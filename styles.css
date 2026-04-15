@@ -5264,7 +5264,7 @@ tr:last-child td{
     border-radius: 12px;
   }
 
-  .botao,
+  .botao:not(.relatorio-menu):not(.relatorio-acao),
   .btn-submenu{
     min-height: 38px;
     padding: 8px 12px;
