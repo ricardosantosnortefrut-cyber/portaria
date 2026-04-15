@@ -5285,6 +5285,20 @@ tr:last-child td{
     padding: 14px !important;
   }
 
+  #containerBotoesVeiculos{
+    max-width: 720px;
+    gap: 8px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #containerBotoesVeiculos .btn-submenu{
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 11.5px;
+    border-radius: 12px;
+  }
+
   #renderListaVeiculos{
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
