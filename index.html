@@ -1007,7 +1007,7 @@
   <div class="report-module-head">
     <p>Filtre por período operacional, tipo de movimento e combustível para analisar o histórico do posto e exportar o recorte.</p>
   </div>
-  <div class="report-filter-grid">
+  <div class="report-filter-grid report-filter-grid--posto">
     <div class="report-date-range">
       <input id="reportPostoDataInicio" type="date">
       <span class="report-date-separator">a</span>
@@ -1024,17 +1024,19 @@
       <option value="S500">S500</option>
       <option value="ARLA">ARLA</option>
     </select>
-    <button class="botao btn-primary" type="button" data-action="aplicar-filtros-posto-relatorio">
+    <button class="botao btn-primary report-filter-apply" type="button" data-action="aplicar-filtros-posto-relatorio">
       <i data-lucide="filter"></i><span>Aplicar Filtros</span>
     </button>
   </div>
   <div id="reportPostoSummary" class="report-module-summary report-module-summary--vehicles report-module-summary--equal"></div>
   <div id="reportPostoInsights" class="report-insights-list"></div>
   <div id="reportPostoPeriod" class="report-period-label"></div>
-  <button class="botao relatorio relatorio-acao relatorio-acao-atual" data-action="exportar-posto-filtrado">
-    <i data-lucide="download"></i><span>Exportar Excel</span>
-  </button>
-  <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+  <div class="report-actions-inline report-actions-inline--posto">
+    <button class="botao relatorio relatorio-acao relatorio-acao-atual" data-action="exportar-posto-filtrado">
+      <i data-lucide="download"></i><span>Exportar Excel</span>
+    </button>
+    <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+  </div>
 </div>
 
 <div id="relatorioPainel" class="section">
