@@ -2470,7 +2470,7 @@ tr:last-child td{
 }
 
 .posto-relatorio-sheet{
-  min-width: 1180px;
+  min-width: 1080px;
   background: #fff;
   color: #111;
   border: 1px solid rgba(25,25,25,.9);
@@ -2542,15 +2542,15 @@ tr:last-child td{
 }
 
 .posto-relatorio-table--geral .posto-relatorio-row{
-  grid-template-columns: 150px repeat(3, 1fr) 160px repeat(3, 1fr) 160px repeat(3, 1fr);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
 .posto-relatorio-table--entrada .posto-relatorio-row{
-  grid-template-columns: 120px 90px 180px 250px 220px 130px 120px 190px 190px;
+  grid-template-columns: 120px 90px 140px minmax(190px, 1fr) 130px 130px 110px;
 }
 
 .posto-relatorio-table--saida .posto-relatorio-row{
-  grid-template-columns: 120px 90px 160px 220px 170px 130px 160px 120px 190px 190px;
+  grid-template-columns: 120px 90px 130px minmax(170px, 1fr) 150px 130px 130px 110px;
 }
 
 .posto-relatorio-cell{

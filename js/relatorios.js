@@ -925,40 +925,35 @@ function preencherLinhaPlanilha(ws, linha, valores, cinza = false) {
 }
 
 function adicionarLinhasMovimentacaoPostoPlanilha(ws, linhaInicial, lista, tipoSecao) {
-  const quantidadeMinima = Math.max(lista.length, 4);
-  for (let indice = 0; indice < quantidadeMinima; indice += 1) {
+  for (let indice = 0; indice < lista.length; indice += 1) {
     const item = lista[indice];
     const linha = linhaInicial + indice;
     const valores = tipoSecao === "entrada"
       ? [
-          item ? formatarDataISOParaBR(item.data) || item.data || "" : "",
+          formatarDataISOParaBR(item.data) || item.data || "",
           item?.hora || "",
           item?.placa || "",
           item?.motorista || "",
-          item ? formatarNumeroPosto(obterQuantidadeMovimentoPosto(item), "L", 3) : "",
-          item ? formatarContadorPosto(item.contador || 0) : "",
-          item?.tipo || "",
-          "",
-          ""
+          formatarNumeroPosto(obterQuantidadeMovimentoPosto(item), "L", 3),
+          formatarContadorPosto(item.contador || 0),
+          item?.tipo || ""
         ]
       : [
-          item ? formatarDataISOParaBR(item.data) || item.data || "" : "",
+          formatarDataISOParaBR(item.data) || item.data || "",
           item?.hora || "",
           item?.placa || "",
           item?.motorista || "",
           item?.setor || "",
-          item ? formatarNumeroPosto(obterQuantidadeMovimentoPosto(item), "L", 3) : "",
-          item ? formatarContadorPosto(item.contador || 0) : "",
-          item?.tipo || "",
-          "",
-          ""
+          formatarNumeroPosto(obterQuantidadeMovimentoPosto(item), "L", 3),
+          formatarContadorPosto(item.contador || 0),
+          item?.tipo || ""
         ];
 
     preencherLinhaPlanilha(ws, linha, valores, false);
     ws.getRow(linha).height = 24;
   }
 
-  return linhaInicial + quantidadeMinima - 1;
+  return linhaInicial + lista.length - 1;
 }
 
 async function exportarRelatorioPostoFiltrado() {
@@ -971,20 +966,7 @@ async function exportarRelatorioPostoFiltrado() {
     pageSetup: { orientation: "landscape", paperSize: 9, fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
   });
 
-  ws.columns = [
-    { width: 14 },
-    { width: 12 },
-    { width: 16 },
-    { width: 18 },
-    { width: 16 },
-    { width: 18 },
-    { width: 18 },
-    { width: 18 },
-    { width: 12 },
-    { width: 18 },
-    { width: 12 },
-    { width: 12 }
-  ];
+  ws.columns = Array.from({ length: 12 }, () => ({ width: 15 }));
 
   const entradas = lista.filter(item => item.modo === "recebimento");
   const saidas = lista.filter(item => item.modo === "abastecimento");
@@ -1040,31 +1022,43 @@ async function exportarRelatorioPostoFiltrado() {
     "", "", ""
   ], false);
 
-  ws.mergeCells("A9:I9");
-  ws.getCell("A9").value = "INFORMAÇÕES SOBRE A ENTRADA DE COMBUSTÍVEL";
-  ws.getCell("A9").font = { bold: true, size: 12 };
-  ws.getCell("A9").alignment = { horizontal: "center", vertical: "middle" };
-  ws.getCell("A9").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9D9D9" } };
-  estilizarIntervaloPlanilha(ws, 9, 9, 1, 9);
+  let proximaLinha = 9;
 
-  preencherLinhaPlanilha(ws, 10, [
-    "DATA", "HORÁRIO", "PLACA", "MOTORISTA", "QTDE. (L)", "CONTADOR", "TIPO", "ASSINATURA MOTORISTA", "ASSINATURA PORTEIRO"
-  ], true);
-  const ultimaEntrada = adicionarLinhasMovimentacaoPostoPlanilha(ws, 11, entradas, "entrada");
+  if (entradas.length) {
+    ws.mergeCells(`A${proximaLinha}:G${proximaLinha}`);
+    ws.getCell(`A${proximaLinha}`).value = "INFORMAÇÕES SOBRE A ENTRADA DE COMBUSTÍVEL";
+    ws.getCell(`A${proximaLinha}`).font = { bold: true, size: 12 };
+    ws.getCell(`A${proximaLinha}`).alignment = { horizontal: "center", vertical: "middle" };
+    ws.getCell(`A${proximaLinha}`).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9D9D9" } };
+    estilizarIntervaloPlanilha(ws, proximaLinha, proximaLinha, 1, 7);
+    ws.getRow(proximaLinha).height = 24;
 
-  const inicioSaidaTitulo = ultimaEntrada + 2;
-  ws.mergeCells(`A${inicioSaidaTitulo}:J${inicioSaidaTitulo}`);
-  ws.getCell(`A${inicioSaidaTitulo}`).value = "INFORMAÇÕES SOBRE A SAÍDA DE COMBUSTÍVEL";
-  ws.getCell(`A${inicioSaidaTitulo}`).font = { bold: true, size: 12 };
-  ws.getCell(`A${inicioSaidaTitulo}`).alignment = { horizontal: "center", vertical: "middle" };
-  ws.getCell(`A${inicioSaidaTitulo}`).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9D9D9" } };
-  estilizarIntervaloPlanilha(ws, inicioSaidaTitulo, inicioSaidaTitulo, 1, 10);
+    proximaLinha += 1;
+    preencherLinhaPlanilha(ws, proximaLinha, [
+      "DATA", "HORÁRIO", "PLACA", "MOTORISTA", "QTDE. (L)", "CONTADOR", "TIPO"
+    ], true);
+    ws.getRow(proximaLinha).height = 28;
 
-  const linhaCabecalhoSaida = inicioSaidaTitulo + 1;
-  preencherLinhaPlanilha(ws, linhaCabecalhoSaida, [
-    "DATA", "HORÁRIO", "PLACA", "MOTORISTA", "SETOR", "QTDE. (L)", "CONTADOR", "TIPO", "ASSINATURA MOTORISTA", "ASSINATURA PORTEIRO"
-  ], true);
-  const ultimaSaida = adicionarLinhasMovimentacaoPostoPlanilha(ws, linhaCabecalhoSaida + 1, saidas, "saida");
+    proximaLinha = adicionarLinhasMovimentacaoPostoPlanilha(ws, proximaLinha + 1, entradas, "entrada") + 2;
+  }
+
+  if (saidas.length) {
+    ws.mergeCells(`A${proximaLinha}:H${proximaLinha}`);
+    ws.getCell(`A${proximaLinha}`).value = "INFORMAÇÕES SOBRE A SAÍDA DE COMBUSTÍVEL";
+    ws.getCell(`A${proximaLinha}`).font = { bold: true, size: 12 };
+    ws.getCell(`A${proximaLinha}`).alignment = { horizontal: "center", vertical: "middle" };
+    ws.getCell(`A${proximaLinha}`).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9D9D9" } };
+    estilizarIntervaloPlanilha(ws, proximaLinha, proximaLinha, 1, 8);
+    ws.getRow(proximaLinha).height = 24;
+
+    proximaLinha += 1;
+    preencherLinhaPlanilha(ws, proximaLinha, [
+      "DATA", "HORÁRIO", "PLACA", "MOTORISTA", "SETOR", "QTDE. (L)", "CONTADOR", "TIPO"
+    ], true);
+    ws.getRow(proximaLinha).height = 28;
+
+    proximaLinha = adicionarLinhasMovimentacaoPostoPlanilha(ws, proximaLinha + 1, saidas, "saida") + 2;
+  }
 
   ws.getRow(1).height = 28;
   ws.getRow(2).height = 22;
@@ -1072,10 +1066,6 @@ async function exportarRelatorioPostoFiltrado() {
   ws.getRow(5).height = 28;
   ws.getRow(6).height = 28;
   ws.getRow(7).height = 28;
-  ws.getRow(9).height = 24;
-  ws.getRow(10).height = 28;
-  ws.getRow(inicioSaidaTitulo).height = 24;
-  ws.getRow(linhaCabecalhoSaida).height = 28;
   const buffer = await wb.xlsx.writeBuffer();
   saveAs(new Blob([buffer]), "Relatorio_Posto_Filtrado.xlsx");
 }

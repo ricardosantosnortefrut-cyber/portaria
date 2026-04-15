@@ -636,7 +636,6 @@ function obterBasesPlantaoRelatorioPosto() {
 }
 
 function montarLinhasRelatorioPosto(lista, tipo) {
-  const quantidadeVazios = Math.max(1, 4 - lista.length);
   const linhas = lista.map(item => {
     const base = [
       `<div class="posto-relatorio-cell">${escaparHtml(formatarDataISOParaBR(item.data) || item.data || "-")}</div>`,
@@ -649,27 +648,19 @@ function montarLinhasRelatorioPosto(lista, tipo) {
       base.push(
         `<div class="posto-relatorio-cell">${escaparHtml(formatarNumeroPosto(obterQuantidadeMovimentoPosto(item), "L", 3))}</div>`,
         `<div class="posto-relatorio-cell">${escaparHtml(formatarContadorPosto(item.contador || 0))}</div>`,
-        `<div class="posto-relatorio-cell">${escaparHtml(item.tipo || "-")}</div>`,
-        `<div class="posto-relatorio-cell"></div>`,
-        `<div class="posto-relatorio-cell"></div>`
+        `<div class="posto-relatorio-cell">${escaparHtml(item.tipo || "-")}</div>`
       );
     } else {
       base.push(
         `<div class="posto-relatorio-cell posto-relatorio-cell--left">${escaparHtml(item.setor || "-")}</div>`,
         `<div class="posto-relatorio-cell">${escaparHtml(formatarNumeroPosto(obterQuantidadeMovimentoPosto(item), "L", 3))}</div>`,
         `<div class="posto-relatorio-cell">${escaparHtml(formatarContadorPosto(item.contador || 0))}</div>`,
-        `<div class="posto-relatorio-cell">${escaparHtml(item.tipo || "-")}</div>`,
-        `<div class="posto-relatorio-cell"></div>`,
-        `<div class="posto-relatorio-cell"></div>`
+        `<div class="posto-relatorio-cell">${escaparHtml(item.tipo || "-")}</div>`
       );
     }
 
     return `<div class="posto-relatorio-row">${base.join("")}</div>`;
   });
-
-  for (let i = 0; i < quantidadeVazios; i += 1) {
-    linhas.push(`<div class="posto-relatorio-row">${new Array(tipo === "entrada" ? 9 : 10).fill('<div class="posto-relatorio-cell"></div>').join("")}</div>`);
-  }
 
   return linhas.join("");
 }
@@ -682,6 +673,37 @@ function montarRelatorioPostoHtml() {
   const saidas = obterMovimentosDiaOperacionalPosto("abastecimento");
   const turnoAtual = resumo.turnoAtual === "DIA" ? "1º TURNO" : "2º TURNO";
   const outroTurno = resumo.turnoAtual === "DIA" ? "2º TURNO" : "1º TURNO";
+  const blocoEntrada = entradas.length ? `
+      <div class="posto-relatorio-section-title">INFORMAÇÕES SOBRE A ENTRADA DE COMBUSTÍVEL</div>
+      <div class="posto-relatorio-table posto-relatorio-table--entrada">
+        <div class="posto-relatorio-row posto-relatorio-row--head">
+          <div class="posto-relatorio-cell">DATA</div>
+          <div class="posto-relatorio-cell">HORÁRIO</div>
+          <div class="posto-relatorio-cell">PLACA</div>
+          <div class="posto-relatorio-cell">MOTORISTA</div>
+          <div class="posto-relatorio-cell">QTDE. (L)</div>
+          <div class="posto-relatorio-cell">CONTADOR</div>
+          <div class="posto-relatorio-cell">TIPO</div>
+        </div>
+        ${montarLinhasRelatorioPosto(entradas, "entrada")}
+      </div>
+  ` : "";
+  const blocoSaida = saidas.length ? `
+      <div class="posto-relatorio-section-title">INFORMAÇÕES SOBRE A SAÍDA DE COMBUSTÍVEL</div>
+      <div class="posto-relatorio-table posto-relatorio-table--saida">
+        <div class="posto-relatorio-row posto-relatorio-row--head">
+          <div class="posto-relatorio-cell">DATA</div>
+          <div class="posto-relatorio-cell">HORÁRIO</div>
+          <div class="posto-relatorio-cell">PLACA</div>
+          <div class="posto-relatorio-cell">MOTORISTA</div>
+          <div class="posto-relatorio-cell">SETOR</div>
+          <div class="posto-relatorio-cell">QTDE. (L)</div>
+          <div class="posto-relatorio-cell">CONTADOR</div>
+          <div class="posto-relatorio-cell">TIPO</div>
+        </div>
+        ${montarLinhasRelatorioPosto(saidas, "saida")}
+      </div>
+  ` : "";
 
   const geralLinha = (titulo, valores = {}) => `
     <div class="posto-relatorio-row">
@@ -750,38 +772,8 @@ function montarRelatorioPostoHtml() {
         })}
       </div>
 
-      <div class="posto-relatorio-section-title">INFORMAÇÕES SOBRE A ENTRADA DE COMBUSTÍVEL</div>
-      <div class="posto-relatorio-table posto-relatorio-table--entrada">
-        <div class="posto-relatorio-row posto-relatorio-row--head">
-          <div class="posto-relatorio-cell">DATA</div>
-          <div class="posto-relatorio-cell">HORÁRIO</div>
-          <div class="posto-relatorio-cell">PLACA</div>
-          <div class="posto-relatorio-cell">MOTORISTA</div>
-          <div class="posto-relatorio-cell">QTDE. (L)</div>
-          <div class="posto-relatorio-cell">CONTADOR</div>
-          <div class="posto-relatorio-cell">TIPO</div>
-          <div class="posto-relatorio-cell posto-relatorio-cell--small">ASSINATURA MOTORISTA</div>
-          <div class="posto-relatorio-cell posto-relatorio-cell--small">ASSINATURA PORTEIRO</div>
-        </div>
-        ${montarLinhasRelatorioPosto(entradas, "entrada")}
-      </div>
-
-      <div class="posto-relatorio-section-title">INFORMAÇÕES SOBRE A SAÍDA DE COMBUSTÍVEL</div>
-      <div class="posto-relatorio-table posto-relatorio-table--saida">
-        <div class="posto-relatorio-row posto-relatorio-row--head">
-          <div class="posto-relatorio-cell">DATA</div>
-          <div class="posto-relatorio-cell">HORÁRIO</div>
-          <div class="posto-relatorio-cell">PLACA</div>
-          <div class="posto-relatorio-cell">MOTORISTA</div>
-          <div class="posto-relatorio-cell">SETOR</div>
-          <div class="posto-relatorio-cell">QTDE. (L)</div>
-          <div class="posto-relatorio-cell">CONTADOR</div>
-          <div class="posto-relatorio-cell">TIPO</div>
-          <div class="posto-relatorio-cell posto-relatorio-cell--small">ASSINATURA MOTORISTA</div>
-          <div class="posto-relatorio-cell posto-relatorio-cell--small">ASSINATURA PORTEIRO</div>
-        </div>
-        ${montarLinhasRelatorioPosto(saidas, "saida")}
-      </div>
+      ${blocoEntrada}
+      ${blocoSaida}
     </div>
   `;
 }
