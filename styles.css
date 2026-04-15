@@ -2839,25 +2839,6 @@ tr:last-child td{
   width: 100%;
 }
 
-.report-filter-grid--posto{
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-}
-
-.report-filter-grid--posto .report-date-range,
-.report-filter-grid--posto #reportPostoModo{
-  grid-column: auto;
-}
-
-.report-filter-grid--posto #reportPostoTipo{
-  grid-column: 1;
-}
-
-.report-filter-grid--posto .report-filter-apply{
-  grid-column: 2;
-  width: 100%;
-  margin-top: 4px;
-}
-
 .report-actions-inline{
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3810,13 +3791,6 @@ tr:last-child td{
     grid-template-columns: 1fr;
     gap: 8px;
     margin-top: 12px;
-  }
-
-  .report-filter-grid--posto .report-date-range,
-  .report-filter-grid--posto #reportPostoModo,
-  .report-filter-grid--posto #reportPostoTipo,
-  .report-filter-grid--posto .report-filter-apply{
-    grid-column: 1;
   }
 
   .report-date-range{
