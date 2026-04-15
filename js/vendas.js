@@ -516,7 +516,7 @@ function renderListaVendas(registros) {
 function inicializarVendaForm() {
   popularSelectVenda("vd_produto", produtosVendaMamao, "Selecione o tipo de mamão...");
   popularSelectVenda("vd_maturacao", opcoesMaturacaoVenda, "Selecione a característica do mamão...");
-  popularSelectVenda("vd_pagamento", formasPagamentoVenda, "Selecione a forma de pagamento...");
+  popularSelectVenda("vd_pagamento", formasPagamentoVenda, "Forma de pagamento");
 
   getById("vd_produto")?.addEventListener("change", atualizarResumoVenda);
   getById("vd_quantidade")?.addEventListener("input", atualizarResumoVenda);
