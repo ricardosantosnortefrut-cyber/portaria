@@ -5519,18 +5519,51 @@ tr:last-child td{
   }
 }
 
-@media (min-width: 861px) and (max-width: 1180px){
+@media (min-width: 861px) and (max-width: 1500px){
   .topo,
   .app-shell{
     width: 100%;
   }
 
   .menu{
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(112px, 1fr));
+    align-items: stretch;
   }
 
   .menu button{
-    min-height: 38px;
+    min-height: 40px;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 10px;
+  }
+
+  .menu button span{
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  .section{
+    max-width: 860px;
+  }
+
+  #inicio.section{
+    max-width: 960px;
+  }
+
+  #posto.section,
+  #pesagemManual.section,
+  #relatorios.section,
+  #cadastros.section{
+    max-width: 980px;
+  }
+
+  .posto-product-card,
+  .report-summary-card,
+  .home-stat-card{
+    padding: 11px;
   }
 }
 
