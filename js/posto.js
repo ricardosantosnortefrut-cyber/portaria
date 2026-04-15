@@ -641,20 +641,20 @@ function montarLinhasRelatorioPosto(lista, tipo) {
       `<div class="posto-relatorio-cell">${escaparHtml(formatarDataISOParaBR(item.data) || item.data || "-")}</div>`,
       `<div class="posto-relatorio-cell">${escaparHtml(item.hora || "-")}</div>`,
       `<div class="posto-relatorio-cell">${escaparHtml(item.placa || "-")}</div>`,
-      `<div class="posto-relatorio-cell posto-relatorio-cell--left">${escaparHtml(item.motorista || "-")}</div>`
+      `<div class="posto-relatorio-cell posto-relatorio-cell--left posto-relatorio-span-2">${escaparHtml(item.motorista || "-")}</div>`
     ];
 
     if (tipo === "entrada") {
       base.push(
-        `<div class="posto-relatorio-cell">${escaparHtml(formatarNumeroPosto(obterQuantidadeMovimentoPosto(item), "L", 3))}</div>`,
-        `<div class="posto-relatorio-cell">${escaparHtml(formatarContadorPosto(item.contador || 0))}</div>`,
-        `<div class="posto-relatorio-cell">${escaparHtml(item.tipo || "-")}</div>`
+        `<div class="posto-relatorio-cell posto-relatorio-span-2">${escaparHtml(formatarNumeroPosto(obterQuantidadeMovimentoPosto(item), "L", 3))}</div>`,
+        `<div class="posto-relatorio-cell posto-relatorio-span-3">${escaparHtml(formatarContadorPosto(item.contador || 0))}</div>`,
+        `<div class="posto-relatorio-cell posto-relatorio-span-2">${escaparHtml(item.tipo || "-")}</div>`
       );
     } else {
       base.push(
-        `<div class="posto-relatorio-cell posto-relatorio-cell--left">${escaparHtml(item.setor || "-")}</div>`,
+        `<div class="posto-relatorio-cell posto-relatorio-cell--left posto-relatorio-span-2">${escaparHtml(item.setor || "-")}</div>`,
         `<div class="posto-relatorio-cell">${escaparHtml(formatarNumeroPosto(obterQuantidadeMovimentoPosto(item), "L", 3))}</div>`,
-        `<div class="posto-relatorio-cell">${escaparHtml(formatarContadorPosto(item.contador || 0))}</div>`,
+        `<div class="posto-relatorio-cell posto-relatorio-span-3">${escaparHtml(formatarContadorPosto(item.contador || 0))}</div>`,
         `<div class="posto-relatorio-cell">${escaparHtml(item.tipo || "-")}</div>`
       );
     }
@@ -680,10 +680,10 @@ function montarRelatorioPostoHtml() {
           <div class="posto-relatorio-cell">DATA</div>
           <div class="posto-relatorio-cell">HORÁRIO</div>
           <div class="posto-relatorio-cell">PLACA</div>
-          <div class="posto-relatorio-cell">MOTORISTA</div>
-          <div class="posto-relatorio-cell">QTDE. (L)</div>
-          <div class="posto-relatorio-cell">CONTADOR</div>
-          <div class="posto-relatorio-cell">TIPO</div>
+          <div class="posto-relatorio-cell posto-relatorio-span-2">MOTORISTA</div>
+          <div class="posto-relatorio-cell posto-relatorio-span-2">QTDE. (L)</div>
+          <div class="posto-relatorio-cell posto-relatorio-span-3">CONTADOR</div>
+          <div class="posto-relatorio-cell posto-relatorio-span-2">TIPO</div>
         </div>
         ${montarLinhasRelatorioPosto(entradas, "entrada")}
       </div>
@@ -695,10 +695,10 @@ function montarRelatorioPostoHtml() {
           <div class="posto-relatorio-cell">DATA</div>
           <div class="posto-relatorio-cell">HORÁRIO</div>
           <div class="posto-relatorio-cell">PLACA</div>
-          <div class="posto-relatorio-cell">MOTORISTA</div>
-          <div class="posto-relatorio-cell">SETOR</div>
+          <div class="posto-relatorio-cell posto-relatorio-span-2">MOTORISTA</div>
+          <div class="posto-relatorio-cell posto-relatorio-span-2">SETOR</div>
           <div class="posto-relatorio-cell">QTDE. (L)</div>
-          <div class="posto-relatorio-cell">CONTADOR</div>
+          <div class="posto-relatorio-cell posto-relatorio-span-3">CONTADOR</div>
           <div class="posto-relatorio-cell">TIPO</div>
         </div>
         ${montarLinhasRelatorioPosto(saidas, "saida")}

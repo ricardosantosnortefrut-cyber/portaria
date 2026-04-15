@@ -2546,11 +2546,19 @@ tr:last-child td{
 }
 
 .posto-relatorio-table--entrada .posto-relatorio-row{
-  grid-template-columns: 120px 90px 140px minmax(190px, 1fr) 130px 130px 110px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
 .posto-relatorio-table--saida .posto-relatorio-row{
-  grid-template-columns: 120px 90px 130px minmax(170px, 1fr) 150px 130px 130px 110px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.posto-relatorio-span-2{
+  grid-column: span 2;
+}
+
+.posto-relatorio-span-3{
+  grid-column: span 3;
 }
 
 .posto-relatorio-cell{
