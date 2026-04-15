@@ -5228,3 +5228,248 @@ tr:last-child td{
     zoom: .84;
   }
 }
+
+/* Compacta apenas o conteudo das telas em computadores menores. */
+@media (min-width: 981px) and (max-width: 1500px){
+  .section{
+    padding: 16px 18px;
+  }
+
+  .section h3{
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  .form-oculto,
+  #formChave,
+  #formGuarda,
+  #formJogoContainer,
+  #formAbast,
+  #formAgendamentoBox,
+  .form-panel,
+  .cadastro-panel,
+  .venda-card{
+    padding: 12px !important;
+    border-radius: 18px !important;
+  }
+
+  input:not([type="radio"]):not([type="checkbox"]),
+  select,
+  textarea,
+  .autocomplete-box input{
+    min-height: 38px;
+    padding: 8px 11px;
+    margin: 4px 0;
+    font-size: 12.5px;
+    border-radius: 12px;
+  }
+
+  .botao,
+  .btn-submenu{
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    border-radius: 12px;
+  }
+
+  #veiculosGeral,
+  #chaves,
+  #vendas,
+  #cadastros{
+    max-width: 920px;
+    padding: 16px 18px;
+  }
+
+  #listaVeiculosContent{
+    max-width: 900px;
+    padding: 14px !important;
+  }
+
+  #renderListaVeiculos{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .veiculo{
+    min-height: 74px;
+    gap: 10px;
+    padding: 9px 11px;
+    border-radius: 14px;
+  }
+
+  .icone{
+    flex-basis: 50px;
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+  }
+
+  .info b{
+    margin-bottom: 1px;
+    font-size: 13px;
+    line-height: 1.15;
+  }
+
+  .info small{
+    font-size: .72rem;
+  }
+
+  .status-badge{
+    padding: 5px 8px;
+    font-size: 9.5px;
+  }
+
+  #chavesAtivas,
+  #guardasAtivos,
+  #jogosAtivos,
+  #listaAgendamentos{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .card-chave,
+  .card-agenda{
+    margin-bottom: 0;
+    padding: 10px 12px 10px 13px;
+    border-radius: 13px;
+    box-shadow: 0 8px 18px rgba(26, 71, 128, .07);
+  }
+
+  .card-chave b,
+  .card-agenda b{
+    margin-bottom: 4px;
+    font-size: .82rem;
+  }
+
+  .card-chave small,
+  .card-agenda small{
+    margin-top: 2px;
+    font-size: .71rem;
+    line-height: 1.25;
+  }
+
+  .card-chave .botao.devolver,
+  .card-agenda .botao.devolver,
+  .card-action-hint{
+    min-height: 28px;
+    margin-top: 7px;
+    padding: 5px 12px;
+    font-size: .62rem;
+  }
+
+  .venda-layout{
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .venda-card{
+    gap: 8px;
+  }
+
+  .venda-card-head{
+    gap: 2px;
+  }
+
+  .venda-card-head strong{
+    font-size: .92rem;
+  }
+
+  .venda-card-head span{
+    font-size: .74rem;
+  }
+
+  .venda-form-grid{
+    gap: 7px;
+  }
+
+  .obs-curta,
+  #vendas textarea.obs-curta{
+    min-height: 50px;
+  }
+
+  .venda-cupom-preview{
+    min-height: 210px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .venda-actions{
+    gap: 8px;
+  }
+
+  .venda-actions-inline .botao,
+  .venda-actions .botao,
+  .venda-cupom-preview + .venda-actions .botao{
+    min-height: 38px;
+  }
+
+  .venda-list-row{
+    padding: 9px 11px;
+    border-radius: 13px;
+  }
+
+  .cadastro-tabs{
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .cadastro-tab,
+  .cadastro-subtab{
+    min-height: 32px;
+    padding: 7px 12px;
+    font-size: .74rem;
+  }
+
+  .cadastro-panel-head{
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  .cadastro-form{
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .cadastro-form .botao{
+    min-height: 38px;
+  }
+
+  .cadastro-helper{
+    margin-bottom: 10px;
+    font-size: .7rem;
+  }
+
+  .cadastro-list{
+    gap: 7px;
+  }
+
+  .cadastro-row{
+    gap: 10px;
+    padding: 9px 11px;
+    border-radius: 14px;
+  }
+
+  .cadastro-row-media{
+    width: 52px;
+    height: 52px;
+    border-radius: 13px;
+  }
+
+  .cadastro-row-info strong{
+    font-size: .82rem;
+  }
+
+  .cadastro-row-info span,
+  .cadastro-row-subline,
+  .cadastro-row-detail{
+    font-size: .68rem !important;
+  }
+
+  .cadastro-action{
+    min-width: 68px;
+    min-height: 28px;
+    padding: 5px 10px;
+    font-size: .64rem;
+  }
+}
