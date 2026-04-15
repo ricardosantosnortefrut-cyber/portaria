@@ -1,0 +1,1255 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Portaria Nortefrut - Versão Gestor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://unpkg.com/lucide@0.515.0/dist/umd/lucide.min.js"></script>
+
+        <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div id="toast">Registro realizado com sucesso!</div>
+
+    <header class="topo">
+  <div class="topo-card">
+    <div class="logo-box">
+      <img class="logo-nf" src="imagens/logo-nortefrut.png" alt="Nortefrut">
+    </div>
+
+    <div class="topo-textos">
+      <h2>PORTARIA NORTEFRUT</h2>
+      <div class="topo-sub">Sistema de Controle • Nortefrut</div>
+    </div>
+  </div>
+</header>
+
+<main class="app-shell">
+    <div class="menu">
+        <button data-nav="inicio"><i data-lucide="house"></i><span>Início</span></button>
+        <button data-nav="veiculosGeral"><i data-lucide="car-front"></i><span>Veículos</span></button>
+        <button data-nav="posto"><i data-lucide="fuel"></i><span>Posto</span></button>
+        <button data-nav="chaves"><i data-lucide="key-round"></i><span>Chaves</span></button>
+        <button data-nav="empilhadeiras"><i data-lucide="forklift"></i><span>Empilhadeiras</span></button>
+        <button data-nav="vendas"><i data-lucide="banknote"></i><span>Vendas</span></button>
+        <button class="menu-jogos" data-nav="jogos"><i data-lucide="gamepad-2"></i><span>Jogos</span></button>
+        <button data-nav="guardachuvas"><i data-lucide="umbrella"></i><span>Guarda-Chuva</span></button>
+        <button data-nav="pesagemManual"><i data-lucide="truck"></i><span>Balança</span></button>
+        <button class="menu-relatorios" data-nav="relatorios"><i data-lucide="chart-column"></i><span>Relatórios</span></button>
+        <button data-nav="cadastros"><i data-lucide="settings-2"></i><span>Cadastros</span></button>
+    </div>
+
+    <section id="inicio" class="section">
+        <div class="home-hero">
+            <div class="home-hero-grid">
+                <article class="operational-panel">
+                    <div class="operational-slide active" data-slide-index="0">
+                        <strong id="operationalTitle">Agendamentos do dia</strong>
+                        <p id="operationalText">Carregando dados operacionais...</p>
+                    </div>
+                    <div class="operational-dots">
+                        <span class="operational-dot active"></span>
+                        <span class="operational-dot"></span>
+                        <span class="operational-dot"></span>
+                    </div>
+                </article>
+
+                <div class="home-stats">
+                    <button class="home-stat-card" data-nav="veiculosGeral">
+                        <span>Veículos na rua</span>
+                        <strong id="statVeiculosRua">0</strong>
+                        <small>Acompanhar frota ativa</small>
+                    </button>
+                    <button class="home-stat-card" data-nav="chaves">
+                        <span>Chaves em uso</span>
+                        <strong id="statChavesUso">0</strong>
+                        <small>Ver retiradas abertas</small>
+                    </button>
+                    <button class="home-stat-card" data-nav="jogos">
+                        <span>Jogos em uso</span>
+                        <strong id="statJogosUso">0</strong>
+                        <small>Checar devoluções</small>
+                    </button>
+                    <button class="home-stat-card" data-nav="guardachuvas">
+                        <span>Guarda-chuvas em uso</span>
+                        <strong id="statGuardasUso">0</strong>
+                        <small>Ver empréstimos do turno</small>
+                    </button>
+                </div>
+            </div>
+
+            <article class="home-attention">
+                <div class="home-attention-head">
+                    <span class="home-attention-badge">Painel do turno</span>
+                    <strong>Prioridades do turno</strong>
+                </div>
+                <div class="attention-board">
+                    <div id="attentionNow" class="attention-row attention-row-primary">
+                        <div class="attention-row-icon">
+                            <i data-lucide="shield-alert"></i>
+                        </div>
+                        <div class="attention-row-content">
+                            <span class="attention-kicker">Agora</span>
+                            <strong>Carregando prioridades...</strong>
+                            <p>Aguarde enquanto o sistema organiza o que pede atenção no turno.</p>
+                        </div>
+                    </div>
+                    <div id="attentionNext" class="attention-row">
+                        <div class="attention-row-icon">
+                            <i data-lucide="arrow-right-circle"></i>
+                        </div>
+                        <div class="attention-row-content">
+                            <span class="attention-kicker">Próximo</span>
+                            <strong>Carregando rotina...</strong>
+                            <p>Buscando a próxima ação importante do turno.</p>
+                        </div>
+                    </div>
+                    <div id="attentionAlert" class="attention-row">
+                        <div class="attention-row-icon">
+                            <i data-lucide="siren"></i>
+                        </div>
+                        <div class="attention-row-content">
+                            <span class="attention-kicker">Atenção</span>
+                            <strong>Carregando alertas...</strong>
+                            <p>Separando os avisos operacionais relevantes.</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <div id="veiculosGeral" class="section">
+        <h3 class="section-title-center"><i data-lucide="car-front" class="title-icon"></i><span>Gestão de Veículos</span></h3>
+        <div id="containerBotoesVeiculos" class="acoes-flex">
+
+        <button class="btn-submenu btn-submenu-primary"
+      data-subveiculos="listaVeiculosContent"><i data-lucide="clipboard-list"></i><span>CONTROLE DE SAÍDA / RETORNO</span></button>
+
+        <button class="btn-submenu btn-primary-soft"
+      data-subveiculos="agendamentoVeiculosContent"><i data-lucide="calendar-days"></i><span>AGENDAMENTO DE VIAGENS</span></button>
+        </div>
+
+        <div id="listaVeiculosContent" class="form-oculto">
+            <h4>Selecione o veículo:</h4>
+            <div class="lista-veiculos" id="renderListaVeiculos"></div>
+        <button class="botao btn-secondary btn-spaced-lg"
+      data-action="fechar-subveiculos"><span>Voltar</span></button>
+        </div>
+        
+        <div id="agendamentoVeiculosContent" class="form-oculto">
+        <button id="btnAbrirAgendamento" class="botao btn-primary" data-action="abrir-agendamento"><i data-lucide="plus"></i><span>Agendar Veículo</span></button>
+
+  <div id="formAgendamentoBox" class="form-panel is-hidden">
+
+    <h4><i data-lucide="calendar-days" class="title-icon"></i><span>Agendar Veículo</span></h4>
+
+    <select id="ag_veiculo">
+      <option value="">Selecione o Veículo...</option>
+      <option value="Fiat Strada Prata (MPI-4647)">Fiat Strada Prata (MPI-4647)</option>
+      <option value="Fiat Strada Branca (PPX-2827)">Fiat Strada Branca (PPX-2827)</option>
+      <option value="Fiat Strada Branca (QRJ-1A02)">Fiat Strada Branca (QRJ-1A02)</option>
+      <option value="Fiat Mobi (PPY-5A18)">Fiat Mobi (PPY-5A18)</option>
+      <option value="Fiat Mobi (TCA-5G32)">Fiat Mobi (TCA-5G32)</option>
+      <option value="Renault Oroch (SGD-5G26)">Renault Oroch (SGD-5G26)</option>
+      <option value="Caminhonete L200 (MSV-3A51)">Caminhonete L200 (MSV-3A51)</option>
+    </select>
+
+      <input type="date" id="ag_data">
+      <input type="time" id="ag_hora">
+      <input id="ag_local" placeholder="Local/Destino" data-uppercase>
+      <input id="ag_quem" placeholder="Nome do Condutor" data-uppercase>
+
+      <button class="botao btn-primary" data-action="salvar-agendamento"><i data-lucide="plus"></i><span>Confirmar Agendamento</span></button>
+
+      <button class="botao btn-secondary btn-spaced-sm"
+    data-action="fechar-agendamento"><span>Cancelar</span></button>
+   </div>
+
+  <div id="blocoReservasAgendamento">
+    <h5 class="heading-spaced">Reservas Ativas:</h5>
+    <div id="listaAgendamentos"></div>
+  </div>
+
+      <button id="btnVoltarAgendamento" class="botao btn-secondary btn-spaced-lg"
+    data-action="fechar-subveiculos"><span>Voltar</span></button>
+
+    </div>
+</div>
+
+    <div id="veiculosForm" class="section">
+        <h3 id="tituloForm">Movimentação</h3>
+        <input id="v_placa" class="readonly-field" placeholder="Placa" readonly>
+        
+        <div id="campos_saida">
+            <h4>Registro de Saída</h4>
+            <input id="v_km_saida" type="number" placeholder="KM Saída">
+            <div class="autocomplete-box">
+            <input id="v_condutor" type="text" placeholder="Pesquisar Condutor..." autocomplete="off">
+            <div id="lista_condutores" class="autocomplete-list"></div>
+            </div>
+            <input id="v_destino" placeholder="Destino" data-uppercase>
+        </div>
+
+        <div id="campos_retorno" class="is-hidden">
+            <h4>Registro de Retorno</h4>
+            <p id="info_saida" class="info-box"></p>
+            <input id="v_km_retorno" type="number" placeholder="KM Retorno">
+            <div class="autocomplete-box">
+            <input id="v_porteiro_retorno" type="text" placeholder="Pesquisar Porteiro..." autocomplete="off">
+            <div id="lista_porteiros_retorno" class="autocomplete-list"></div>
+            </div>
+            
+            <h4>Checklist</h4>
+            <div class="checklist-grid">
+                <div class="checklist-item">
+                    <strong>Buzina/Ar Condicionado</strong>
+                    <div class="checklist-options">
+                        <label><span>C</span><input type="radio" name="c_luz" value="C"></label>
+                        <label><span>NC</span><input type="radio" name="c_luz" value="NC"></label>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <strong>Farol/Luzes</strong>
+                    <div class="checklist-options">
+                        <label><span>C</span><input type="radio" name="c_pneu" value="C"></label>
+                        <label><span>NC</span><input type="radio" name="c_pneu" value="NC"></label>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <strong>Lataria/Retrovisores</strong>
+                    <div class="checklist-options">
+                        <label><span>C</span><input type="radio" name="c_limp" value="C"></label>
+                        <label><span>NC</span><input type="radio" name="c_limp" value="NC"></label>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <strong>Limpeza/Pneus</strong>
+                    <div class="checklist-options">
+                        <label><span>C</span><input type="radio" name="c_pneu_visual" value="C"></label>
+                        <label><span>NC</span><input type="radio" name="c_pneu_visual" value="NC"></label>
+                    </div>
+                </div>
+            </div>
+            <textarea id="v_obs" class="obs-curta" placeholder="Observações importantes..." data-uppercase></textarea>
+        </div>
+        <div class="veiculos-form-actions">
+          <button class="botao btn-secondary" data-action="voltar-veiculos"><span>Voltar</span></button>
+          <button class="botao btn-primary" data-action="processar-veiculo">Gravar Registro</button>
+        </div>
+            
+    </div>
+
+    <div id="chaves" class="section">
+        <h3><i data-lucide="key-round" class="title-icon"></i><span>Controle de Chaves</span></h3>
+        <button id="btnAbrirChave" class="botao btn-primary" data-action="abrir-chave"><i data-lucide="plus"></i><span>Registrar Retirada</span></button>
+        
+        <div id="formChave" class="form-panel is-hidden">
+            <div class="autocomplete-box">
+  <input id="ch_sala" type="text" placeholder="Pesquisar Sala/Setor..." autocomplete="off" data-uppercase>
+  <div id="lista_chaves_setor" class="autocomplete-list"></div>
+</div>
+
+<input id="ch_num" class="readonly-field" placeholder="Número da Chave" readonly>
+            <input id="ch_quem" placeholder="Quem retirou" data-uppercase>
+            <div class="autocomplete-box">
+  <input id="ch_porteiro" type="text" placeholder="Pesquisar Porteiro..." autocomplete="off" data-uppercase>
+  <div id="lista_porteiros_chaves" class="autocomplete-list"></div>
+</div>
+            <button class="botao btn-primary" data-action="salvar-chave">Salvar Retirada</button>
+            <button class="botao btn-secondary btn-spaced-sm" data-action="cancelar-chave">Cancelar</button>
+        </div>
+
+        <h4 class="heading-spaced">Chaves em Uso:</h4>
+        <div id="chavesAtivas"></div>
+    </div>
+
+     <div id="guardachuvas" class="section">
+  <h3><i data-lucide="umbrella" class="title-icon"></i><span>Controle de Guarda-Chuva</span></h3>
+
+  <button id="btnAbrirGuarda" class="botao btn-primary" data-action="abrir-guarda"><i data-lucide="plus"></i><span>Registrar Retirada</span></button>
+
+  <!-- FORM -->
+  <div id="formGuarda" class="form-panel is-hidden">
+
+    <div class="autocomplete-box">
+      <input id="gu_num" placeholder="Selecione o guarda-chuva..." autocomplete="off" data-uppercase>
+      <div id="lista_guardas_num" class="autocomplete-list"></div>
+    </div>
+    <input id="gu_quem" placeholder="Quem retirou" data-uppercase>
+    <div class="autocomplete-box">
+      <input id="gu_setor" placeholder="Selecione o setor..." autocomplete="off" data-uppercase>
+      <div id="lista_guardas_setor" class="autocomplete-list"></div>
+    </div>
+    <div class="autocomplete-box">
+      <input id="gu_porteiro" placeholder="Selecione o porteiro..." autocomplete="off" data-uppercase>
+      <div id="lista_guardas_porteiro" class="autocomplete-list"></div>
+    </div>
+
+    <button class="botao btn-primary" data-action="salvar-guarda">Salvar Retirada</button>
+    <button class="botao btn-secondary btn-spaced-sm" data-action="fechar-guarda">Cancelar</button>
+  </div>
+
+  <h4 class="heading-spaced">Guarda-Chuvas em Uso:</h4>
+  <div id="guardasAtivos"></div>
+</div>
+
+<div id="jogos" class="section">
+        <h3><i data-lucide="gamepad-2" class="title-icon"></i><span>Controle de Jogos</span></h3>
+        <button id="btnAbrirJogo" class="botao btn-primary" data-action="abrir-jogo"><i data-lucide="plus"></i><span>Retirar Jogo</span></button>
+        
+        <div id="formJogoContainer" class="form-panel is-hidden">
+            <form id="formJogoReal" autocomplete="off">
+                <input id="jo_func" placeholder="Funcionário" data-uppercase>
+                <input id="jo_aut" placeholder="Autorizador" data-uppercase>
+                <div class="autocomplete-box">
+                    <input id="jo_jogo" placeholder="Selecione o jogo..." autocomplete="off" data-uppercase>
+                    <div id="lista_jogos_nome" class="autocomplete-list"></div>
+                </div>
+                <div class="autocomplete-box">
+                    <input id="jo_porteiro" placeholder="Selecione o porteiro..." autocomplete="off" data-uppercase>
+                    <div id="lista_jogos_porteiro" class="autocomplete-list"></div>
+                </div>
+                <button type="button" class="botao btn-primary" data-action="salvar-jogo">Salvar Retirada</button>
+                <button type="button" class="botao btn-secondary btn-spaced-sm" data-action="fechar-jogo">Cancelar</button>
+            </form>
+        </div>
+
+        <h4 class="heading-spaced">Jogos em Uso:</h4>
+        <div id="jogosAtivos"></div>
+    </div>
+
+    <div id="vendas" class="section">
+        <h3><i data-lucide="banknote" class="title-icon"></i><span>Venda de Caixa de Mamão</span></h3>
+        <div class="venda-layout">
+            <article class="venda-card">
+                <div class="venda-card-head">
+                    <strong>Novo Pedido</strong>
+                    <span>Monte o pedido e gere um texto padrão para envio aos setores.</span>
+                </div>
+                <div class="venda-form-grid venda-form-grid--item">
+                    <input id="vd_nome" placeholder="Nome do cliente" data-uppercase>
+                    <select id="vd_produto"></select>
+                    <select id="vd_maturacao"></select>
+                    <input id="vd_quantidade" type="number" min="1" step="1" value="1" placeholder="Quantidade de caixas">
+                    <input id="vd_valor_unitario" class="readonly-field" readonly placeholder="Valor unitário">
+                    <input id="vd_valor_item" class="readonly-field" readonly placeholder="Subtotal do item">
+                    <div class="venda-actions venda-actions-inline">
+                        <button class="botao btn-primary" data-action="adicionar-item-venda"><i data-lucide="plus"></i><span>Adicionar Item</span></button>
+                    </div>
+                </div>
+                <div class="venda-items-block">
+                    <div class="venda-items-head">
+                        <strong>Itens do pedido</strong>
+                        <span id="vendaResumoItens">Nenhum item adicionado.</span>
+                    </div>
+                    <div id="vendaItensPedido" class="venda-itens-list"></div>
+                </div>
+                <div class="venda-form-grid venda-form-grid--pedido">
+                    <select id="vd_pagamento"></select>
+                    <input id="vd_valor_total" class="readonly-field" readonly placeholder="Valor total do pedido">
+                    <textarea id="vd_obs" class="obs-curta" placeholder="Observação opcional..." data-uppercase></textarea>
+                </div>
+                <div class="venda-actions">
+                    <button class="botao btn-primary" data-action="salvar-venda"><i data-lucide="badge-plus"></i><span>Gerar Pedido</span></button>
+                    <button class="botao btn-secondary" data-action="nova-venda"><span>Limpar Pedido</span></button>
+                </div>
+            </article>
+
+            <article class="venda-card venda-card-preview is-empty">
+                <div class="venda-card-head">
+                    <div class="venda-card-head-row">
+                        <strong>Pedido Gerado</strong>
+                        <button type="button" class="venda-toggle-preview" data-action="ocultar-preview-venda">Ocultar</button>
+                    </div>
+                    <span>Pronto para copiar, imprimir ou encaminhar.</span>
+                </div>
+                <div id="vendaCupomPreview" class="venda-cupom-preview">
+                    <p class="empty-state">Nenhum pedido gerado ainda.</p>
+                </div>
+                <div class="venda-actions">
+                    <button class="botao btn-primary" data-action="copiar-cupom-venda"><i data-lucide="copy"></i><span>Copiar Pedido</span></button>
+                    <button class="botao btn-secondary" data-action="imprimir-cupom-venda"><i data-lucide="printer"></i><span>Imprimir</span></button>
+                </div>
+            </article>
+        </div>
+
+        <div class="venda-history">
+            <h4 class="heading-spaced">Últimos Pedidos</h4>
+            <div id="listaVendas" class="venda-list"></div>
+        </div>
+    </div>
+
+    <div id="empilhadeiras" class="section">
+        <h3><i data-lucide="forklift" class="title-icon"></i><span>Empilhadeiras</span></h3>
+        <button id="btnAbrirEmpilhadeira" class="botao btn-primary" data-action="abrir-empilhadeira"><i data-lucide="plus"></i><span>Registrar Abastecimento</span></button>
+        <div id="formAbast" class="form-panel is-hidden">
+            <div class="autocomplete-box">
+                <input id="ab_num" placeholder="Selecione a empilhadeira..." autocomplete="off" data-uppercase>
+                <div id="lista_empilhadeiras_num" class="autocomplete-list"></div>
+            </div>
+            <input id="ab_motorista" placeholder="Motorista" data-uppercase>
+            <div class="autocomplete-box">
+                <input id="ab_porteiro" placeholder="Selecione o porteiro..." autocomplete="off" data-uppercase>
+                <div id="lista_empilhadeiras_porteiro" class="autocomplete-list"></div>
+            </div>
+            <button class="botao btn-primary" data-action="salvar-empilhadeira">Gravar</button>
+            <button class="botao btn-secondary btn-spaced-sm" data-action="cancelar-empilhadeira">Cancelar</button>
+        </div>
+        <div class="empilhadeira-history">
+            <h4 class="heading-spaced">Últimos 5 abastecimentos</h4>
+            <div class="empilhadeira-table">
+                <div class="empilhadeira-table-head">
+                    <span>Data</span>
+                    <span>Número</span>
+                    <span>Motorista</span>
+                    <span>Porteiro</span>
+                </div>
+                <div id="listaAbastecimentosRecentes" class="empilhadeira-table-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="posto" class="section">
+        <h3><i data-lucide="fuel" class="title-icon"></i><span>Posto</span></h3>
+        <div id="postoStockGrid" class="posto-stock-grid">
+            <article class="posto-stock-card">
+                <span>S10</span>
+                <strong id="postoStockS10">0,00 L</strong>
+                <small>Contador atual: <b id="postoContadorS10">0,00</b></small>
+            </article>
+            <article class="posto-stock-card">
+                <span>S500</span>
+                <strong id="postoStockS500">0,00 L</strong>
+                <small>Contador atual: <b id="postoContadorS500">0,00</b></small>
+            </article>
+            <article class="posto-stock-card">
+                <span>ARLA</span>
+                <strong id="postoStockArla">0,00 L</strong>
+                <small>Contador atual: <b id="postoContadorArla">0,00</b></small>
+            </article>
+        </div>
+
+        <div id="postoActionsGrid" class="posto-actions-grid">
+            <button class="botao btn-primary" type="button" data-action="abrir-posto-abastecimento">
+                <i data-lucide="fuel"></i><span data-mobile-label="Abastecer">Lançar Abastecimento</span>
+            </button>
+            <button class="botao btn-secondary" type="button" data-action="abrir-posto-recebimento">
+                <i data-lucide="download"></i><span data-mobile-label="Receber">Registrar Recebimento</span>
+            </button>
+            <button class="botao relatorio relatorio-acao-atual" type="button" data-action="abrir-posto-plantao">
+                <i data-lucide="clipboard-pen-line"></i><span data-mobile-label="Plantão">Fechamento de Plantão</span>
+            </button>
+            <button class="botao relatorio relatorio-empilhadeiras" type="button" data-action="abrir-relatorio-posto">
+                <i data-lucide="file-spreadsheet"></i><span data-mobile-label="Relatório">Relatório</span>
+            </button>
+        </div>
+
+        <div id="postoMovForm" class="form-panel is-hidden">
+            <h4 id="postoMovTitle">Lançamento</h4>
+            <input id="postoMovModo" type="hidden" value="abastecimento">
+            <div class="posto-form-grid">
+                <select id="postoMovTipo">
+                    <option value="S10">S10</option>
+                    <option value="S500">S500</option>
+                    <option value="ARLA">ARLA</option>
+                </select>
+                <input id="postoMovPlaca" placeholder="Placa" data-uppercase>
+                <input id="postoMovMotorista" placeholder="Motorista" data-uppercase>
+                <div class="autocomplete-box">
+                    <input id="postoMovSetor" placeholder="Setor" autocomplete="off" data-uppercase>
+                    <div id="lista_posto_setores" class="autocomplete-list"></div>
+                </div>
+                <input id="postoMovQuantidade" type="text" inputmode="decimal" placeholder="Quant.">
+                <input id="postoMovContador" type="number" min="0" max="999999999" step="1" placeholder="Contador">
+                <input id="postoMovKm" type="number" min="0" step="0.01" placeholder="KM do carro">
+                <div class="posto-mov-actions">
+                    <button class="botao btn-secondary" type="button" data-action="cancelar-posto-movimentacao">
+                        <span data-mobile-label="Cancelar">Cancelar</span>
+                    </button>
+                    <button class="botao btn-primary" type="button" data-action="salvar-posto-movimentacao">
+                        <i data-lucide="save"></i><span data-mobile-label="Salvar">Salvar Lançamento</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="postoPlantaoForm" class="form-panel is-hidden">
+            <h4 id="postoPlantaoTitulo">Fechamento de Plantão</h4>
+            <div class="posto-plantao-grid">
+                <article class="posto-product-card">
+                    <strong>S10</strong>
+                    <label class="posto-field-stack">
+                        <span>Es. inicial</span>
+                        <input id="postoS10EstoqueInicial" type="number" min="0" max="99999" step="1">
+                    </label>
+                    <label class="posto-field-stack posto-field-stack--final">
+                        <span>Es. final</span>
+                        <input id="postoS10EstoqueFinal" type="number" min="0" max="99999" step="1">
+                    </label>
+                    <label class="posto-field-stack">
+                        <span>Cont. inicial</span>
+                        <input id="postoS10ContadorInicial" type="number" min="0" max="999999999" step="1">
+                    </label>
+                    <label class="posto-field-stack posto-field-stack--final">
+                        <span>Cont. final</span>
+                        <input id="postoS10ContadorFinal" type="number" min="0" max="999999999" step="1">
+                    </label>
+                </article>
+                <article class="posto-product-card">
+                    <strong>S500</strong>
+                    <label class="posto-field-stack">
+                        <span>Es. inicial</span>
+                        <input id="postoS500EstoqueInicial" type="number" min="0" max="99999" step="1">
+                    </label>
+                    <label class="posto-field-stack posto-field-stack--final">
+                        <span>Es. final</span>
+                        <input id="postoS500EstoqueFinal" type="number" min="0" max="99999" step="1">
+                    </label>
+                    <label class="posto-field-stack">
+                        <span>Cont. inicial</span>
+                        <input id="postoS500ContadorInicial" type="number" min="0" max="999999999" step="1">
+                    </label>
+                    <label class="posto-field-stack posto-field-stack--final">
+                        <span>Cont. final</span>
+                        <input id="postoS500ContadorFinal" type="number" min="0" max="999999999" step="1">
+                    </label>
+                </article>
+                <article class="posto-product-card">
+                    <strong>ARLA</strong>
+                    <label class="posto-field-stack">
+                        <span>Es. inicial</span>
+                        <input id="postoArlaEstoqueInicial" type="number" min="0" max="99999" step="1">
+                    </label>
+                    <label class="posto-field-stack posto-field-stack--final">
+                        <span>Es. final</span>
+                        <input id="postoArlaEstoqueFinal" type="number" min="0" max="99999" step="1">
+                    </label>
+                    <label class="posto-field-stack">
+                        <span>Cont. inicial</span>
+                        <input id="postoArlaContadorInicial" type="number" min="0" max="999999999" step="1">
+                    </label>
+                    <label class="posto-field-stack posto-field-stack--final">
+                        <span>Cont. final</span>
+                        <input id="postoArlaContadorFinal" type="number" min="0" max="999999999" step="1">
+                    </label>
+                </article>
+            </div>
+
+            <div class="posto-plantao-actions">
+                <button class="botao btn-secondary" type="button" data-action="cancelar-posto-plantao">
+                    <span>Cancelar</span>
+                </button>
+                <button class="botao btn-primary" type="button" data-action="salvar-posto-plantao">
+                    <i data-lucide="save"></i><span>Salvar Plantão</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="postoHistoryGrid" class="posto-history-grid">
+            <div class="empilhadeira-history">
+                <h4 class="heading-spaced">Abastecimentos do dia</h4>
+                <div class="empilhadeira-table posto-table">
+                    <div class="empilhadeira-table-head posto-table-head">
+                        <span>Data</span>
+                        <span>Horário</span>
+                        <span>Placa</span>
+                        <span>Motorista</span>
+                        <span>Setor</span>
+                        <span>Qtde (L)</span>
+                        <span>Contador</span>
+                        <span>Tipo</span>
+                    </div>
+                    <div id="listaPostoMovimentacoes" class="empilhadeira-table-body"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="postoRelatorioView" class="form-panel is-hidden">
+            <div class="pesagem-report-head">
+                <strong>Controle de Abastecimento</strong>
+                <div class="posto-report-actions-inline">
+                    <button class="botao btn-secondary" type="button" data-action="voltar-relatorio-posto">
+                        <span>Voltar</span>
+                    </button>
+                    <button class="botao btn-secondary" type="button" data-action="imprimir-relatorio-posto">
+                        <i data-lucide="printer"></i><span>Imprimir</span>
+                    </button>
+                </div>
+            </div>
+            <div id="postoRelatorioPreview" class="posto-relatorio-preview"></div>
+        </div>
+    </div>
+
+    <div id="pesagemManual" class="section">
+        <h3><i data-lucide="scale" class="title-icon"></i><span>Pesagem Manual</span></h3>
+        <div class="pesagem-shell">
+            <aside class="pesagem-sidebar">
+                <button id="pmSidebarIncluir" class="pesagem-side-btn" type="button" data-action="nova-pesagem-manual" title="Incluir nova pesagem">
+                    <i data-lucide="plus"></i>
+                </button>
+                <button id="pmSidebarEditar" class="pesagem-side-btn" type="button" data-action="editar-pesagem-manual" title="Editar pesagem selecionada">
+                    <i data-lucide="pencil"></i>
+                </button>
+                <button id="pmSidebarCancelar" class="pesagem-side-btn" type="button" data-action="voltar-lista-pesagem-manual" title="Cancelar e voltar para lista">
+                    <i data-lucide="x"></i>
+                </button>
+                <button id="pmSidebarSalvar" class="pesagem-side-btn" type="button" data-action="salvar-pesagem-manual" title="Salvar pesagem">
+                    <i data-lucide="save"></i>
+                </button>
+                <button id="pmSidebarRelatorio" class="pesagem-side-btn" type="button" data-action="enviar-relatorio-pesagem-manual" title="Enviar relatório">
+                    <i data-lucide="file-text"></i>
+                </button>
+            </aside>
+
+            <div id="pesagemManualListaView" class="pesagem-board">
+                <div class="pesagem-board-toolbar">
+                    <div class="pesagem-search-wrap">
+                        <i data-lucide="search"></i>
+                        <input id="pm_filtro_busca" placeholder="Pesquisar por número ou placa" data-uppercase>
+                    </div>
+                </div>
+
+                <div class="pesagem-table-wrap">
+                    <div class="pesagem-table-title-row">
+                        <span>Nr. de Pesagem</span>
+                        <div class="pesagem-title-status-filter" id="pmStatusFilter">
+                            <button id="pm_filtro_status_ciclo" class="pesagem-title-status-main" type="button">Status</button>
+                            <button id="pm_filtro_status_toggle" class="pesagem-title-status-arrow" type="button" aria-label="Escolher status">
+                                <i data-lucide="chevron-down"></i>
+                            </button>
+                            <div id="pm_filtro_status_menu" class="pesagem-title-status-menu is-hidden">
+                                <button type="button" data-status-value="">Todos</button>
+                                <button type="button" data-status-value="AB">AB - Aberta</button>
+                                <button type="button" data-status-value="FE">FE - Fechada</button>
+                            </div>
+                        </div>
+                        <span>Placa</span>
+                    </div>
+                    <div id="listaPesagensManuais" class="pesagem-table-body"></div>
+                </div>
+            </div>
+
+            <article id="pesagemManualDetalheView" class="pesagem-manual-card pesagem-manual-card--detail is-hidden">
+                <input id="pm_registro_id" type="hidden">
+                <input id="pm_tipo" type="hidden" value="PU">
+                <input id="pm_status" type="hidden" value="AB">
+
+                <div class="pesagem-manual-form">
+                    <div class="pesagem-manual-grid pesagem-manual-grid--top pesagem-manual-grid--top-compact">
+                        <div class="pesagem-field">
+                            <label for="pm_numero">Nr. Pesagem</label>
+                            <input id="pm_numero" class="readonly-field" type="text" readonly>
+                        </div>
+                        <div class="pesagem-field">
+                            <label for="pm_status_display">Status da Pesagem</label>
+                            <input id="pm_status_display" class="readonly-field" type="text" readonly>
+                        </div>
+                    </div>
+
+                    <div class="pesagem-manual-grid pesagem-manual-grid--vehicles">
+                        <div class="pesagem-field">
+                            <label for="pm_placa">Veículo (Placa)</label>
+                            <input id="pm_placa" placeholder="Placa do veículo" data-uppercase>
+                        </div>
+                        <div class="pesagem-field">
+                            <label for="pm_reboque1">Placa Reboque 01</label>
+                            <input id="pm_reboque1" class="readonly-field" value="-" readonly>
+                        </div>
+                        <div class="pesagem-field">
+                            <label for="pm_reboque2">Placa Reboque 02</label>
+                            <input id="pm_reboque2" class="readonly-field" value="-" readonly>
+                        </div>
+                    </div>
+
+                    <div class="pesagem-manual-grid pesagem-manual-grid--km">
+                        <div class="pesagem-field">
+                            <label for="pm_km_inicial">Km Inicial</label>
+                            <input id="pm_km_inicial" class="readonly-field" type="text" value="0" readonly>
+                        </div>
+                        <div class="pesagem-field">
+                            <label for="pm_km_final">Km Final</label>
+                            <input id="pm_km_final" class="readonly-field" type="text" value="0" readonly>
+                        </div>
+                        <div class="pesagem-field">
+                            <label for="pm_km_percorrido">Km Percorrido</label>
+                            <input id="pm_km_percorrido" class="readonly-field" readonly value="0">
+                        </div>
+                    </div>
+
+                    <div class="pesagem-manual-grid pesagem-manual-grid--basic">
+                        <div class="pesagem-field pesagem-field--full">
+                            <label for="pm_produtor">Produtor / Transportador</label>
+                            <input id="pm_produtor" placeholder="Nome do produtor ou transportador" data-uppercase>
+                        </div>
+                        <div class="pesagem-field pesagem-field--full">
+                            <label for="pm_motorista">Motorista</label>
+                            <input id="pm_motorista" placeholder="Nome do motorista" data-uppercase>
+                        </div>
+                        <div class="pesagem-field">
+                            <label for="pm_produto">Produto</label>
+                            <input id="pm_produto" placeholder="Produto" data-uppercase>
+                        </div>
+                        <div class="pesagem-field">
+                            <label for="pm_peso_declarado">Peso Declarado</label>
+                            <input id="pm_peso_declarado" class="readonly-field" type="text" value="0,00" readonly>
+                        </div>
+                        <div class="pesagem-field pesagem-field--full">
+                            <label for="pm_observacao">Observação</label>
+                            <textarea id="pm_observacao" placeholder="Observações do ticket..." data-uppercase></textarea>
+                        </div>
+                    </div>
+
+                    <div class="pesagem-manual-grid pesagem-manual-grid--weights">
+                        <div class="pesagem-weight-card">
+                            <div class="pesagem-weight-head">
+                                <strong>Primeira Pesagem</strong>
+                            </div>
+                            <div class="pesagem-field">
+                                <label for="pm_primeira_pesagem">Peso (Kg)</label>
+                                <input id="pm_primeira_pesagem" type="number" min="0" step="0.01" placeholder="0,00">
+                            </div>
+                            <input id="pm_data_primeira" type="hidden">
+                            <input id="pm_hora_primeira" type="hidden">
+                            <div class="autocomplete-box">
+                                <label for="pm_usuario_primeira">Usuário Prim. Pesagem</label>
+                                <input id="pm_usuario_primeira" class="readonly-field" readonly>
+                            </div>
+                        </div>
+
+                        <div class="pesagem-weight-card">
+                            <div class="pesagem-weight-head">
+                                <strong>Segunda Pesagem</strong>
+                            </div>
+                            <div class="pesagem-field">
+                                <label for="pm_segunda_pesagem">Peso (Kg)</label>
+                                <input id="pm_segunda_pesagem" type="number" min="0" step="0.01" placeholder="0,00">
+                            </div>
+                            <input id="pm_data_segunda" type="hidden">
+                            <input id="pm_hora_segunda" type="hidden">
+                            <div class="autocomplete-box">
+                                <label for="pm_usuario_segunda">Usuário Seg. Pesagem</label>
+                                <input id="pm_usuario_segunda" class="readonly-field" readonly>
+                            </div>
+                        </div>
+
+                        <div class="pesagem-weight-card pesagem-weight-card--total">
+                            <span class="pesagem-total-label">Peso Líquido</span>
+                            <input id="pm_peso_liquido" type="hidden">
+                            <strong id="pm_peso_liquido_display">0</strong>
+                            <small>Pesagem manual: SIM</small>
+                        </div>
+                    </div>
+
+                    <button class="pesagem-pesar-btn" type="button" data-action="salvar-pesagem-manual">
+                        <i data-lucide="scale"></i><span>Pesar</span>
+                    </button>
+                </div>
+            </article>
+
+            <article id="pesagemManualRelatorioView" class="pesagem-manual-card pesagem-manual-card--report is-hidden">
+                <div class="pesagem-report-head">
+                    <strong>Ticket de Pesagem</strong>
+                    <button class="botao btn-secondary" type="button" data-action="imprimir-ticket-pesagem-manual">
+                        <i data-lucide="printer"></i><span>Imprimir</span>
+                    </button>
+                </div>
+                <div id="pesagemTicketPreview" class="pesagem-ticket-preview"></div>
+            </article>
+        </div>
+    </div>
+
+    <div id="relatorios" class="section">
+    <h3><i data-lucide="chart-column" class="title-icon"></i><span>Central de Relatórios</span></h3>
+
+    <div class="report-group">
+      <h4>Históricos</h4>
+      <div id="menuRelatorios" class="report-menu-grid">
+          <button class="botao relatorio relatorio-menu" data-nav="relatorioFrota"><i data-lucide="car-front"></i><span>Histórico de Veículos</span></button>
+          <button class="botao relatorio relatorio-menu" data-nav="relatorioAgendamentos"><i data-lucide="calendar-days"></i><span>Histórico de Agendamentos</span></button>
+          <button class="botao relatorio relatorio-menu" data-nav="relatorioEmpilhadeiras"><i data-lucide="forklift"></i><span>Histórico de Empilhadeiras</span></button>
+          <button class="botao relatorio relatorio-menu" data-nav="relatorioPosto"><i data-lucide="fuel"></i><span>Controle de Abastecimento</span></button>
+          <button class="botao relatorio relatorio-menu" data-nav="relatorioChaves"><i data-lucide="key-round"></i><span>Histórico de Chaves</span></button>
+          <button class="botao relatorio relatorio-menu" data-nav="relatorioGuarda"><i data-lucide="umbrella"></i><span>Histórico de Guarda-Chuva</span></button>
+          <button class="botao relatorio relatorio-menu" data-nav="relatorioJogos"><i data-lucide="gamepad-2"></i><span>Histórico de Jogos</span></button>
+      </div>
+    </div>
+
+</div>
+
+<div id="cadastros" class="section">
+  <h3><i data-lucide="settings-2" class="title-icon"></i><span>Cadastros</span></h3>
+  <div class="cadastro-tabs" role="tablist" aria-label="Categorias de cadastro">
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="porteiros">Porteiros</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="condutores">Condutores</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="setores">Setores</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="posto">Posto</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="jogos">Jogos</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="chaves">Chaves</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="empilhadeiras">Empilhadeiras</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="guardas">Guarda-chuvas</button>
+    <button class="cadastro-tab active" type="button" data-cadastro-panel-trigger="veiculos">Veículos</button>
+  </div>
+  <div class="cadastro-grid">
+    <article class="cadastro-panel" data-cadastro-panel="porteiros">
+      <div class="cadastro-panel-head">
+        <strong>Porteiros</strong>
+        <span>Controle quem aparece nas listas de porteiro.</span>
+      </div>
+      <div class="cadastro-form">
+        <input id="cadastroPorteiroNome" placeholder="Nome do porteiro" data-uppercase>
+        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-porteiro">
+          <i data-lucide="plus"></i><span>Adicionar Porteiro</span>
+        </button>
+      </div>
+      <div id="listaCadastroPorteiros" class="cadastro-list"></div>
+    </article>
+
+    <article class="cadastro-panel" data-cadastro-panel="condutores">
+      <div class="cadastro-panel-head">
+        <strong>Condutores</strong>
+        <span>Controle quem pode dirigir veículos da empresa.</span>
+      </div>
+      <div class="cadastro-form">
+        <input id="cadastroCondutorNome" placeholder="Nome do condutor" data-uppercase>
+        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-condutor">
+          <i data-lucide="plus"></i><span>Adicionar Condutor</span>
+        </button>
+      </div>
+      <div id="listaCadastroCondutores" class="cadastro-list"></div>
+    </article>
+
+    <article class="cadastro-panel" data-cadastro-panel="setores">
+      <div class="cadastro-panel-head">
+        <strong>Setores</strong>
+        <span>Controle os setores exibidos nas listas do guarda-chuva.</span>
+      </div>
+      <div class="cadastro-form">
+        <input id="cadastroSetorNome" placeholder="Nome do setor" data-uppercase>
+        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-setor">
+          <i data-lucide="plus"></i><span>Adicionar Setor</span>
+        </button>
+      </div>
+      <div id="listaCadastroSetores" class="cadastro-list"></div>
+    </article>
+
+    <article class="cadastro-panel cadastro-panel-wide" data-cadastro-panel="posto">
+      <div class="cadastro-panel-head">
+        <strong>Posto</strong>
+        <span>Cadastre os setores do abastecimento e a base inicial de estoque e contador.</span>
+      </div>
+
+      <div class="cadastro-subtabs" role="tablist" aria-label="Subabas do posto">
+        <button class="cadastro-subtab active" type="button" data-cadastro-subpanel-trigger="posto-setores">Setores</button>
+        <button class="cadastro-subtab" type="button" data-cadastro-subpanel-trigger="posto-base">Base Inicial</button>
+      </div>
+
+      <div class="cadastro-subpanel is-active" data-cadastro-subpanel="posto-setores">
+      <div class="cadastro-block">
+        <div class="cadastro-block-head">
+          <strong>Setores do Posto</strong>
+          <span>Esses setores aparecem no abastecimento do posto.</span>
+        </div>
+        <div class="cadastro-form">
+          <input id="cadastroPostoSetorNome" placeholder="Nome do setor do posto" data-uppercase>
+          <button class="botao btn-primary" type="button" data-cadastro-action="salvar-posto-setor">
+            <i data-lucide="plus"></i><span>Adicionar Setor</span>
+          </button>
+        </div>
+        <div id="listaCadastroPostoSetores" class="cadastro-list"></div>
+      </div>
+      </div>
+
+      <div class="cadastro-subpanel" data-cadastro-subpanel="posto-base">
+      <div class="cadastro-block cadastro-block--stacked">
+        <div class="cadastro-block-head">
+          <strong>Base Inicial do Posto</strong>
+          <span>Use para cadastrar o estoque e contador de partida antes do primeiro plantão.</span>
+        </div>
+        <div class="cadastro-posto-config-grid">
+          <article class="cadastro-posto-config-card">
+            <strong>S10</strong>
+            <label class="cadastro-field-stack">
+              <span>Estoque inicial (L)</span>
+              <input id="cadastroPostoS10Estoque" type="number" min="0" max="99999" step="1" placeholder="0">
+            </label>
+            <label class="cadastro-field-stack">
+              <span>Contador inicial</span>
+              <input id="cadastroPostoS10Contador" type="number" min="0" max="999999999" step="1" placeholder="0">
+            </label>
+          </article>
+          <article class="cadastro-posto-config-card">
+            <strong>S500</strong>
+            <label class="cadastro-field-stack">
+              <span>Estoque inicial (L)</span>
+              <input id="cadastroPostoS500Estoque" type="number" min="0" max="99999" step="1" placeholder="0">
+            </label>
+            <label class="cadastro-field-stack">
+              <span>Contador inicial</span>
+              <input id="cadastroPostoS500Contador" type="number" min="0" max="999999999" step="1" placeholder="0">
+            </label>
+          </article>
+          <article class="cadastro-posto-config-card">
+            <strong>ARLA</strong>
+            <label class="cadastro-field-stack">
+              <span>Estoque inicial (L)</span>
+              <input id="cadastroPostoArlaEstoque" type="number" min="0" max="99999" step="1" placeholder="0">
+            </label>
+            <label class="cadastro-field-stack">
+              <span>Contador inicial</span>
+              <input id="cadastroPostoArlaContador" type="number" min="0" max="999999999" step="1" placeholder="0">
+            </label>
+          </article>
+        </div>
+        <div class="cadastro-posto-config-actions">
+          <button class="botao btn-secondary" type="button" data-cadastro-action="limpar-posto-config">
+            <span>Limpar</span>
+          </button>
+          <button class="botao btn-primary" type="button" data-cadastro-action="salvar-posto-config">
+            <i data-lucide="save"></i><span>Salvar Base do Posto</span>
+          </button>
+        </div>
+      </div>
+      </div>
+    </article>
+
+    <article class="cadastro-panel" data-cadastro-panel="jogos">
+      <div class="cadastro-panel-head">
+        <strong>Jogos</strong>
+        <span>Controle os jogos disponíveis para retirada na portaria.</span>
+      </div>
+      <div class="cadastro-form">
+        <input id="cadastroJogoNome" placeholder="Nome do jogo" data-uppercase>
+        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-jogo-cadastro">
+          <i data-lucide="plus"></i><span>Adicionar Jogo</span>
+        </button>
+      </div>
+      <div id="listaCadastroJogos" class="cadastro-list"></div>
+    </article>
+
+    <article class="cadastro-panel cadastro-panel-wide" data-cadastro-panel="chaves">
+      <div class="cadastro-panel-head">
+        <strong>Chaves</strong>
+        <span>Cadastre número e sala/setor das chaves disponíveis na portaria.</span>
+      </div>
+      <div class="cadastro-form cadastro-form--chaves">
+        <input id="cadastroChaveNumero" placeholder="Número da chave" inputmode="numeric">
+        <input id="cadastroChaveSala" placeholder="Sala / setor" data-uppercase>
+        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-chave-cadastro">
+          <i data-lucide="plus"></i><span>Salvar Chave</span>
+        </button>
+      </div>
+      <div id="listaCadastroChaves" class="cadastro-list cadastro-list--chaves"></div>
+    </article>
+
+    <article class="cadastro-panel cadastro-panel-wide" data-cadastro-panel="empilhadeiras">
+      <div class="cadastro-panel-head">
+        <strong>Empilhadeiras</strong>
+        <span>Cadastre as empilhadeiras liberadas para abastecimento.</span>
+      </div>
+      <div class="cadastro-form cadastro-form--chaves">
+        <input id="cadastroEmpilhadeiraNumero" placeholder="Número" inputmode="numeric">
+        <input id="cadastroEmpilhadeiraNome" placeholder="Nome / descrição" data-uppercase>
+        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-empilhadeira-cadastro">
+          <i data-lucide="plus"></i><span>Salvar Empilhadeira</span>
+        </button>
+      </div>
+      <div id="listaCadastroEmpilhadeiras" class="cadastro-list"></div>
+    </article>
+
+    <article class="cadastro-panel cadastro-panel-wide" data-cadastro-panel="guardas">
+      <div class="cadastro-panel-head">
+        <strong>Guarda-chuvas</strong>
+        <span>Cadastre os patrimônios disponíveis para retirada na portaria.</span>
+      </div>
+      <div class="cadastro-form cadastro-form--chaves">
+        <input id="cadastroGuardaNumero" placeholder="Número" inputmode="numeric">
+        <input id="cadastroGuardaNome" placeholder="Descrição opcional" data-uppercase>
+        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-guarda-cadastro">
+          <i data-lucide="plus"></i><span>Salvar Guarda-Chuva</span>
+        </button>
+      </div>
+      <div id="listaCadastroGuardas" class="cadastro-list"></div>
+    </article>
+
+    <article class="cadastro-panel cadastro-panel-wide is-active" data-cadastro-panel="veiculos">
+      <div class="cadastro-panel-head">
+        <strong>Veículos</strong>
+        <span>Cadastre a frota usada em saídas, agendamentos e relatórios.</span>
+      </div>
+      <div class="cadastro-form cadastro-form--veiculos">
+        <input id="cadastroVeiculoPlaca" placeholder="Placa" data-uppercase>
+        <input id="cadastroVeiculoNome" placeholder="Nome do veículo" data-uppercase>
+        <input id="cadastroVeiculoImagem" placeholder="Imagem. Ex: fiat-strada-prata.png">
+        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-veiculo-cadastro">
+          <i data-lucide="plus"></i><span>Salvar Veículo</span>
+        </button>
+      </div>
+      <div class="cadastro-helper">Use o nome do arquivo dentro da pasta <strong>imagens</strong>, por exemplo: <strong>fiat-strada-prata.png</strong>.</div>
+      <div id="listaCadastroVeiculos" class="cadastro-list cadastro-list--veiculos"></div>
+    </article>
+  </div>
+</div>
+
+<div id="relatorioPosto" class="section">
+  <h3><i data-lucide="fuel" class="title-icon"></i><span>Controle de Abastecimento</span></h3>
+  <div class="report-module-head">
+    <p>Filtre por período operacional, tipo de movimento e combustível para analisar o histórico do posto e exportar o recorte.</p>
+  </div>
+  <div class="report-filter-grid">
+    <div class="report-date-range">
+      <input id="reportPostoDataInicio" type="date">
+      <span class="report-date-separator">a</span>
+      <input id="reportPostoDataFim" type="date">
+    </div>
+    <select id="reportPostoModo">
+      <option value="">Todos os movimentos</option>
+      <option value="abastecimento">Abastecimento</option>
+      <option value="recebimento">Recebimento</option>
+    </select>
+    <select id="reportPostoTipo">
+      <option value="">Todos os combustíveis</option>
+      <option value="S10">S10</option>
+      <option value="S500">S500</option>
+      <option value="ARLA">ARLA</option>
+    </select>
+    <button class="botao btn-primary" type="button" data-action="aplicar-filtros-posto-relatorio">
+      <i data-lucide="filter"></i><span>Aplicar Filtros</span>
+    </button>
+  </div>
+  <div id="reportPostoSummary" class="report-module-summary report-module-summary--vehicles report-module-summary--equal"></div>
+  <div id="reportPostoInsights" class="report-insights-list"></div>
+  <div id="reportPostoPeriod" class="report-period-label"></div>
+  <button class="botao relatorio relatorio-acao relatorio-acao-atual" data-action="exportar-posto-filtrado">
+    <i data-lucide="download"></i><span>Exportar Excel</span>
+  </button>
+  <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+</div>
+
+<div id="relatorioPainel" class="section">
+  <h3><i data-lucide="layout-dashboard" class="title-icon"></i><span>Painel Rápido</span></h3>
+  <div id="reportHeroCard" class="report-hero-card"></div>
+  <div id="reportSummaryGrid" class="report-summary-grid"></div>
+  <div id="reportDailyGrid" class="report-daily-grid"></div>
+  <div id="reportQuickLinks" class="report-quick-links"></div>
+  <div class="report-panel-hint">Resumo operacional do momento para consulta rápida.</div>
+  <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+</div>
+
+<div id="relatorioEmAberto" class="section">
+  <h3><i data-lucide="clipboard-check" class="title-icon"></i><span>Movimentações em Aberto</span></h3>
+  <div id="reportOpenGroups" class="report-open-groups"></div>
+  <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+</div>
+
+  <!-- PÁGINA NOVA: RELATÓRIO FROTA -->
+<div id="relatorioFrota" class="section">
+  <h3><i data-lucide="car-front" class="title-icon"></i><span>Histórico de Veículos</span></h3>
+  <div class="report-module-head">
+    <p>Filtre por período e veículo, confira um resumo do recorte e exporte exatamente o que precisar.</p>
+  </div>
+
+  <div class="report-filter-grid">
+    <div class="report-date-range">
+      <input id="reportVeiculosDataInicio" type="date">
+      <span class="report-date-separator">a</span>
+      <input id="reportVeiculosDataFim" type="date">
+    </div>
+    <select id="reportVeiculosSelect">
+      <option value="">Todos os veículos</option>
+    </select>
+    <button class="botao btn-primary" type="button" data-action="aplicar-filtros-veiculos-relatorio">
+      <i data-lucide="filter"></i><span>Aplicar Filtros</span>
+    </button>
+  </div>
+
+  <div id="reportVeiculosSummary" class="report-module-summary report-module-summary--vehicles"></div>
+  <div id="reportVeiculosInsights" class="report-insights-list"></div>
+  <div id="reportVeiculosPeriod" class="report-period-label"></div>
+
+  <button class="botao relatorio relatorio-acao relatorio-acao-atual" data-action="exportar-veiculos-filtrado">
+    <i data-lucide="download"></i><span>Exportar Excel</span>
+  </button>
+
+  <button class="botao btn-secondary" data-nav="relatorios">
+    <span>Voltar</span>
+  </button>
+</div>
+
+  <!-- PÁGINA NOVA: RELATÓRIO AGENDAMENTOS -->
+<div id="relatorioAgendamentos" class="section">
+  <h3><i data-lucide="calendar-days" class="title-icon"></i><span>Histórico de Agendamentos</span></h3>
+  <div class="report-module-head">
+    <p>Filtre o período e o veículo, veja os principais indicadores e exporte só o recorte desejado.</p>
+  </div>
+  <div class="report-filter-grid">
+    <div class="report-date-range">
+      <input id="reportAgendamentosDataInicio" type="date">
+      <span class="report-date-separator">a</span>
+      <input id="reportAgendamentosDataFim" type="date">
+    </div>
+    <select id="reportAgendamentosSelect">
+      <option value="">Todos os veículos</option>
+    </select>
+    <button class="botao btn-primary" type="button" data-action="aplicar-filtros-agendamentos-relatorio">
+      <i data-lucide="filter"></i><span>Aplicar Filtros</span>
+    </button>
+  </div>
+  <div id="reportAgendamentosSummary" class="report-module-summary report-module-summary--vehicles"></div>
+  <div id="reportAgendamentosInsights" class="report-insights-list"></div>
+  <div id="reportAgendamentosPeriod" class="report-period-label"></div>
+  <button class="botao relatorio relatorio-acao relatorio-acao-atual" data-action="exportar-agendamentos-filtrado">
+    <i data-lucide="download"></i><span>Exportar Excel</span>
+  </button>
+  <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+</div>
+
+  <!-- PÁGINA NOVA: RELATÓRIO EMPILHADEIRAS -->
+   <div id="relatorioEmpilhadeiras" class="section">
+  <h3><i data-lucide="forklift" class="title-icon"></i><span>Histórico de Empilhadeiras</span></h3>
+  <div class="report-module-head">
+    <p>Filtre por período e número da empilhadeira para ver o uso e exportar o histórico certo.</p>
+  </div>
+  <div class="report-filter-grid">
+    <div class="report-date-range">
+      <input id="reportEmpilhadeirasDataInicio" type="date">
+      <span class="report-date-separator">a</span>
+      <input id="reportEmpilhadeirasDataFim" type="date">
+    </div>
+    <input id="reportEmpilhadeirasNumero" placeholder="Número da empilhadeira">
+    <button class="botao btn-primary" type="button" data-action="aplicar-filtros-empilhadeiras-relatorio">
+      <i data-lucide="filter"></i><span>Aplicar Filtros</span>
+    </button>
+  </div>
+  <div id="reportEmpilhadeirasSummary" class="report-module-summary report-module-summary--vehicles report-module-summary--equal"></div>
+  <div id="reportEmpilhadeirasPeriod" class="report-period-label"></div>
+  <button class="botao relatorio relatorio-acao relatorio-acao-atual" data-action="exportar-empilhadeiras-filtrado">
+    <i data-lucide="download"></i><span>Exportar Excel</span>
+  </button>
+  <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+</div>
+ 
+  <!-- PÁGINA NOVA: RELATÓRIO CHAVES -->
+     <div id="relatorioChaves" class="section">
+  <h3><i data-lucide="key-round" class="title-icon"></i><span>Histórico de Chaves</span></h3>
+  <div class="report-module-head">
+    <p>Filtre por período e por chave para entender uso, devoluções e movimentações do setor.</p>
+  </div>
+  <div class="report-filter-grid">
+    <div class="report-date-range">
+      <input id="reportChavesDataInicio" type="date">
+      <span class="report-date-separator">a</span>
+      <input id="reportChavesDataFim" type="date">
+    </div>
+    <select id="reportChavesSelect">
+      <option value="">Todas as chaves</option>
+    </select>
+    <button class="botao btn-primary" type="button" data-action="aplicar-filtros-chaves-relatorio">
+      <i data-lucide="filter"></i><span>Aplicar Filtros</span>
+    </button>
+  </div>
+  <div id="reportChavesSummary" class="report-module-summary report-module-summary--vehicles"></div>
+  <div id="reportChavesInsights" class="report-insights-list"></div>
+  <div id="reportChavesPeriod" class="report-period-label"></div>
+  <button class="botao relatorio relatorio-acao relatorio-acao-atual" data-action="exportar-chaves-filtrado">
+    <i data-lucide="download"></i><span>Exportar Excel</span>
+  </button>
+  <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+</div>
+ 
+  <!-- PÁGINA NOVA: RELATÓRIO GUARDA CHUVA -->
+<div id="relatorioGuarda" class="section">
+  <h3><i data-lucide="umbrella" class="title-icon"></i><span>Histórico de Guarda-Chuva</span></h3>
+  <div class="report-module-head">
+    <p>Filtre por período e patrimônio para entender retirada, devolução e itens sem movimentação.</p>
+  </div>
+  <div class="report-filter-grid">
+    <div class="report-date-range">
+      <input id="reportGuardasDataInicio" type="date">
+      <span class="report-date-separator">a</span>
+      <input id="reportGuardasDataFim" type="date">
+    </div>
+    <input id="reportGuardasNumero" placeholder="Número / patrimônio">
+    <button class="botao btn-primary" type="button" data-action="aplicar-filtros-guardas-relatorio">
+      <i data-lucide="filter"></i><span>Aplicar Filtros</span>
+    </button>
+  </div>
+  <div id="reportGuardasSummary" class="report-module-summary report-module-summary--vehicles"></div>
+  <div id="reportGuardasInsights" class="report-insights-list"></div>
+  <div id="reportGuardasPeriod" class="report-period-label"></div>
+  <button class="botao relatorio relatorio-acao relatorio-acao-atual" data-action="exportar-guardas-filtrado">
+    <i data-lucide="download"></i><span>Exportar Excel</span>
+  </button>
+  <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+</div>
+
+  <!-- PÁGINA NOVA: RELATÓRIO JOGOS -->
+<div id="relatorioJogos" class="section">
+  <h3><i data-lucide="gamepad-2" class="title-icon"></i><span>Histórico de Jogos</span></h3>
+  <div class="report-module-head">
+    <p>Filtre por período e por jogo para ver quem mais usou, quais itens ficaram parados e exportar o recorte.</p>
+  </div>
+  <div class="report-filter-grid">
+    <div class="report-date-range">
+      <input id="reportJogosDataInicio" type="date">
+      <span class="report-date-separator">a</span>
+      <input id="reportJogosDataFim" type="date">
+    </div>
+    <input id="reportJogosNome" placeholder="Nome do jogo">
+    <button class="botao btn-primary" type="button" data-action="aplicar-filtros-jogos-relatorio">
+      <i data-lucide="filter"></i><span>Aplicar Filtros</span>
+    </button>
+  </div>
+  <div id="reportJogosSummary" class="report-module-summary report-module-summary--vehicles"></div>
+  <div id="reportJogosInsights" class="report-insights-list"></div>
+  <div id="reportJogosPeriod" class="report-period-label"></div>
+  <button class="botao relatorio relatorio-acao relatorio-acao-atual" data-action="exportar-jogos-filtrado">
+    <i data-lucide="download"></i><span>Exportar Excel</span>
+  </button>
+  <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+</div>
+
+</main>
+
+<nav class="bottom-nav" aria-label="Navegação principal">
+    <button class="bottom-nav-btn" data-nav="inicio"><i data-lucide="house"></i><span>Início</span></button>
+    <button class="bottom-nav-btn" data-nav="veiculosGeral"><i data-lucide="car-front"></i><span>Frota</span></button>
+    <button class="bottom-nav-btn" data-nav="posto"><i data-lucide="fuel"></i><span>Posto</span></button>
+    <button class="bottom-nav-btn" data-nav="chaves"><i data-lucide="key-round"></i><span>Chaves</span></button>
+    <button class="bottom-nav-btn" data-nav="empilhadeiras"><i data-lucide="forklift"></i><span>Empilh.</span></button>
+    <button class="bottom-nav-btn" data-nav="vendas"><i data-lucide="banknote"></i><span>Vendas</span></button>
+    <button class="bottom-nav-btn" data-nav="jogos"><i data-lucide="gamepad-2"></i><span>Jogos</span></button>
+    <button class="bottom-nav-btn" data-nav="guardachuvas"><i data-lucide="umbrella"></i><span>Guarda</span></button>
+    <button class="bottom-nav-btn" data-nav="pesagemManual"><i data-lucide="truck"></i><span>Balança</span></button>
+    <button class="bottom-nav-btn" data-nav="relatorios"><i data-lucide="chart-column"></i><span>Relat.</span></button>
+    <button class="bottom-nav-btn" data-nav="cadastros"><i data-lucide="settings-2"></i><span>Cad.</span></button>
+</nav>
+
+        <script src="js/data.js"></script>
+        <script src="js/ui.js"></script>
+        <script src="js/autocomplete.js"></script>
+        <script src="js/cadastros.js"></script>
+        <script src="js/veiculos.js"></script>
+        <script src="js/chaves.js"></script>
+        <script src="js/jogos.js"></script>
+        <script src="js/vendas.js"></script>
+        <script src="js/guardachuvas.js"></script>
+        <script src="js/empilhadeiras.js"></script>
+        <script src="js/posto.js"></script>
+        <script src="js/pesagem.js"></script>
+        <script src="js/relatorios.js"></script>
+</body>
+</html>
+
+
