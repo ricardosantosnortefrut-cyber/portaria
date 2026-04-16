@@ -2972,35 +2972,54 @@ tr:last-child td{
   gap: 16px;
 }
 
-.cadastro-tabs{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+#cadastros .cadastro-tabs{
+  display: flex !important;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px !important;
   margin-bottom: 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.cadastro-tab{
-  min-height: 40px;
-  padding: 9px 14px;
-  border: 1px solid rgba(16, 67, 129, .10);
+#cadastros .cadastro-tabs::-webkit-scrollbar{
+  display: none;
+}
+
+#cadastros .cadastro-tab{
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 37px;
+  width: auto;
+  min-width: 0;
+  padding: 8px 16px;
+  box-sizing: border-box;
+  border: 1px solid rgba(209, 223, 238, .96);
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(245,249,253,.95));
-  color: #5f758b;
+  background: linear-gradient(180deg, rgba(255,255,255,.99), rgba(246,250,254,.96));
+  color: #6a7f95;
   font-family: "Manrope", sans-serif;
-  font-size: .82rem;
+  font-size: .77rem;
   font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
   cursor: pointer;
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, color .18s ease;
 }
 
-.cadastro-tab.active{
-  border-color: rgba(35, 132, 234, .24);
-  background: linear-gradient(135deg, rgba(35,132,234,.12), rgba(21,101,192,.08));
+#cadastros .cadastro-tab.active{
+  border: 1px solid rgba(167, 210, 244, .95);
+  padding: 8px 16px;
+  background: linear-gradient(180deg, rgba(236, 247, 255, .98), rgba(224, 240, 252, .96));
   color: #1565c0;
-  box-shadow: 0 10px 20px rgba(21, 101, 192, .10);
+  box-shadow: 0 6px 14px rgba(21, 101, 192, .08);
 }
 
-.cadastro-tab:hover{
+#cadastros .cadastro-tab:hover{
   transform: translateY(-1px);
 }
 
@@ -3235,6 +3254,21 @@ tr:last-child td{
   color: #263d54;
   font-size: .92rem;
   line-height: 1.25;
+}
+
+.cadastro-row-head{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+}
+
+.cadastro-row-title{
+  min-width: 0;
+}
+
+.cadastro-row-title strong{
+  display: block;
 }
 
 .cadastro-row-info span{
@@ -3624,6 +3658,270 @@ tr:last-child td{
     grid-template-columns: 1fr;
   }
 
+  #cadastros .cadastro-tabs{
+    display: flex !important;
+    flex-wrap: nowrap;
+    gap: 7px !important;
+    margin: 0 -2px 12px;
+    padding: 0 2px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+
+  #cadastros .cadastro-tabs::-webkit-scrollbar{
+    display: none;
+  }
+
+  #cadastros .cadastro-tab{
+    flex: 0 0 auto;
+    width: auto;
+    min-width: max-content;
+    min-height: 36px;
+    padding: 7px 13px;
+    font-size: .73rem;
+    white-space: nowrap;
+    scroll-snap-align: start;
+  }
+
+  #cadastros .cadastro-panel{
+    padding: 10px !important;
+    border-radius: 16px !important;
+  }
+
+  #cadastros .cadastro-panel-head{
+    gap: 3px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  #cadastros .cadastro-panel-head strong{
+    font-size: .94rem;
+  }
+
+  #cadastros .cadastro-panel-head span{
+    font-size: .72rem;
+    line-height: 1.35;
+  }
+
+  #cadastros .cadastro-subtabs{
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin: 2px -2px 0;
+    padding: 0 2px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  #cadastros .cadastro-subtabs::-webkit-scrollbar{
+    display: none;
+  }
+
+  #cadastros .cadastro-subtab{
+    flex: 0 0 auto;
+    min-height: 34px;
+    padding: 7px 12px;
+    font-size: .72rem;
+    white-space: nowrap;
+  }
+
+  #cadastros .cadastro-block{
+    gap: 10px;
+    margin-top: 12px;
+    padding: 11px;
+    border-radius: 15px;
+  }
+
+  #cadastros .cadastro-block-head strong{
+    font-size: .88rem;
+  }
+
+  #cadastros .cadastro-block-head span{
+    font-size: .7rem;
+    line-height: 1.35;
+  }
+
+  #cadastros .cadastro-form{
+    grid-template-columns: 1fr;
+    gap: 7px;
+    margin-bottom: 10px;
+  }
+
+  #cadastros .cadastro-form .botao{
+    justify-self: end;
+    width: auto;
+    min-width: 0;
+    min-height: 36px;
+    padding: 7px 12px;
+    border-radius: 12px;
+    font-size: .73rem;
+  }
+
+  #cadastros .cadastro-posto-config-grid{
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  #cadastros .cadastro-posto-config-card{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 8px 10px;
+    padding: 10px;
+    border-radius: 16px;
+  }
+
+  #cadastros .cadastro-posto-config-card strong{
+    grid-column: 1 / -1;
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    width: fit-content;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(35, 132, 234, .10);
+    color: #1f4f86;
+    font-size: .8rem;
+    line-height: 1;
+  }
+
+  #cadastros .cadastro-field-stack{
+    gap: 4px;
+    padding: 8px;
+    border-radius: 13px;
+    background: rgba(247, 250, 254, .95);
+    border: 1px solid rgba(16, 67, 129, .07);
+  }
+
+  #cadastros .cadastro-field-stack span{
+    font-size: .64rem;
+    line-height: 1.2;
+  }
+
+  #cadastros .cadastro-field-stack input{
+    min-height: 34px;
+    padding: 6px 10px;
+    font-size: .8rem;
+    border-radius: 12px;
+  }
+
+  #cadastros .cadastro-posto-config-actions{
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  #cadastros .cadastro-list{
+    gap: 7px;
+  }
+
+  #cadastros .cadastro-row{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 10px;
+    padding: 10px 11px;
+    border-radius: 15px;
+    box-shadow: 0 8px 18px rgba(21, 83, 151, .05);
+  }
+
+  #cadastros .cadastro-row--vehicle{
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  #cadastros .cadastro-row-media{
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  #cadastros .cadastro-row-info{
+    align-self: center;
+  }
+
+  #cadastros .cadastro-row-info strong{
+    font-size: .82rem;
+  }
+
+  #cadastros .cadastro-row-info span,
+  #cadastros .cadastro-row-subline,
+  #cadastros .cadastro-row-detail{
+    font-size: .68rem !important;
+    line-height: 1.3;
+  }
+
+  #cadastros .cadastro-row-actions{
+    width: auto;
+    justify-content: flex-end;
+    align-items: center;
+    align-self: center;
+    gap: 6px;
+  }
+
+  #cadastros .cadastro-action{
+    min-width: 64px;
+    min-height: 30px;
+    padding: 5px 10px;
+    font-size: .63rem;
+  }
+
+  #listaCadastroVeiculos .cadastro-row--vehicle{
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-areas:
+      "media info"
+      "media actions";
+    align-items: start;
+    column-gap: 10px;
+    row-gap: 8px;
+  }
+
+  #listaCadastroVeiculos .cadastro-row-media{
+    grid-area: media;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  #listaCadastroVeiculos .cadastro-row-info{
+    grid-area: info;
+    align-self: start;
+    gap: 2px;
+  }
+
+  #listaCadastroVeiculos .cadastro-row-head{
+    gap: 6px;
+  }
+
+  #listaCadastroVeiculos .cadastro-row-info strong{
+    font-size: .8rem;
+    line-height: 1.2;
+  }
+
+  #listaCadastroVeiculos .cadastro-row-tags{
+    margin-top: 0;
+  }
+
+  #listaCadastroVeiculos .cadastro-tag{
+    min-height: 22px;
+    padding: 3px 8px;
+    font-size: .6rem;
+  }
+
+  #listaCadastroVeiculos .cadastro-row-actions{
+    grid-area: actions;
+    width: 100%;
+    justify-content: flex-end;
+    align-self: end;
+    gap: 6px;
+  }
+
+  #listaCadastroVeiculos .cadastro-action{
+    min-width: 62px;
+    min-height: 28px;
+    padding: 5px 9px;
+    font-size: .61rem;
+  }
+
   input,
   select,
   textarea,
@@ -3743,6 +4041,130 @@ tr:last-child td{
 
   .section{
     padding: 18px 13px 15px;
+  }
+
+  #cadastros .cadastro-tabs{
+    gap: 6px !important;
+    margin-bottom: 10px;
+  }
+
+  #cadastros .cadastro-tab{
+    min-height: 34px;
+    padding: 6px 11px;
+    font-size: .7rem;
+  }
+
+  #cadastros .cadastro-panel{
+    padding: 9px !important;
+    border-radius: 14px !important;
+  }
+
+  #cadastros .cadastro-block{
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  #cadastros .cadastro-posto-config-grid{
+    gap: 7px;
+  }
+
+  #cadastros .cadastro-posto-config-card{
+    gap: 7px 8px;
+    padding: 9px;
+    border-radius: 14px;
+  }
+
+  #cadastros .cadastro-posto-config-card strong{
+    min-height: 26px;
+    padding: 0 9px;
+    font-size: .76rem;
+  }
+
+  #cadastros .cadastro-field-stack span{
+    font-size: .61rem;
+  }
+
+  #cadastros .cadastro-field-stack{
+    padding: 7px;
+    border-radius: 12px;
+  }
+
+  #cadastros .cadastro-field-stack input{
+    min-height: 32px;
+    padding: 5px 9px;
+    font-size: .76rem;
+    border-radius: 11px;
+  }
+
+  #cadastros .cadastro-subtab{
+    min-height: 32px;
+    padding: 6px 10px;
+    font-size: .69rem;
+  }
+
+  #cadastros .cadastro-form .botao{
+    min-height: 34px;
+    padding: 6px 10px;
+    font-size: .7rem;
+  }
+
+  #cadastros .cadastro-row{
+    padding: 9px 10px;
+    gap: 8px;
+  }
+
+  #cadastros .cadastro-row--vehicle{
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+  }
+
+  #cadastros .cadastro-row-media{
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  #cadastros .cadastro-action{
+    min-width: 58px;
+    min-height: 28px;
+    padding: 5px 8px;
+    font-size: .6rem;
+  }
+
+  #listaCadastroVeiculos .cadastro-row--vehicle{
+    grid-template-columns: 44px minmax(0, 1fr);
+    column-gap: 8px;
+    row-gap: 7px;
+  }
+
+  #listaCadastroVeiculos .cadastro-row-media{
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  #listaCadastroVeiculos .cadastro-row-info strong{
+    font-size: .76rem;
+  }
+
+  #listaCadastroVeiculos .cadastro-row-head{
+    gap: 5px;
+  }
+
+  #listaCadastroVeiculos .cadastro-tag{
+    min-height: 20px;
+    padding: 3px 7px;
+    font-size: .57rem;
+  }
+
+  #listaCadastroVeiculos .cadastro-row-actions{
+    gap: 5px;
+  }
+
+  #listaCadastroVeiculos .cadastro-action{
+    min-width: 56px;
+    min-height: 26px;
+    padding: 4px 8px;
+    font-size: .58rem;
   }
 
   .veiculo{
@@ -5543,16 +5965,17 @@ tr:last-child td{
     border-radius: 13px;
   }
 
-  .cadastro-tabs{
-    gap: 6px;
-    margin-bottom: 10px;
+  #cadastros .cadastro-tabs{
+    justify-content: flex-start;
+    gap: 8px;
+    margin-bottom: 14px;
   }
 
-  .cadastro-tab,
+  #cadastros .cadastro-tab,
   .cadastro-subtab{
-    min-height: 32px;
-    padding: 7px 12px;
-    font-size: .74rem;
+    min-height: 37px;
+    padding: 8px 16px;
+    font-size: .77rem;
   }
 
   .cadastro-panel-head{

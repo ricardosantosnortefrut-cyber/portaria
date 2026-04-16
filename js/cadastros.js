@@ -207,10 +207,26 @@ function criarCadastroGuardaKey(numero) {
 }
 
 function obterNomeCadastroItem(tipo, item) {
-  if (tipo === "chaves") return `No ${item.numero || "-"} - ${item.sala || "-"}`;
-  if (tipo === "empilhadeiras") return `Empilhadeira ${item.numero || "-"}${item.nome ? ` - ${item.nome}` : ""}`;
-  if (tipo === "guardas") return `Guarda-chuva ${item.numero || "-"}${item.nome ? ` - ${item.nome}` : ""}`;
-  if (tipo === "veiculos") return `${item.nome || "-"} - ${item.placa || "-"}`;
+  if (tipo === "chaves") return `N° ${item.numero || "-"} - ${item.sala || "-"}`;
+  if (tipo === "empilhadeiras") {
+    const numero = String(item.numero || "-").trim();
+    const nome = String(item.nome || "").trim();
+    const nomeNormalizado = nome.replace(/\s+/g, " ").trim().toUpperCase();
+    const baseNormalizada = `EMPILHADEIRA ${numero}`.replace(/\s+/g, " ").trim().toUpperCase();
+    if (!nome) return `Empilhadeira ${numero}`;
+    if (nomeNormalizado === baseNormalizada) return nome;
+    return `Empilhadeira ${numero} - ${nome}`;
+  }
+  if (tipo === "guardas") {
+    const numero = String(item.numero || "-").trim();
+    const nome = String(item.nome || "").trim();
+    const nomeNormalizado = nome.replace(/\s+/g, " ").trim().toUpperCase();
+    const baseNormalizada = `GUARDA-CHUVA ${numero}`.replace(/\s+/g, " ").trim().toUpperCase();
+    if (!nome) return `Guarda-chuva ${numero}`;
+    if (nomeNormalizado === baseNormalizada) return nome;
+    return `Guarda-chuva ${numero} - ${nome}`;
+  }
+  if (tipo === "veiculos") return item.nome || "-";
   if (tipo === "agendamentoVeiculos") return `${item.nome || "-"} (${item.placa || "-"})`;
   if (tipo === "vendaProdutos") return `${item.nome || "-"} - ${formatarMoedaBR(item.preco)}`;
   return item.nome || "-";
@@ -285,6 +301,12 @@ function renderCadastroLista(tipo, containerId, vazio) {
     status.textContent = obterStatusCadastroItem(tipo, item, ativo);
 
     if (tipo === "veiculos") {
+      const header = document.createElement("div");
+      header.className = "cadastro-row-head";
+
+      const nomeWrap = document.createElement("div");
+      nomeWrap.className = "cadastro-row-title";
+
       const placa = document.createElement("span");
       placa.className = "cadastro-row-subline";
       placa.textContent = item.placa || "-";
@@ -293,15 +315,9 @@ function renderCadastroLista(tipo, containerId, vazio) {
       detalhe.className = "cadastro-row-detail";
       detalhe.textContent = item.img ? `Imagem: ${item.img}` : "Sem imagem definida";
 
-      const tags = document.createElement("div");
-      tags.className = "cadastro-row-tags";
-
-      const statusTag = document.createElement("span");
-      statusTag.className = `cadastro-tag ${ativo ? "is-active" : "is-inactive"}`;
-      statusTag.textContent = ativo ? "Ativo" : "Inativo";
-
-      tags.append(statusTag);
-      info.append(nome, placa, detalhe, tags);
+      nomeWrap.append(nome);
+      header.append(nomeWrap);
+      info.append(header, placa, detalhe);
       row.appendChild(criarMidiaCadastroVeiculo(item));
     } else {
       info.append(nome, status);
