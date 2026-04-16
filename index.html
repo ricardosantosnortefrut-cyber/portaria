@@ -425,17 +425,17 @@
             <article class="posto-stock-card">
                 <span>S10</span>
                 <strong id="postoStockS10">0,00 L</strong>
-                <small>Contador atual: <b id="postoContadorS10">0,00</b></small>
+                <small>Contador: <b id="postoContadorS10">0,00</b></small>
             </article>
             <article class="posto-stock-card">
                 <span>S500</span>
                 <strong id="postoStockS500">0,00 L</strong>
-                <small>Contador atual: <b id="postoContadorS500">0,00</b></small>
+                <small>Contador: <b id="postoContadorS500">0,00</b></small>
             </article>
             <article class="posto-stock-card">
                 <span>ARLA</span>
                 <strong id="postoStockArla">0,00 L</strong>
-                <small>Contador atual: <b id="postoContadorArla">0,00</b></small>
+                <small>Contador: <b id="postoContadorArla">0,00</b></small>
             </article>
         </div>
 
@@ -557,14 +557,15 @@
                 <h4 class="heading-spaced">Abastecimentos do dia</h4>
                 <div class="empilhadeira-table posto-table">
                     <div class="empilhadeira-table-head posto-table-head">
-                        <span>Data</span>
-                        <span>Horário</span>
-                        <span>Placa</span>
-                        <span>Motorista</span>
-                        <span>Setor</span>
-                        <span>Qtde (L)</span>
-                        <span>Contador</span>
-                        <span>Tipo</span>
+                        <span class="posto-col-data">Data</span>
+                        <span class="posto-col-hora">Horário</span>
+                        <span class="posto-col-placa">Placa</span>
+                        <span class="posto-col-motorista">Motorista</span>
+                        <span class="posto-col-setor">Setor</span>
+                        <span class="posto-col-qtde">Qtde (L)</span>
+                        <span class="posto-col-contador">Contador</span>
+                        <span class="posto-col-tipo">Tipo</span>
+                        <span class="posto-col-acao">Ver</span>
                     </div>
                     <div id="listaPostoMovimentacoes" class="empilhadeira-table-body"></div>
                 </div>
@@ -770,14 +771,15 @@
 
     <div class="report-group">
       <h4>Históricos</h4>
-      <div id="menuRelatorios" class="report-menu-grid">
+      <div class="report-menu-grid">
           <button class="botao relatorio relatorio-menu" data-nav="relatorioFrota"><i data-lucide="car-front"></i><span>Histórico de Veículos</span></button>
           <button class="botao relatorio relatorio-menu" data-nav="relatorioAgendamentos"><i data-lucide="calendar-days"></i><span>Histórico de Agendamentos</span></button>
-          <button class="botao relatorio relatorio-menu" data-nav="relatorioEmpilhadeiras"><i data-lucide="forklift"></i><span>Histórico de Empilhadeiras</span></button>
           <button class="botao relatorio relatorio-menu" data-nav="relatorioPosto"><i data-lucide="fuel"></i><span>Controle de Abastecimento</span></button>
+          <button class="botao relatorio relatorio-menu" data-nav="relatorioEmpilhadeiras"><i data-lucide="forklift"></i><span>Histórico de Empilhadeiras</span></button>
           <button class="botao relatorio relatorio-menu" data-nav="relatorioChaves"><i data-lucide="key-round"></i><span>Histórico de Chaves</span></button>
           <button class="botao relatorio relatorio-menu" data-nav="relatorioGuarda"><i data-lucide="umbrella"></i><span>Histórico de Guarda-Chuva</span></button>
           <button class="botao relatorio relatorio-menu" data-nav="relatorioJogos"><i data-lucide="gamepad-2"></i><span>Histórico de Jogos</span></button>
+          <button class="botao relatorio relatorio-menu" data-nav="relatorioVendas"><i data-lucide="banknote"></i><span>Relatório de Vendas</span></button>
       </div>
     </div>
 
@@ -786,15 +788,14 @@
 <div id="cadastros" class="section">
   <h3><i data-lucide="settings-2" class="title-icon"></i><span>Cadastros</span></h3>
   <div class="cadastro-tabs" role="tablist" aria-label="Categorias de cadastro">
-    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="porteiros">Porteiros</button>
-    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="condutores">Condutores</button>
-    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="setores">Setores</button>
+    <button class="cadastro-tab active" type="button" data-cadastro-panel-trigger="frota">Frota</button>
     <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="posto">Posto</button>
-    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="jogos">Jogos</button>
-    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="chaves">Chaves</button>
     <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="empilhadeiras">Empilhadeiras</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="chaves">Chaves</button>
     <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="guardas">Guarda-chuvas</button>
-    <button class="cadastro-tab active" type="button" data-cadastro-panel-trigger="veiculos">Veículos</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="jogos">Jogos</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="vendas">Vendas</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="porteiros">Porteiros</button>
   </div>
   <div class="cadastro-grid">
     <article class="cadastro-panel" data-cadastro-panel="porteiros">
@@ -809,34 +810,6 @@
         </button>
       </div>
       <div id="listaCadastroPorteiros" class="cadastro-list"></div>
-    </article>
-
-    <article class="cadastro-panel" data-cadastro-panel="condutores">
-      <div class="cadastro-panel-head">
-        <strong>Condutores</strong>
-        <span>Controle quem pode dirigir veículos da empresa.</span>
-      </div>
-      <div class="cadastro-form">
-        <input id="cadastroCondutorNome" placeholder="Nome do condutor" data-uppercase>
-        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-condutor">
-          <i data-lucide="plus"></i><span>Adicionar Condutor</span>
-        </button>
-      </div>
-      <div id="listaCadastroCondutores" class="cadastro-list"></div>
-    </article>
-
-    <article class="cadastro-panel" data-cadastro-panel="setores">
-      <div class="cadastro-panel-head">
-        <strong>Setores</strong>
-        <span>Controle os setores exibidos nas listas do guarda-chuva.</span>
-      </div>
-      <div class="cadastro-form">
-        <input id="cadastroSetorNome" placeholder="Nome do setor" data-uppercase>
-        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-setor">
-          <i data-lucide="plus"></i><span>Adicionar Setor</span>
-        </button>
-      </div>
-      <div id="listaCadastroSetores" class="cadastro-list"></div>
     </article>
 
     <article class="cadastro-panel cadastro-panel-wide" data-cadastro-panel="posto">
@@ -966,33 +939,172 @@
     <article class="cadastro-panel cadastro-panel-wide" data-cadastro-panel="guardas">
       <div class="cadastro-panel-head">
         <strong>Guarda-chuvas</strong>
-        <span>Cadastre os patrimônios disponíveis para retirada na portaria.</span>
+        <span>Cadastre patrimônios e setores usados na retirada de guarda-chuvas.</span>
       </div>
-      <div class="cadastro-form cadastro-form--chaves">
-        <input id="cadastroGuardaNumero" placeholder="Número" inputmode="numeric">
-        <input id="cadastroGuardaNome" placeholder="Descrição opcional" data-uppercase>
-        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-guarda-cadastro">
-          <i data-lucide="plus"></i><span>Salvar Guarda-Chuva</span>
-        </button>
+
+      <div class="cadastro-subtabs" role="tablist" aria-label="Subabas de guarda-chuvas">
+        <button class="cadastro-subtab active" type="button" data-cadastro-subpanel-trigger="guardas-itens">Guarda-chuvas</button>
+        <button class="cadastro-subtab" type="button" data-cadastro-subpanel-trigger="guardas-setores">Setores</button>
       </div>
-      <div id="listaCadastroGuardas" class="cadastro-list"></div>
+
+      <div class="cadastro-subpanel is-active" data-cadastro-subpanel="guardas-itens">
+        <div class="cadastro-block">
+          <div class="cadastro-block-head">
+            <strong>Patrimônios</strong>
+            <span>Cadastre os guarda-chuvas disponíveis para retirada na portaria.</span>
+          </div>
+          <div class="cadastro-form cadastro-form--chaves">
+            <input id="cadastroGuardaNumero" placeholder="Número" inputmode="numeric">
+            <input id="cadastroGuardaNome" placeholder="Descrição opcional" data-uppercase>
+            <button class="botao btn-primary" type="button" data-cadastro-action="salvar-guarda-cadastro">
+              <i data-lucide="plus"></i><span>Salvar Guarda-Chuva</span>
+            </button>
+          </div>
+          <div id="listaCadastroGuardas" class="cadastro-list"></div>
+        </div>
+      </div>
+
+      <div class="cadastro-subpanel" data-cadastro-subpanel="guardas-setores">
+        <div class="cadastro-block">
+          <div class="cadastro-block-head">
+            <strong>Setores</strong>
+            <span>Controle os setores exibidos nas listas do guarda-chuva.</span>
+          </div>
+          <div class="cadastro-form">
+            <input id="cadastroSetorNome" placeholder="Nome do setor" data-uppercase>
+            <button class="botao btn-primary" type="button" data-cadastro-action="salvar-setor">
+              <i data-lucide="plus"></i><span>Adicionar Setor</span>
+            </button>
+          </div>
+          <div id="listaCadastroSetores" class="cadastro-list"></div>
+        </div>
+      </div>
     </article>
 
-    <article class="cadastro-panel cadastro-panel-wide is-active" data-cadastro-panel="veiculos">
+    <article class="cadastro-panel cadastro-panel-wide" data-cadastro-panel="vendas">
       <div class="cadastro-panel-head">
-        <strong>Veículos</strong>
-        <span>Cadastre a frota usada em saídas, agendamentos e relatórios.</span>
+        <strong>Vendas</strong>
+        <span>Cadastre os mamões, características e formas de pagamento usados nos pedidos.</span>
       </div>
-      <div class="cadastro-form cadastro-form--veiculos">
-        <input id="cadastroVeiculoPlaca" placeholder="Placa" data-uppercase>
-        <input id="cadastroVeiculoNome" placeholder="Nome do veículo" data-uppercase>
-        <input id="cadastroVeiculoImagem" placeholder="Imagem. Ex: fiat-strada-prata.png">
-        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-veiculo-cadastro">
-          <i data-lucide="plus"></i><span>Salvar Veículo</span>
-        </button>
+
+      <div class="cadastro-subtabs" role="tablist" aria-label="Subabas de vendas">
+        <button class="cadastro-subtab active" type="button" data-cadastro-subpanel-trigger="vendas-produtos">Mamões</button>
+        <button class="cadastro-subtab" type="button" data-cadastro-subpanel-trigger="vendas-caracteristicas">Características</button>
+        <button class="cadastro-subtab" type="button" data-cadastro-subpanel-trigger="vendas-pagamentos">Pagamentos</button>
       </div>
-      <div class="cadastro-helper">Use o nome do arquivo dentro da pasta <strong>imagens</strong>, por exemplo: <strong>fiat-strada-prata.png</strong>.</div>
-      <div id="listaCadastroVeiculos" class="cadastro-list cadastro-list--veiculos"></div>
+
+      <div class="cadastro-subpanel is-active" data-cadastro-subpanel="vendas-produtos">
+        <div class="cadastro-block">
+          <div class="cadastro-block-head">
+            <strong>Mamões da Venda</strong>
+            <span>Exemplo: HAVAI 5KG com valor de R$ 40,00.</span>
+          </div>
+          <div class="cadastro-form cadastro-form--vendas-produto">
+            <input id="cadastroVendaProdutoNome" placeholder="Tipo / caixa. Ex: HAVAI 5KG" data-uppercase>
+            <input id="cadastroVendaProdutoPreco" type="text" inputmode="decimal" placeholder="Valor. Ex: 40,00">
+            <button class="botao btn-primary" type="button" data-cadastro-action="salvar-venda-produto">
+              <i data-lucide="plus"></i><span>Salvar Mamão</span>
+            </button>
+          </div>
+          <div id="listaCadastroVendaProdutos" class="cadastro-list"></div>
+        </div>
+      </div>
+
+      <div class="cadastro-subpanel" data-cadastro-subpanel="vendas-caracteristicas">
+        <div class="cadastro-block">
+          <div class="cadastro-block-head">
+            <strong>Características</strong>
+            <span>Essas opções aparecem no campo de característica do item.</span>
+          </div>
+          <div class="cadastro-form">
+            <input id="cadastroVendaCaracteristicaNome" placeholder="Característica" data-uppercase>
+            <button class="botao btn-primary" type="button" data-cadastro-action="salvar-venda-caracteristica">
+              <i data-lucide="plus"></i><span>Adicionar Característica</span>
+            </button>
+          </div>
+          <div id="listaCadastroVendaCaracteristicas" class="cadastro-list"></div>
+        </div>
+      </div>
+
+      <div class="cadastro-subpanel" data-cadastro-subpanel="vendas-pagamentos">
+        <div class="cadastro-block">
+          <div class="cadastro-block-head">
+            <strong>Formas de Pagamento</strong>
+            <span>Essas opções aparecem ao fechar o pedido de venda.</span>
+          </div>
+          <div class="cadastro-form">
+            <input id="cadastroVendaPagamentoNome" placeholder="Forma de pagamento" data-uppercase>
+            <button class="botao btn-primary" type="button" data-cadastro-action="salvar-venda-pagamento">
+              <i data-lucide="plus"></i><span>Adicionar Pagamento</span>
+            </button>
+          </div>
+          <div id="listaCadastroVendaPagamentos" class="cadastro-list"></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="cadastro-panel cadastro-panel-wide is-active" data-cadastro-panel="frota">
+      <div class="cadastro-panel-head">
+        <strong>Frota</strong>
+        <span>Cadastre os veículos e condutores usados em saídas, agendamentos e relatórios.</span>
+      </div>
+
+      <div class="cadastro-subtabs" role="tablist" aria-label="Subabas de frota">
+        <button class="cadastro-subtab active" type="button" data-cadastro-subpanel-trigger="frota-veiculos">Veículos</button>
+        <button class="cadastro-subtab" type="button" data-cadastro-subpanel-trigger="frota-condutores">Condutores</button>
+        <button class="cadastro-subtab" type="button" data-cadastro-subpanel-trigger="frota-agendamento">Agendamento</button>
+      </div>
+
+      <div class="cadastro-subpanel is-active" data-cadastro-subpanel="frota-veiculos">
+        <div class="cadastro-block">
+          <div class="cadastro-block-head">
+            <strong>Veículos</strong>
+            <span>Cadastre a frota usada em saídas, agendamentos e relatórios.</span>
+          </div>
+          <div class="cadastro-form cadastro-form--veiculos">
+            <input id="cadastroVeiculoPlaca" placeholder="Placa" data-uppercase>
+            <input id="cadastroVeiculoNome" placeholder="Nome do veículo" data-uppercase>
+            <input id="cadastroVeiculoImagem" placeholder="Imagem. Ex: fiat-strada-prata.png">
+            <button class="botao btn-primary" type="button" data-cadastro-action="salvar-veiculo-cadastro">
+              <i data-lucide="plus"></i><span>Salvar Veículo</span>
+            </button>
+          </div>
+          <div class="cadastro-helper">Use o nome do arquivo dentro da pasta <strong>imagens</strong>, por exemplo: <strong>fiat-strada-prata.png</strong>.</div>
+          <div id="listaCadastroVeiculos" class="cadastro-list cadastro-list--veiculos"></div>
+        </div>
+      </div>
+
+      <div class="cadastro-subpanel" data-cadastro-subpanel="frota-condutores">
+        <div class="cadastro-block">
+          <div class="cadastro-block-head">
+            <strong>Condutores</strong>
+            <span>Controle quem pode dirigir veículos da empresa.</span>
+          </div>
+          <div class="cadastro-form">
+            <input id="cadastroCondutorNome" placeholder="Nome do condutor" data-uppercase>
+            <button class="botao btn-primary" type="button" data-cadastro-action="salvar-condutor">
+              <i data-lucide="plus"></i><span>Adicionar Condutor</span>
+            </button>
+          </div>
+          <div id="listaCadastroCondutores" class="cadastro-list"></div>
+        </div>
+      </div>
+
+      <div class="cadastro-subpanel" data-cadastro-subpanel="frota-agendamento">
+        <div class="cadastro-block">
+          <div class="cadastro-block-head">
+            <strong>Veículos Agendáveis</strong>
+            <span>Controle quais veículos aparecem no formulário de agendamento de viagens.</span>
+          </div>
+          <div class="cadastro-form">
+            <select id="cadastroAgendamentoVeiculoPlaca"></select>
+            <button class="botao btn-primary" type="button" data-cadastro-action="salvar-agendamento-veiculo-cadastro">
+              <i data-lucide="plus"></i><span>Adicionar à Agenda</span>
+            </button>
+          </div>
+          <div id="listaCadastroAgendamentoVeiculos" class="cadastro-list"></div>
+        </div>
+      </div>
     </article>
   </div>
 </div>
@@ -1048,6 +1160,33 @@
   <h3><i data-lucide="clipboard-check" class="title-icon"></i><span>Movimentações em Aberto</span></h3>
   <div id="reportOpenGroups" class="report-open-groups"></div>
   <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+</div>
+
+<div id="relatorioVendas" class="section">
+  <h3><i data-lucide="banknote" class="title-icon"></i><span>Relatório de Vendas</span></h3>
+  <div class="report-module-head">
+    <p>Filtre por período e cliente para acompanhar pedidos, caixas vendidas e valor total das vendas de mamão.</p>
+  </div>
+  <div class="report-filter-grid">
+    <div class="report-date-range">
+      <input id="reportVendasDataInicio" type="date">
+      <span class="report-date-separator">a</span>
+      <input id="reportVendasDataFim" type="date">
+    </div>
+    <input id="reportVendasCliente" placeholder="Cliente">
+    <button class="botao btn-primary" type="button" data-action="aplicar-filtros-vendas-relatorio">
+      <i data-lucide="filter"></i><span>Aplicar Filtros</span>
+    </button>
+  </div>
+  <div id="reportVendasSummary" class="report-module-summary report-module-summary--vehicles"></div>
+  <div id="reportVendasInsights" class="report-insights-list"></div>
+  <div id="reportVendasPeriod" class="report-period-label"></div>
+  <div class="report-actions-inline">
+    <button class="botao relatorio relatorio-acao relatorio-acao-atual" data-action="exportar-vendas-filtrado">
+      <i data-lucide="download"></i><span>Exportar Excel</span>
+    </button>
+    <button class="botao btn-secondary" data-nav="relatorios"><span>Voltar</span></button>
+  </div>
 </div>
 
   <!-- PÁGINA NOVA: RELATÓRIO FROTA -->

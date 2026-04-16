@@ -36,6 +36,7 @@ function gerarCodigoVenda() {
 function popularSelectVenda(id, opcoes, placeholder) {
   const select = getById(id);
   if (!select) return;
+  const valorAtual = select.value;
   limparConteudoElemento(select);
 
   const primeira = document.createElement("option");
@@ -54,6 +55,23 @@ function popularSelectVenda(id, opcoes, placeholder) {
     }
     select.appendChild(option);
   });
+
+  if ([...select.options].some(option => option.value === valorAtual)) {
+    select.value = valorAtual;
+  }
+}
+
+function obterPlaceholderPagamentoVenda() {
+  return window.matchMedia("(max-width: 720px)").matches
+    ? "Form. pagamento"
+    : "Forma de pagamento";
+}
+
+function atualizarSelectsVenda() {
+  popularSelectVenda("vd_produto", produtosVendaMamao, "Tipo de mamão");
+  popularSelectVenda("vd_maturacao", opcoesMaturacaoVenda, "Características");
+  popularSelectVenda("vd_pagamento", formasPagamentoVenda, obterPlaceholderPagamentoVenda());
+  atualizarResumoVenda();
 }
 
 function normalizarVendaRegistro(id, dados) {
@@ -514,9 +532,7 @@ function renderListaVendas(registros) {
 }
 
 function inicializarVendaForm() {
-  popularSelectVenda("vd_produto", produtosVendaMamao, "Tipo de mamão");
-  popularSelectVenda("vd_maturacao", opcoesMaturacaoVenda, "Características");
-  popularSelectVenda("vd_pagamento", formasPagamentoVenda, "Forma de pagamento");
+  atualizarSelectsVenda();
 
   getById("vd_produto")?.addEventListener("change", atualizarResumoVenda);
   getById("vd_quantidade")?.addEventListener("input", atualizarResumoVenda);

@@ -793,6 +793,7 @@ function renderInsightsModulo(containerId, items) {
 }
 
 const relatorioAgendamentosState = { ativos: {}, historico: {}, filtros: { dataInicio: "", dataFim: "", veiculo: "" } };
+const relatorioVendasState = { registros: {}, filtros: { dataInicio: "", dataFim: "", cliente: "" } };
 const relatorioEmpilhadeirasState = { historico: {}, filtros: { dataInicio: "", dataFim: "", numero: "" } };
 const relatorioChavesState = { ativas: {}, historico: {}, filtros: { dataInicio: "", dataFim: "", numero: "" } };
 const relatorioGuardasState = { ativos: {}, historico: {}, filtros: { dataInicio: "", dataFim: "", numero: "" } };
@@ -1181,6 +1182,138 @@ async function exportarRelatorioAgendamentosFiltrado() {
   aplicarEstiloLinhas(ws);
   const buffer = await wb.xlsx.writeBuffer();
   saveAs(new Blob([buffer]), "Relatorio_Agendamentos_Filtrado.xlsx");
+}
+
+function preencherFiltrosRelatorioVendas() {
+  preencherIntervaloPadrao("reportVendas");
+  const inicio = getById("reportVendasDataInicio");
+  const fim = getById("reportVendasDataFim");
+  const cliente = getById("reportVendasCliente");
+  if (!relatorioVendasState.filtros.dataInicio && inicio?.value) relatorioVendasState.filtros.dataInicio = inicio.value;
+  if (!relatorioVendasState.filtros.dataFim && fim?.value) relatorioVendasState.filtros.dataFim = fim.value;
+  if (!relatorioVendasState.filtros.cliente && cliente?.value) relatorioVendasState.filtros.cliente = normalizarTexto(cliente.value);
+}
+
+function normalizarVendaRelatorio(id, dados) {
+  const venda = typeof normalizarVendaRegistro === "function"
+    ? normalizarVendaRegistro(id, dados)
+    : { id, ...(dados || {}), itens: dados?.itens || [] };
+  const itens = Array.isArray(venda.itens) ? venda.itens : [];
+  const totalCaixas = itens.reduce((total, item) => total + Number(item.quantidade || 0), 0);
+  const itensResumo = itens
+    .map(item => {
+      const quantidade = Number(item.quantidade || 0);
+      const nome = item.produtoNome || item.produtoDescricao || "-";
+      return `${quantidade || 0} CX ${nome}`;
+    })
+    .join(" | ");
+
+  return {
+    id: venda.id || id,
+    data: venda.data || (venda.criadoEm ? new Date(venda.criadoEm).toLocaleDateString("pt-BR") : ""),
+    hora: venda.hora || (venda.criadoEm ? new Date(venda.criadoEm).toLocaleTimeString("pt-BR", { hour12: false }) : ""),
+    cliente: venda.cliente || "-",
+    pedido: venda.codigo || id || "-",
+    caixas: totalCaixas,
+    valor: Number(venda.valorTotal || 0) || 0,
+    pagamento: venda.pagamento || "-",
+    itens: itensResumo || "-",
+    criadoEm: Number(venda.criadoEm || 0) || 0
+  };
+}
+
+function obterVendasFiltradas() {
+  preencherFiltrosRelatorioVendas();
+  const { dataInicio, dataFim, cliente } = relatorioVendasState.filtros;
+  const clienteFiltro = normalizarTexto(cliente || "");
+  return filtrarPorIntervaloBR(
+    Object.entries(relatorioVendasState.registros || {}).map(([id, dados]) => normalizarVendaRelatorio(id, dados)),
+    "data",
+    dataInicio,
+    dataFim
+  )
+    .filter(item => !clienteFiltro || normalizarTexto(item.cliente || "").includes(clienteFiltro))
+    .sort((a, b) => {
+      const dataA = a.criadoEm ? new Date(a.criadoEm) : parseDateTime(a.data, a.hora);
+      const dataB = b.criadoEm ? new Date(b.criadoEm) : parseDateTime(b.data, b.hora);
+      return dataB - dataA;
+    });
+}
+
+function renderRelatorioVendas() {
+  const lista = obterVendasFiltradas();
+  const period = getById("reportVendasPeriod");
+  if (period) {
+    period.textContent = formatarPeriodoLabel(
+      relatorioVendasState.filtros.dataInicio,
+      relatorioVendasState.filtros.dataFim,
+      relatorioVendasState.filtros.cliente ? ` • Cliente: ${relatorioVendasState.filtros.cliente}` : " • Todos os clientes"
+    );
+  }
+
+  const totalCaixas = lista.reduce((total, item) => total + Number(item.caixas || 0), 0);
+  const totalValor = lista.reduce((total, item) => total + Number(item.valor || 0), 0);
+  const clientes = new Set(lista.map(item => item.cliente).filter(Boolean));
+
+  const porPagamento = new Map();
+  const porItem = new Map();
+  lista.forEach(venda => {
+    if (venda.pagamento) porPagamento.set(venda.pagamento, (porPagamento.get(venda.pagamento) || 0) + 1);
+    String(venda.itens || "")
+      .split("|")
+      .map(item => item.trim())
+      .filter(Boolean)
+      .forEach(item => porItem.set(item, (porItem.get(item) || 0) + 1));
+  });
+
+  const pagamentoTop = [...porPagamento.entries()].sort((a, b) => b[1] - a[1])[0];
+  const itemTop = [...porItem.entries()].sort((a, b) => b[1] - a[1])[0];
+
+  renderResumoModulo("reportVendasSummary", [
+    criarResumoRelatorioCard("Pedidos", lista.length, "Vendas no período"),
+    criarResumoRelatorioCard("Caixas", totalCaixas, "Total vendido"),
+    criarResumoRelatorioCard("Valor", formatarMoedaBR(totalValor), `${clientes.size} cliente(s) no recorte`)
+  ]);
+  renderInsightsModulo("reportVendasInsights", [
+    criarInsightRelatorio("credit-card", "Pagamento Mais Usado", pagamentoTop ? `${pagamentoTop[0]} em ${pagamentoTop[1]} pedido(s)` : "Nenhum pedido no período", "is-blue"),
+    criarInsightRelatorio("package", "Item Mais Frequente", itemTop ? itemTop[0] : "Nenhum item no período", "is-green")
+  ]);
+}
+
+function aplicarFiltrosRelatorioVendas() {
+  const inicio = getById("reportVendasDataInicio")?.value || "";
+  const fim = getById("reportVendasDataFim")?.value || "";
+  if (!validarIntervalo(inicio, fim)) return avisoValidacao("A data inicial não pode ser maior que a data final.");
+  relatorioVendasState.filtros = {
+    dataInicio: inicio,
+    dataFim: fim,
+    cliente: normalizarTexto(getById("reportVendasCliente")?.value || "")
+  };
+  renderRelatorioVendas();
+}
+
+async function exportarRelatorioVendasFiltrado() {
+  const lista = obterVendasFiltradas();
+  if (!lista.length) return avisoInfo("Nenhuma venda encontrada para exportar.", "banknote");
+
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Vendas", { views: [{ state: "frozen", ySplit: 3 }] });
+  ws.columns = [
+    { header: "Data", key: "data", width: 14 },
+    { header: "Hora", key: "hora", width: 12 },
+    { header: "Nº Pedido", key: "pedido", width: 18 },
+    { header: "Cliente", key: "cliente", width: 28 },
+    { header: "Itens", key: "itens", width: 42 },
+    { header: "Caixas", key: "caixas", width: 12 },
+    { header: "Valor", key: "valor", width: 14 },
+    { header: "Pagamento", key: "pagamento", width: 18 }
+  ];
+  aplicarCabecalhoRelatorio(ws, "RELATÓRIO - VENDAS", formatarPeriodoLabel(relatorioVendasState.filtros.dataInicio, relatorioVendasState.filtros.dataFim), "FF1565C0");
+  lista.forEach(item => ws.addRow(item));
+  ws.getColumn(7).numFmt = '"R$" #,##0.00';
+  aplicarEstiloLinhas(ws);
+  const buffer = await wb.xlsx.writeBuffer();
+  saveAs(new Blob([buffer]), "Relatorio_Vendas_Filtrado.xlsx");
 }
 
 function obterEmpilhadeirasFiltradas() {
@@ -1596,6 +1729,11 @@ db.ref("abastecimentos").on("value", snap => {
 db.ref("historico_agendamentos").on("value", snap => {
   relatorioAgendamentosState.historico = snap.val() || {};
   renderRelatorioAgendamentos();
+});
+
+db.ref("vendas_caixas_mamao").on("value", snap => {
+  relatorioVendasState.registros = snap.val() || {};
+  renderRelatorioVendas();
 });
 
 db.ref("historico_chaves").on("value", snap => {

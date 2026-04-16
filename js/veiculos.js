@@ -76,7 +76,11 @@ function preencherSelectAgendamentoVeiculos() {
   placeholder.textContent = "Selecione o Veículo...";
   select.appendChild(placeholder);
 
-  veiculosCadastrados.forEach(veiculo => {
+  const veiculosAgendaveis = veiculosAgendamentoDisponiveis.length
+    ? veiculosAgendamentoDisponiveis
+    : veiculosCadastrados;
+
+  veiculosAgendaveis.forEach(veiculo => {
     const option = document.createElement("option");
     option.value = `${veiculo.nome} (${veiculo.placa})`;
     option.textContent = `${veiculo.nome} (${veiculo.placa})`;

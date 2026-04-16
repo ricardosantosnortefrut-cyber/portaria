@@ -16,6 +16,16 @@ const veiculosCadastrados = [
   { placa: "MSV-3A51", nome: "Caminhonete L200", img: "L200.png" }
 ];
 
+const veiculosAgendamentoDisponiveis = [
+  { placa: "MPI-4647", nome: "Fiat Strada Prata" },
+  { placa: "PPX-2827", nome: "Fiat Strada Branca" },
+  { placa: "QRJ-1A02", nome: "Fiat Strada Branca" },
+  { placa: "PPY-5A18", nome: "Fiat Mobi (Osvaldinho)" },
+  { placa: "TCA-5G32", nome: "Fiat Mobi (Edgar)" },
+  { placa: "SGD-5G26", nome: "Renault Oroch" },
+  { placa: "MSV-3A51", nome: "Caminhonete L200" }
+];
+
 let modoAtual = "SAIDA";
 
 const condutoresAutorizados = [

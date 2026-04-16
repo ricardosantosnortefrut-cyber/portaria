@@ -543,6 +543,68 @@ function renderMovimentacoesPosto(registros) {
   });
 }
 
+function ajustarTabelaMovimentacoesPostoMobile() {
+  const container = getById("listaPostoMovimentacoes");
+  if (!container) return;
+
+  const classes = [
+    "posto-col-data",
+    "posto-col-hora",
+    "posto-col-placa",
+    "posto-col-motorista",
+    "posto-col-setor",
+    "posto-col-qtde",
+    "posto-col-contador",
+    "posto-col-tipo"
+  ];
+
+  [...container.querySelectorAll(".posto-table-row")].forEach(row => {
+    const spans = [...row.querySelectorAll(":scope > span")];
+    spans.forEach((span, index) => {
+      if (classes[index]) {
+        span.classList.add(classes[index]);
+      }
+    });
+
+    if (row.querySelector(".posto-row-toggle")) return;
+
+    const valores = {
+      hora: spans[1]?.textContent?.trim() || "-",
+      motorista: spans[3]?.textContent?.trim() || "-",
+      setor: spans[4]?.textContent?.trim() || "-",
+      contador: spans[6]?.textContent?.trim() || "-",
+      tipo: spans[7]?.textContent?.trim() || "-"
+    };
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "posto-row-toggle posto-col-acao";
+    toggle.textContent = "Ver";
+    toggle.setAttribute("aria-expanded", "false");
+
+    const details = document.createElement("div");
+    details.className = "posto-row-details";
+    details.hidden = true;
+    details.innerHTML = `
+      <div class="posto-row-detail"><small>Horario</small><strong>${escaparHtml(valores.hora)}</strong></div>
+      <div class="posto-row-detail"><small>Motorista</small><strong>${escaparHtml(valores.motorista)}</strong></div>
+      <div class="posto-row-detail"><small>Setor</small><strong>${escaparHtml(valores.setor)}</strong></div>
+      <div class="posto-row-detail"><small>Contador</small><strong>${escaparHtml(valores.contador)}</strong></div>
+      <div class="posto-row-detail"><small>Tipo</small><strong>${escaparHtml(valores.tipo)}</strong></div>
+    `;
+
+    toggle.addEventListener("click", () => {
+      const aberto = row.classList.toggle("is-expanded");
+      details.hidden = !aberto;
+      toggle.setAttribute("aria-expanded", aberto ? "true" : "false");
+      toggle.textContent = aberto ? "Ocultar" : "Ver";
+    });
+
+    row.appendChild(toggle);
+    row.appendChild(details);
+  });
+}
+
 function renderPlantoesPosto(registros) {
   const container = getById("listaPostoPlantoes");
   if (!container) return;
@@ -869,6 +931,7 @@ window.addEventListener("DOMContentLoaded", () => {
     cacheMov = snap.val() || {};
     postoState.movimentacoes = cacheMov;
     renderMovimentacoesPosto(cacheMov);
+    ajustarTabelaMovimentacoesPostoMobile();
     atualizarResumoPosto(cacheMov, cachePlantoes);
   });
 

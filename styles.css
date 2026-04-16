@@ -1307,7 +1307,7 @@ tr:last-child td{
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
-  padding: 10px;
+  padding: 12px;
   background: #d7d7d7;
   border-bottom: 1px solid rgba(0,0,0,.12);
 }
@@ -1338,9 +1338,9 @@ tr:last-child td{
 .pesagem-table-title-row,
 .pesagem-table-row{
   display: grid;
-  grid-template-columns: 140px 140px minmax(180px, 1fr);
+  grid-template-columns: 160px 150px minmax(220px, 1fr);
   align-items: center;
-  min-width: 520px;
+  min-width: 620px;
 }
 
 .pesagem-table-title-row{
@@ -1422,7 +1422,7 @@ tr:last-child td{
 
 .pesagem-table-title-row span,
 .pesagem-table-row span{
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-right: 1px solid rgba(0,0,0,.08);
 }
 
@@ -1439,7 +1439,7 @@ tr:last-child td{
 .pesagem-table-row{
   background: #ffffff;
   border-bottom: 1px solid rgba(0,0,0,.06);
-  font-size: .84rem;
+  font-size: .88rem;
   cursor: pointer;
 }
 
@@ -2337,6 +2337,7 @@ tr:last-child td{
   color: #193956;
   font-size: 1.8rem;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .posto-stock-card small{
@@ -2613,6 +2614,51 @@ tr:last-child td{
 .posto-table .empilhadeira-table-row > span{
   text-align: center;
   justify-content: center;
+}
+
+.posto-col-acao,
+.posto-row-details{
+  display: none;
+}
+
+.posto-row-toggle{
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid rgba(17, 82, 152, .18);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff, #eef5ff);
+  color: #1c5fb8;
+  font-size: .72rem;
+  font-weight: 800;
+}
+
+.posto-row-details{
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid rgba(17, 82, 152, .08);
+  background: linear-gradient(180deg, rgba(245,249,255,.92), rgba(238,244,252,.98));
+}
+
+.posto-row-detail{
+  display: grid;
+  gap: 2px;
+}
+
+.posto-row-detail small{
+  color: #6b8299;
+  font-size: .66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.posto-row-detail strong{
+  color: #24415c;
+  font-size: .78rem;
+  font-weight: 800;
 }
 
 .posto-table-head--plantao,
@@ -3012,6 +3058,10 @@ tr:last-child td{
 
 .cadastro-form--veiculos{
   grid-template-columns: 140px minmax(220px, 1fr);
+}
+
+.cadastro-form--vendas-produto{
+  grid-template-columns: minmax(180px, 1fr) 150px 180px;
 }
 
 .cadastro-form .botao{
@@ -4344,6 +4394,10 @@ tr:last-child td{
     grid-template-columns: 1fr;
   }
 
+  .cadastro-form--vendas-produto{
+    grid-template-columns: 1fr;
+  }
+
   .cadastro-block{
     gap: 10px;
     margin-top: 12px;
@@ -4472,16 +4526,24 @@ tr:last-child td{
 
   .posto-stock-card{
     gap: 5px;
+    min-height: 0;
     padding: 14px;
     border-radius: 16px;
   }
 
+  .posto-stock-card span{
+    font-size: .82rem;
+  }
+
   .posto-stock-card strong{
-    font-size: 1.42rem;
+    font-size: 1.26rem;
+    line-height: 1;
+    white-space: nowrap;
   }
 
   .posto-stock-card small{
-    font-size: .74rem;
+    font-size: .72rem;
+    line-height: 1.25;
   }
 
   .posto-actions-grid{
@@ -4561,13 +4623,15 @@ tr:last-child td{
   }
 
   .posto-table .empilhadeira-table-head{
-    display: none;
+    display: grid;
+    min-width: 0;
+    grid-template-columns: .95fr 1fr .9fr .62fr;
   }
 
   .posto-table .empilhadeira-table-body{
-    display: grid;
-    gap: 10px;
-    padding: 10px;
+    display: block;
+    padding: 0;
+    overflow-x: visible;
   }
 
   .posto-history-note{
@@ -4583,38 +4647,75 @@ tr:last-child td{
 
   .posto-table .empilhadeira-table-row{
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px 10px;
-    padding: 11px 10px;
-    border-radius: 14px;
-    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(245,249,255,.95));
-    border: 1px solid rgba(16, 67, 129, .08);
-    box-shadow: 0 8px 18px rgba(26, 71, 128, .08);
+    grid-template-columns: .95fr 1fr .9fr .62fr !important;
+    gap: 0;
+    padding: 0;
+    border-radius: 0;
+    background: #fff;
+    border: 0;
+    box-shadow: none;
+    min-width: 0;
   }
 
+  .posto-table .empilhadeira-table-head > span,
   .posto-table .empilhadeira-table-row > span{
-    display: grid;
-    gap: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 0;
     font-size: .77rem;
     line-height: 1.25;
     color: #24415c;
-    word-break: break-word;
+    word-break: normal;
+    white-space: nowrap;
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .posto-table .posto-col-hora,
+  .posto-table .posto-col-motorista,
+  .posto-table .posto-col-setor,
+  .posto-table .posto-col-contador,
+  .posto-table .posto-col-tipo{
+    display: none !important;
+  }
+
+  .posto-table .posto-col-acao{
+    display: flex;
+  }
+
+  .posto-table .empilhadeira-table-head .posto-col-acao{
+    padding: 10px 6px;
+    color: #6a7e92;
+    font-size: .72rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .posto-table .empilhadeira-table-row .posto-col-acao{
+    margin: 6px;
+    align-self: center;
+    justify-self: center;
+    width: calc(100% - 12px);
+  }
+
+  .posto-table .posto-row-details{
+    display: grid;
+  }
+
+  .posto-table .posto-row-details[hidden]{
+    display: none;
   }
 
   .posto-table .empilhadeira-table-row > span::before{
-    content: attr(data-label);
-    color: #69829a;
-    font-size: .62rem;
-    font-weight: 900;
-    letter-spacing: .04em;
-    text-transform: uppercase;
+    display: none;
   }
 
   .posto-table .empilhadeira-table-empty{
     margin: 0;
-    border-radius: 14px;
+    border-radius: 0 0 14px 14px;
     font-size: .78rem;
+    min-width: 0;
   }
 
   body{
@@ -5116,7 +5217,7 @@ tr:last-child td{
   .pesagem-table-title-row,
   .pesagem-table-row{
     min-width: 0;
-    grid-template-columns: 102px 58px minmax(92px, 1fr);
+    grid-template-columns: 112px 64px minmax(112px, 1fr);
   }
 
   .pesagem-table-title-row{
@@ -5125,8 +5226,8 @@ tr:last-child td{
 
   .pesagem-table-title-row span,
   .pesagem-table-row span{
-    padding: 9px 10px;
-    font-size: .74rem;
+    padding: 10px 11px;
+    font-size: .76rem;
   }
 
   .pesagem-title-status-main{

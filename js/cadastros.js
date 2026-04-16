@@ -9,6 +9,10 @@ const cadastroRefs = {
   empilhadeiras: "cadastros/empilhadeiras",
   guardas: "cadastros/guardas",
   veiculos: "cadastros/veiculos",
+  agendamentoVeiculos: "cadastros/agendamentoVeiculos",
+  vendaProdutos: "cadastros/vendaProdutos",
+  vendaCaracteristicas: "cadastros/vendaCaracteristicas",
+  vendaPagamentos: "cadastros/vendaPagamentos",
   postoConfig: "cadastros/postoConfig"
 };
 
@@ -22,6 +26,10 @@ const cadastroState = {
   empilhadeiras: {},
   guardas: {},
   veiculos: {},
+  agendamentoVeiculos: {},
+  vendaProdutos: {},
+  vendaCaracteristicas: {},
+  vendaPagamentos: {},
   postoConfig: {}
 };
 
@@ -32,8 +40,13 @@ const cadastroEditando = {
   veiculos: null
 };
 
-const cadastroPainelPadrao = "veiculos";
-const cadastroSubPainelPadrao = "posto-setores";
+const cadastroPainelPadrao = "frota";
+const cadastroSubPainelPorPainel = {
+  posto: "posto-setores",
+  guardas: "guardas-itens",
+  vendas: "vendas-produtos",
+  frota: "frota-veiculos"
+};
 
 function criarCadastroKey(nome) {
   return normalizarTexto(nome)
@@ -51,6 +64,10 @@ function selecionarPainelCadastro(tipo) {
   document.querySelectorAll("[data-cadastro-panel-trigger]").forEach(botao => {
     botao.classList.toggle("active", botao.dataset.cadastroPanelTrigger === tipo);
   });
+
+  if (cadastroSubPainelPorPainel[tipo]) {
+    selecionarSubPainelCadastro(cadastroSubPainelPorPainel[tipo]);
+  }
 }
 
 function selecionarSubPainelCadastro(tipo) {
@@ -93,6 +110,41 @@ function sincronizarArrayCadastro(destino, valores) {
   destino.splice(0, destino.length, ...valores);
 }
 
+function normalizarPrecoCadastroVenda(valor) {
+  let texto = String(valor || "").trim();
+  if (!texto) return 0;
+
+  texto = texto.replace(/[R$\s]/gi, "");
+  const possuiVirgula = texto.includes(",");
+  const possuiPonto = texto.includes(".");
+
+  if (possuiVirgula && possuiPonto) {
+    if (texto.lastIndexOf(",") > texto.lastIndexOf(".")) {
+      texto = texto.replace(/\./g, "").replace(",", ".");
+    } else {
+      texto = texto.replace(/,/g, "");
+    }
+  } else if (possuiVirgula) {
+    texto = texto.replace(",", ".");
+  }
+
+  const numero = Number(texto);
+  return Number.isFinite(numero) ? numero : 0;
+}
+
+function ordenarVendaProdutosAtivos(dados) {
+  return Object.values(dados || {})
+    .filter(item => item && item.ativo !== false)
+    .map(item => ({
+      id: item.id || criarCadastroKey(item.nome || ""),
+      nome: normalizarTexto(item.nome || ""),
+      descricao: item.descricao || `01 caixa de ${normalizarTexto(item.nome || "")}`,
+      preco: Number(item.preco || 0) || 0
+    }))
+    .filter(item => item.id && item.nome && item.preco > 0)
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+}
+
 function ordenarVeiculosAtivos(dados) {
   return Object.values(dados || {})
     .filter(item => item && item.ativo !== false)
@@ -100,6 +152,17 @@ function ordenarVeiculosAtivos(dados) {
       placa: normalizarTexto(item.placa || ""),
       nome: normalizarTexto(item.nome || ""),
       img: String(item.img || "").trim() || "carro.png"
+    }))
+    .filter(item => item.placa && item.nome)
+    .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+}
+
+function ordenarAgendamentoVeiculosAtivos(dados) {
+  return Object.values(dados || {})
+    .filter(item => item && item.ativo !== false)
+    .map(item => ({
+      placa: normalizarTexto(item.placa || ""),
+      nome: normalizarTexto(item.nome || "")
     }))
     .filter(item => item.placa && item.nome)
     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
@@ -144,18 +207,24 @@ function criarCadastroGuardaKey(numero) {
 }
 
 function obterNomeCadastroItem(tipo, item) {
-  if (tipo === "chaves") return `NÂº ${item.numero || "-"} - ${item.sala || "-"}`;
+  if (tipo === "chaves") return `No ${item.numero || "-"} - ${item.sala || "-"}`;
   if (tipo === "empilhadeiras") return `Empilhadeira ${item.numero || "-"}${item.nome ? ` - ${item.nome}` : ""}`;
   if (tipo === "guardas") return `Guarda-chuva ${item.numero || "-"}${item.nome ? ` - ${item.nome}` : ""}`;
   if (tipo === "veiculos") return `${item.nome || "-"} - ${item.placa || "-"}`;
+  if (tipo === "agendamentoVeiculos") return `${item.nome || "-"} (${item.placa || "-"})`;
+  if (tipo === "vendaProdutos") return `${item.nome || "-"} - ${formatarMoedaBR(item.preco)}`;
   return item.nome || "-";
 }
 
 function obterStatusCadastroItem(tipo, item, ativo) {
-  if (tipo === "chaves") return ativo ? "DisponÃ­vel nas listas" : "Inativa";
+  if (tipo === "chaves") return ativo ? "Disponivel nas listas" : "Inativa";
   if (tipo === "empilhadeiras") return ativo ? "Disponivel para abastecimento" : "Inativa";
   if (tipo === "guardas") return ativo ? "Disponivel para retirada" : "Inativo";
   if (tipo === "veiculos") return ativo ? "Disponivel na frota" : "Inativo";
+  if (tipo === "agendamentoVeiculos") return ativo ? "Disponivel para agendamento" : "Inativo";
+  if (tipo === "vendaProdutos") return ativo ? "Disponivel nas vendas" : "Inativo";
+  if (tipo === "vendaCaracteristicas") return ativo ? "Disponivel nas vendas" : "Inativa";
+  if (tipo === "vendaPagamentos") return ativo ? "Disponivel nas vendas" : "Inativa";
   return ativo ? "Ativo nas listas" : "Inativo";
 }
 
@@ -186,7 +255,10 @@ function renderCadastroLista(tipo, containerId, vazio) {
     if (tipo === "chaves" || tipo === "empilhadeiras" || tipo === "guardas") {
       return String(a.numero || "").localeCompare(String(b.numero || ""), "pt-BR", { numeric: true });
     }
-    if (tipo === "veiculos") {
+    if (tipo === "veiculos" || tipo === "agendamentoVeiculos") {
+      return normalizarTexto(a.nome || "").localeCompare(normalizarTexto(b.nome || ""), "pt-BR");
+    }
+    if (tipo === "vendaProdutos") {
       return normalizarTexto(a.nome || "").localeCompare(normalizarTexto(b.nome || ""), "pt-BR");
     }
     return normalizarTexto(a.nome || "").localeCompare(normalizarTexto(b.nome || ""), "pt-BR");
@@ -281,7 +353,11 @@ function renderCadastros() {
   renderCadastroLista("chaves", "listaCadastroChaves", "Nenhuma chave cadastrada.");
   renderCadastroLista("empilhadeiras", "listaCadastroEmpilhadeiras", "Nenhuma empilhadeira cadastrada.");
   renderCadastroLista("guardas", "listaCadastroGuardas", "Nenhum guarda-chuva cadastrado.");
-  renderCadastroLista("veiculos", "listaCadastroVeiculos", "Nenhum veÃ­culo cadastrado.");
+  renderCadastroLista("agendamentoVeiculos", "listaCadastroAgendamentoVeiculos", "Nenhum veículo liberado para agendamento.");
+  renderCadastroLista("vendaProdutos", "listaCadastroVendaProdutos", "Nenhum mamão cadastrado.");
+  renderCadastroLista("vendaCaracteristicas", "listaCadastroVendaCaracteristicas", "Nenhuma característica cadastrada.");
+  renderCadastroLista("vendaPagamentos", "listaCadastroVendaPagamentos", "Nenhuma forma de pagamento cadastrada.");
+  renderCadastroLista("veiculos", "listaCadastroVeiculos", "Nenhum veiculo cadastrado.");
   preencherFormularioPostoConfig();
   refreshLucideIcons();
 }
@@ -296,9 +372,15 @@ function atualizarListasDinamicas() {
   sincronizarArrayCadastro(empilhadeirasDisponiveis, ordenarEmpilhadeirasAtivas(cadastroState.empilhadeiras).map(item => item.numero));
   sincronizarArrayCadastro(guardasDisponiveis, ordenarGuardasAtivos(cadastroState.guardas).map(item => item.numero));
   sincronizarArrayCadastro(veiculosCadastrados, ordenarVeiculosAtivos(cadastroState.veiculos));
+  sincronizarArrayCadastro(veiculosAgendamentoDisponiveis, ordenarAgendamentoVeiculosAtivos(cadastroState.agendamentoVeiculos));
+  sincronizarArrayCadastro(produtosVendaMamao, ordenarVendaProdutosAtivos(cadastroState.vendaProdutos));
+  sincronizarArrayCadastro(opcoesMaturacaoVenda, ordenarCadastrosAtivos(cadastroState.vendaCaracteristicas));
+  sincronizarArrayCadastro(formasPagamentoVenda, ordenarCadastrosAtivos(cadastroState.vendaPagamentos));
   window.postoConfigCadastro = cadastroState.postoConfig || {};
+  if (typeof atualizarSelectsVenda === "function") atualizarSelectsVenda();
   if (typeof renderListaVeiculos === "function") renderListaVeiculos(statusVeiculosAtual || {});
   if (typeof preencherSelectAgendamentoVeiculos === "function") preencherSelectAgendamentoVeiculos();
+  if (typeof preencherSelectCadastroAgendamentoVeiculos === "function") preencherSelectCadastroAgendamentoVeiculos();
   if (typeof atualizarEstadoCampoEmpilhadeira === "function") atualizarEstadoCampoEmpilhadeira();
   if (typeof atualizarEstadoCampoGuarda === "function") atualizarEstadoCampoGuarda();
   if (typeof renderRelatorioVeiculosResumo === "function") renderRelatorioVeiculosResumo();
@@ -445,6 +527,48 @@ function semearVeiculosSeVazio() {
   });
 }
 
+function semearAgendamentoVeiculosSeVazio() {
+  const ref = db.ref(cadastroRefs.agendamentoVeiculos);
+  return ref.once("value").then(snap => {
+    if (snap.exists()) return;
+    const payload = {};
+    veiculosAgendamentoDisponiveis.forEach(item => {
+      const placa = normalizarTexto(item.placa || "");
+      const nome = normalizarTexto(item.nome || "");
+      if (!placa || !nome) return;
+      payload[criarCadastroVeiculoKey(placa)] = {
+        placa,
+        nome,
+        ativo: true,
+        origem: "inicial"
+      };
+    });
+    return ref.set(payload);
+  });
+}
+
+function semearVendaProdutosSeVazio() {
+  const ref = db.ref(cadastroRefs.vendaProdutos);
+  return ref.once("value").then(snap => {
+    if (snap.exists()) return;
+    const payload = {};
+    produtosVendaMamao.forEach(item => {
+      const nome = normalizarTexto(item.nome || "");
+      const id = criarCadastroKey(nome);
+      if (!id || !nome) return;
+      payload[id] = {
+        id,
+        nome,
+        descricao: item.descricao || `01 caixa de ${nome}`,
+        preco: Number(item.preco || 0) || 0,
+        ativo: true,
+        origem: "inicial"
+      };
+    });
+    return ref.set(payload);
+  });
+}
+
 function semearEmpilhadeirasSeVazio() {
   const ref = db.ref(cadastroRefs.empilhadeiras);
   return ref.once("value").then(snap => {
@@ -503,7 +627,7 @@ function salvarCadastro(tipo, inputId, label) {
   const id = criarCadastroKey(nome);
   db.ref(`${cadastroRefs[tipo]}/${id}`).once("value").then(snap => {
     if (snap.exists()) {
-      avisoValidacao(`${label[0].toUpperCase()}${label.slice(1)} jÃ¡ estÃ¡ ativo na lista.`);
+      avisoValidacao(`${label[0].toUpperCase()}${label.slice(1)} ja esta ativo na lista.`);
       return;
     }
 
@@ -518,6 +642,39 @@ function salvarCadastro(tipo, inputId, label) {
   }).catch(() => avisoErro(`Erro ao salvar ${label}.`));
 }
 
+function salvarCadastroVendaProduto() {
+  const inputNome = getById("cadastroVendaProdutoNome");
+  const inputPreco = getById("cadastroVendaProdutoPreco");
+  const nome = normalizarTexto(inputNome?.value || "");
+  const preco = normalizarPrecoCadastroVenda(inputPreco?.value || "");
+
+  if (!nome || preco <= 0) {
+    avisoValidacao("Informe o mamão e um valor maior que zero.");
+    return;
+  }
+
+  const id = criarCadastroKey(nome);
+  db.ref(`${cadastroRefs.vendaProdutos}/${id}`).once("value").then(snap => {
+    if (snap.exists()) {
+      avisoValidacao("Esse mamão já existe no cadastro.");
+      return;
+    }
+
+    return db.ref(`${cadastroRefs.vendaProdutos}/${id}`).set({
+      id,
+      nome,
+      descricao: `01 caixa de ${nome}`,
+      preco,
+      ativo: true,
+      atualizadoEm: new Date().toLocaleString("pt-BR")
+    }).then(() => {
+      if (inputNome) inputNome.value = "";
+      if (inputPreco) inputPreco.value = "";
+      avisoSucesso("Mamão salvo com sucesso.", "package-plus");
+    });
+  }).catch(() => avisoErro("Erro ao salvar mamão."));
+}
+
 function salvarCadastroChave() {
   const inputNumero = getById("cadastroChaveNumero");
   const inputSala = getById("cadastroChaveSala");
@@ -525,7 +682,7 @@ function salvarCadastroChave() {
   const sala = normalizarTexto(inputSala?.value || "");
 
   if (!numero || !sala) {
-    avisoValidacao("Informe o nÃºmero e a sala/setor da chave.");
+    avisoValidacao("Informe o numero e a sala/setor da chave.");
     return;
   }
 
@@ -607,6 +764,58 @@ function salvarCadastroVeiculo() {
       avisoSucesso("Veiculo salvo com sucesso.", "car-front");
     });
   }).catch(() => avisoErro("Erro ao salvar veiculo."));
+}
+
+function preencherSelectCadastroAgendamentoVeiculos() {
+  const select = getById("cadastroAgendamentoVeiculoPlaca");
+  if (!select) return;
+  const valorAtual = select.value;
+  limparConteudoElemento(select);
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Selecione um veículo da frota";
+  select.appendChild(placeholder);
+
+  veiculosCadastrados.forEach(veiculo => {
+    const option = document.createElement("option");
+    option.value = veiculo.placa;
+    option.textContent = `${veiculo.nome} (${veiculo.placa})`;
+    select.appendChild(option);
+  });
+
+  if ([...select.options].some(option => option.value === valorAtual)) {
+    select.value = valorAtual;
+  }
+}
+
+function salvarCadastroAgendamentoVeiculo() {
+  const select = getById("cadastroAgendamentoVeiculoPlaca");
+  const placa = normalizarTexto(select?.value || "");
+  const veiculo = veiculosCadastrados.find(item => item.placa === placa);
+
+  if (!veiculo) {
+    avisoValidacao("Selecione um veículo da frota.");
+    return;
+  }
+
+  const id = criarCadastroVeiculoKey(placa);
+  db.ref(`${cadastroRefs.agendamentoVeiculos}/${id}`).once("value").then(snap => {
+    if (snap.exists()) {
+      avisoValidacao("Esse veículo já está no cadastro de agendamento.");
+      return;
+    }
+
+    return db.ref(`${cadastroRefs.agendamentoVeiculos}/${id}`).set({
+      placa: veiculo.placa,
+      nome: veiculo.nome,
+      ativo: true,
+      atualizadoEm: new Date().toLocaleString("pt-BR")
+    }).then(() => {
+      if (select) select.value = "";
+      avisoSucesso("Veículo liberado para agendamento.", "calendar-days");
+    });
+  }).catch(() => avisoErro("Erro ao salvar veículo de agendamento."));
 }
 
 function editarCadastroVeiculo(id) {
@@ -836,9 +1045,13 @@ function vincularAcoesCadastros() {
     if (action === "salvar-posto-config") return salvarCadastroPostoConfig();
     if (action === "limpar-posto-config") return limparCadastroPostoConfig();
     if (action === "salvar-jogo-cadastro") return salvarCadastro("jogos", "cadastroJogoNome", "jogo");
+    if (action === "salvar-venda-produto") return salvarCadastroVendaProduto();
+    if (action === "salvar-venda-caracteristica") return salvarCadastro("vendaCaracteristicas", "cadastroVendaCaracteristicaNome", "caracteristica");
+    if (action === "salvar-venda-pagamento") return salvarCadastro("vendaPagamentos", "cadastroVendaPagamentoNome", "pagamento");
     if (action === "salvar-chave-cadastro") return salvarCadastroChave();
     if (action === "salvar-empilhadeira-cadastro") return salvarCadastroEmpilhadeira();
     if (action === "salvar-guarda-cadastro") return salvarCadastroGuarda();
+    if (action === "salvar-agendamento-veiculo-cadastro") return salvarCadastroAgendamentoVeiculo();
     if (action === "salvar-veiculo-cadastro") return salvarCadastroVeiculo();
     if (action === "editar-chaves") return editarCadastroChave(trigger.dataset.id);
     if (action === "editar-empilhadeiras") return editarCadastroEmpilhadeira(trigger.dataset.id);
@@ -854,12 +1067,20 @@ function vincularAcoesCadastros() {
     if (action === "ativar-postoSetores") return alternarCadastro("postoSetores", trigger.dataset.id, true);
     if (action === "desativar-jogos") return alternarCadastro("jogos", trigger.dataset.id, false);
     if (action === "ativar-jogos") return alternarCadastro("jogos", trigger.dataset.id, true);
+    if (action === "desativar-vendaProdutos") return alternarCadastro("vendaProdutos", trigger.dataset.id, false);
+    if (action === "ativar-vendaProdutos") return alternarCadastro("vendaProdutos", trigger.dataset.id, true);
+    if (action === "desativar-vendaCaracteristicas") return alternarCadastro("vendaCaracteristicas", trigger.dataset.id, false);
+    if (action === "ativar-vendaCaracteristicas") return alternarCadastro("vendaCaracteristicas", trigger.dataset.id, true);
+    if (action === "desativar-vendaPagamentos") return alternarCadastro("vendaPagamentos", trigger.dataset.id, false);
+    if (action === "ativar-vendaPagamentos") return alternarCadastro("vendaPagamentos", trigger.dataset.id, true);
     if (action === "desativar-chaves") return alternarCadastro("chaves", trigger.dataset.id, false);
     if (action === "ativar-chaves") return alternarCadastro("chaves", trigger.dataset.id, true);
     if (action === "desativar-empilhadeiras") return alternarCadastro("empilhadeiras", trigger.dataset.id, false);
     if (action === "ativar-empilhadeiras") return alternarCadastro("empilhadeiras", trigger.dataset.id, true);
     if (action === "desativar-guardas") return alternarCadastro("guardas", trigger.dataset.id, false);
     if (action === "ativar-guardas") return alternarCadastro("guardas", trigger.dataset.id, true);
+    if (action === "desativar-agendamentoVeiculos") return alternarCadastro("agendamentoVeiculos", trigger.dataset.id, false);
+    if (action === "ativar-agendamentoVeiculos") return alternarCadastro("agendamentoVeiculos", trigger.dataset.id, true);
     if (action === "desativar-veiculos") return alternarCadastro("veiculos", trigger.dataset.id, false);
     if (action === "ativar-veiculos") return alternarCadastro("veiculos", trigger.dataset.id, true);
     if (action === "excluir-porteiros") return excluirCadastro("porteiros", trigger.dataset.id);
@@ -867,9 +1088,13 @@ function vincularAcoesCadastros() {
     if (action === "excluir-setores") return excluirCadastro("setores", trigger.dataset.id);
     if (action === "excluir-postoSetores") return excluirCadastro("postoSetores", trigger.dataset.id);
     if (action === "excluir-jogos") return excluirCadastro("jogos", trigger.dataset.id);
+    if (action === "excluir-vendaProdutos") return excluirCadastro("vendaProdutos", trigger.dataset.id);
+    if (action === "excluir-vendaCaracteristicas") return excluirCadastro("vendaCaracteristicas", trigger.dataset.id);
+    if (action === "excluir-vendaPagamentos") return excluirCadastro("vendaPagamentos", trigger.dataset.id);
     if (action === "excluir-chaves") return excluirCadastro("chaves", trigger.dataset.id);
     if (action === "excluir-empilhadeiras") return excluirCadastro("empilhadeiras", trigger.dataset.id);
     if (action === "excluir-guardas") return excluirCadastro("guardas", trigger.dataset.id);
+    if (action === "excluir-agendamentoVeiculos") return excluirCadastro("agendamentoVeiculos", trigger.dataset.id);
     if (action === "excluir-veiculos") return excluirCadastro("veiculos", trigger.dataset.id);
   });
 }
@@ -877,27 +1102,34 @@ function vincularAcoesCadastros() {
 window.addEventListener("DOMContentLoaded", () => {
   vincularAcoesCadastros();
   selecionarPainelCadastro(cadastroPainelPadrao);
-  selecionarSubPainelCadastro(cadastroSubPainelPadrao);
   Promise.all([
     semearCadastroSeVazio("porteiros", porteirosAutorizados),
     semearCadastroSeVazio("condutores", condutoresAutorizados),
     semearCadastroSeVazio("setores", setoresGuardas),
     semearCadastroSeVazio("postoSetores", setoresPosto),
     semearCadastroSeVazio("jogos", jogosDisponiveis),
+    semearVendaProdutosSeVazio(),
+    semearCadastroSeVazio("vendaCaracteristicas", opcoesMaturacaoVenda),
+    semearCadastroSeVazio("vendaPagamentos", formasPagamentoVenda),
     semearChavesSeVazio(),
     semearEmpilhadeirasSeVazio(),
     semearGuardasSeVazio(),
-    semearVeiculosSeVazio()
+    semearVeiculosSeVazio(),
+    semearAgendamentoVeiculosSeVazio()
   ]).finally(() => {
     iniciarCadastroListener("porteiros");
     iniciarCadastroListener("condutores");
     iniciarCadastroListener("setores");
     iniciarCadastroListener("postoSetores");
     iniciarCadastroListener("jogos");
+    iniciarCadastroListener("vendaProdutos");
+    iniciarCadastroListener("vendaCaracteristicas");
+    iniciarCadastroListener("vendaPagamentos");
     iniciarCadastroListener("chaves");
     iniciarCadastroListener("empilhadeiras");
     iniciarCadastroListener("guardas");
     iniciarCadastroListener("veiculos");
+    iniciarCadastroListener("agendamentoVeiculos");
     db.ref(cadastroRefs.postoConfig).on("value", snap => {
       cadastroState.postoConfig = snap.val() || {};
       atualizarListasDinamicas();
