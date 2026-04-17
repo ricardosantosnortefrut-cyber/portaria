@@ -5761,13 +5761,13 @@ tr:last-child td{
 /* Reduz a escala em computadores menores sem alterar o layout original. */
 @media (min-width: 861px) and (max-width: 1500px){
   body{
-    zoom: .88;
+    zoom: .95;
   }
 }
 
 @media (min-width: 861px) and (max-width: 1500px) and (max-height: 780px){
   body{
-    zoom: .84;
+    zoom: .92;
   }
 }
 
