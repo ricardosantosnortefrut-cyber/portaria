@@ -1,14 +1,28 @@
 let statusVeiculosAtual = {};
-
+let agendamentosVeiculosAtual = {};
 function pesagemDisponivelNoDispositivoAtual() {
   return window.innerWidth > 720;
 }
 
 // --- Navegacao ---
-function abrir(id) {
+async function abrir(id) {
   if (id === "pesagemManual" && !pesagemDisponivelNoDispositivoAtual()) {
     avisoInfo("A pesagem manual está disponível apenas no desktop.", "monitor-smartphone");
     return;
+  }
+
+  if (id === "cadastros") {
+    const senha = await solicitarSenhaAcesso({
+      titulo: "Acesso a Cadastros",
+      mensagem: "Digite a senha para abrir a area de configuracoes.",
+      placeholder: "Senha de acesso",
+      confirmarTexto: "Liberar acesso"
+    });
+    if (senha === null) return;
+    if (String(senha).trim() !== "1840") {
+      avisoErro("Senha incorreta.");
+      return;
+    }
   }
 
   const secao = getById(id);
@@ -22,10 +36,22 @@ function abrir(id) {
   secao.classList.add("section-active");
   secao.style.display = "block";
 
+  const menu = document.querySelector(".menu");
+  if (menu) {
+    menu.classList.toggle("menu-home-hidden", id === "inicio");
+    menu.classList.remove("is-open");
+    const toggle = menu.querySelector("[data-menu-toggle]");
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", "false");
+    }
+  }
+
   if (id === "veiculosGeral") {
     ocultarElemento("listaVeiculosContent");
     ocultarElemento("agendamentoVeiculosContent");
     getById("containerBotoesVeiculos").style.display = "grid";
+    mostrarElemento("veiculosOverview");
+    renderVisaoGeralVeiculos();
   }
 
   if (id === "pesagemManual" && typeof abrirListaPesagemManual === "function") {
@@ -50,6 +76,7 @@ function voltarVeiculos() {
 // --- Veiculos ---
 function exibirSubVeiculos(idSub) {
   getById("containerBotoesVeiculos").style.display = "none";
+  ocultarElemento("veiculosOverview");
   ui.vehicleSubsections.forEach(ocultarElemento);
   mostrarElemento(idSub);
   if (idSub === "listaVeiculosContent") {
@@ -61,7 +88,74 @@ function exibirSubVeiculos(idSub) {
 function fecharSubVeiculos() {
   ui.vehicleSubsections.forEach(ocultarElemento);
   getById("containerBotoesVeiculos").style.display = "grid";
+  mostrarElemento("veiculosOverview");
+  renderVisaoGeralVeiculos();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function obterAgendamentosVeiculosOrdenados() {
+  const agora = new Date();
+  return Object.entries(agendamentosVeiculosAtual || {})
+    .map(([id, item]) => ({ id, ...item }))
+    .filter(item => item?.data)
+    .sort((a, b) => new Date(`${a.data}T${a.hora || "00:00"}`) - new Date(`${b.data}T${b.hora || "00:00"}`))
+    .filter(item => new Date(`${item.data}T${item.hora || "00:00"}`) >= agora);
+}
+
+function renderVisaoGeralVeiculos() {
+  const total = veiculosCadastrados.length;
+  const naRua = Object.values(statusVeiculosAtual || {}).filter(item => item?.emUso).length;
+  const disponiveis = Math.max(total - naRua, 0);
+  const hojeIso = new Date().toISOString().slice(0, 10);
+  const agendamentosHoje = Object.values(agendamentosVeiculosAtual || {}).filter(item => item?.data === hojeIso).length;
+
+  const totalEl = getById("veiculosOverviewTotal");
+  const ruaEl = getById("veiculosOverviewRua");
+  const disponiveisEl = getById("veiculosOverviewDisponiveis");
+  const hojeEl = getById("veiculosOverviewHoje");
+  if (totalEl) totalEl.textContent = String(total);
+  if (ruaEl) ruaEl.textContent = String(naRua);
+  if (disponiveisEl) disponiveisEl.textContent = String(disponiveis);
+  if (hojeEl) hojeEl.textContent = String(agendamentosHoje);
+
+  const agendaContainer = getById("veiculosOverviewAgenda");
+  if (!agendaContainer) return;
+  limparConteudoElemento(agendaContainer);
+
+  const proximos = obterAgendamentosVeiculosOrdenados().slice(0, 4);
+  if (!proximos.length) {
+    const empty = document.createElement("p");
+    empty.className = "veiculos-next-empty";
+    empty.textContent = "Nenhum agendamento futuro cadastrado no momento.";
+    agendaContainer.appendChild(empty);
+    return;
+  }
+
+  proximos.forEach(item => {
+    const card = document.createElement("article");
+    card.className = "veiculos-next-item";
+
+    const time = document.createElement("div");
+    time.className = "veiculos-next-time";
+    const hora = document.createElement("strong");
+    hora.textContent = item.hora || "--:--";
+    const data = document.createElement("span");
+    data.textContent = formatarDataISOParaBR(item.data) || "-";
+    time.append(hora, data);
+
+    const info = document.createElement("div");
+    info.className = "veiculos-next-info";
+    const veiculo = document.createElement("strong");
+    veiculo.textContent = item.veiculo || "Veículo";
+    const local = document.createElement("span");
+    local.textContent = item.local || "Destino a definir";
+    const condutor = document.createElement("span");
+    condutor.textContent = item.quem ? `Condutor: ${item.quem}` : "Condutor a definir";
+    info.append(veiculo, local, condutor);
+
+    card.append(time, info);
+    agendaContainer.appendChild(card);
+  });
 }
 
 function preencherSelectAgendamentoVeiculos() {
@@ -142,12 +236,14 @@ db.ref("status_veiculos").on("value", snap => {
   atualizarIndicador("statVeiculosRua", Object.values(statusVeiculosAtual).filter(v => v && v.emUso).length);
   atualizarPainelPendencias();
   renderListaVeiculos(statusVeiculosAtual);
+  renderVisaoGeralVeiculos();
 });
 
 function prepararForm(placa) {
   limparFormularioVeiculos();
   abrir("veiculosForm");
   getById("v_placa").value = placa;
+  if (typeof aplicarContrasteCamposTema === "function") aplicarContrasteCamposTema();
 
   db.ref(`status_veiculos/${placa}`).once("value").then(snap => {
     const d = snap.val();
@@ -161,6 +257,7 @@ function prepararForm(placa) {
       getById("campos_saida").style.display = "block";
       ocultarElemento("campos_retorno");
     }
+    if (typeof aplicarContrasteCamposTema === "function") aplicarContrasteCamposTema();
   });
 }
 
@@ -397,9 +494,11 @@ function renderListaAgendamentos(dados) {
 
 db.ref("agendamentos_veiculos").on("value", snap => {
   const dados = snap.val();
+  agendamentosVeiculosAtual = dados || {};
   atualizarIndicador("statAgendamentos", dados ? Object.keys(dados).length : 0);
   atualizarPainelPendencias();
   renderListaAgendamentos(dados);
+  renderVisaoGeralVeiculos();
   refreshLucideIcons();
 });
 
@@ -423,6 +522,7 @@ function finalizarAgendamento(id) {
 }
 
 renderListaVeiculos(statusVeiculosAtual);
+renderVisaoGeralVeiculos();
 
 
 

@@ -9,6 +9,95 @@ const dashboardState = {
   timerId: null
 };
 
+const THEME_STORAGE_KEY = "nortefrut-theme";
+
+function atualizarBotaoTema() {
+  const botao = getById("themeToggle");
+  if (!botao) return;
+
+  const escuroAtivo = document.body.classList.contains("theme-dark");
+  botao.innerHTML = escuroAtivo
+    ? '<i data-lucide="sun-medium"></i>'
+    : '<i data-lucide="moon-star"></i>';
+  botao.setAttribute("aria-label", escuroAtivo ? "Voltar para modo claro" : "Ativar modo noturno");
+  botao.setAttribute("title", escuroAtivo ? "Modo claro" : "Modo noturno");
+  refreshLucideIcons();
+}
+
+function aplicarTema(modo) {
+  const usarEscuro = modo === "dark";
+  document.body.classList.toggle("theme-dark", usarEscuro);
+  localStorage.setItem(THEME_STORAGE_KEY, usarEscuro ? "dark" : "light");
+  aplicarContrasteCamposTema(usarEscuro);
+  atualizarBotaoTema();
+}
+
+function alternarTema() {
+  aplicarTema(document.body.classList.contains("theme-dark") ? "light" : "dark");
+}
+
+function inicializarTema() {
+  const salvo = localStorage.getItem(THEME_STORAGE_KEY);
+  aplicarTema(salvo === "dark" ? "dark" : "light");
+}
+
+function aplicarContrasteCamposTema(escuroAtivo = document.body.classList.contains("theme-dark")) {
+  const alvos = document.querySelectorAll([
+    ".section input:not([type='radio']):not([type='checkbox']):not([type='hidden'])",
+    ".section select",
+    ".section textarea",
+    ".readonly-field",
+    "#v_placa",
+    "#ch_num",
+    "#vd_valor_unitario",
+    "#vd_valor_item",
+    "#vd_valor_total",
+    "#pm_numero",
+    "#pm_status_display",
+    "#pm_reboque1",
+    "#pm_reboque2",
+    "#pm_km_inicial",
+    "#pm_km_final",
+    "#pm_km_percorrido",
+    "#pm_peso_declarado",
+    "#pm_usuario_primeira",
+    "#pm_usuario_segunda",
+    "#postoMovContador"
+  ].join(", "));
+
+  alvos.forEach(campo => {
+    if (!escuroAtivo) {
+      campo.style.removeProperty("color");
+      campo.style.removeProperty("-webkit-text-fill-color");
+      campo.style.removeProperty("background");
+      campo.style.removeProperty("border-color");
+      campo.style.removeProperty("opacity");
+      return;
+    }
+
+    campo.style.setProperty("color", "#111111", "important");
+    campo.style.setProperty("-webkit-text-fill-color", "#111111", "important");
+    campo.style.setProperty("background", "#f4f7fb", "important");
+    campo.style.setProperty("border-color", "rgba(21, 101, 192, 0.22)", "important");
+    campo.style.setProperty("caret-color", "#111111", "important");
+    campo.style.setProperty("opacity", "1", "important");
+  });
+
+  ["postoContadorS10", "postoContadorS500", "postoContadorArla"].forEach(id => {
+    const el = getById(id);
+    if (!el) return;
+    if (!escuroAtivo) {
+      el.style.removeProperty("color");
+      el.style.removeProperty("-webkit-text-fill-color");
+      el.style.removeProperty("opacity");
+      return;
+    }
+    el.style.setProperty("color", "#111111", "important");
+    el.style.setProperty("-webkit-text-fill-color", "#111111", "important");
+    el.style.setProperty("opacity", "1", "important");
+  });
+}
+
 function getById(id) {
   return document.getElementById(id);
 }
@@ -39,6 +128,23 @@ function ocultarSecoes() {
   document.querySelectorAll(ui.sectionsSelector).forEach(secao => {
     secao.classList.remove("section-active");
     secao.style.display = "none";
+  });
+}
+
+function adicionarAtalhoHomeSecoes() {
+  document.querySelectorAll(".section").forEach(secao => {
+    if (secao.id === "inicio") return;
+    if (secao.querySelector(".section-home-link")) return;
+
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "section-home-link";
+    botao.dataset.nav = "inicio";
+    botao.setAttribute("aria-label", "Voltar para a Home");
+    botao.setAttribute("title", "Home");
+    botao.appendChild(criarIconeLucide("house"));
+
+    secao.prepend(botao);
   });
 }
 
@@ -81,7 +187,9 @@ function vincularAcoesDeclarativas() {
     "abrir-posto-recebimento": () => abrirFormPostoMovimentacao("recebimento"),
     "cancelar-posto-movimentacao": cancelarFormPostoMovimentacao,
     "salvar-posto-movimentacao": salvarMovimentacaoPosto,
-    "abrir-posto-plantao": abrirFormPostoPlantao,
+    "abrir-posto-plantao-resumo": abrirResumoPlantaoPosto,
+    "abrir-posto-plantao-abertura": abrirFormPostoPlantaoAbertura,
+    "abrir-posto-plantao-fechamento": abrirFormPostoPlantaoFechamento,
     "cancelar-posto-plantao": cancelarFormPostoPlantao,
     "salvar-posto-plantao": salvarPlantaoPosto,
     "abrir-relatorio-posto": abrirRelatorioPosto,
@@ -128,6 +236,15 @@ function vincularAcoesDeclarativas() {
   };
 
   document.addEventListener("click", event => {
+    const menuToggle = event.target.closest("[data-menu-toggle]");
+    if (menuToggle) {
+      const menu = menuToggle.closest(".menu");
+      if (!menu) return;
+      const isOpen = menu.classList.toggle("is-open");
+      menuToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      return;
+    }
+
     const trigger = event.target.closest("[data-nav], [data-subveiculos], [data-action], [data-export], [data-item-action]");
     if (!trigger) return;
     if (trigger.dataset.nav) return void abrir(trigger.dataset.nav);
@@ -135,6 +252,23 @@ function vincularAcoesDeclarativas() {
     if (trigger.dataset.action) return void actionHandlers[trigger.dataset.action]?.(trigger);
     if (trigger.dataset.export) return void exportHandlers[trigger.dataset.export]?.(Number(trigger.dataset.offset || 0));
     if (trigger.dataset.itemAction) return void itemHandlers[trigger.dataset.itemAction]?.(trigger);
+  });
+
+  document.addEventListener("click", event => {
+    document.querySelectorAll(".menu.is-open").forEach(menu => {
+      if (menu.contains(event.target)) return;
+      menu.classList.remove("is-open");
+      const toggle = menu.querySelector("[data-menu-toggle]");
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
+    });
+  });
+
+  document.addEventListener("keydown", event => {
+    const trigger = event.target.closest("[data-nav]");
+    if (!trigger) return;
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    abrir(trigger.dataset.nav);
   });
 }
 
@@ -552,6 +686,1080 @@ function renderListaAtencao(dados) {
     texto.textContent = item.text;
     linha.appendChild(texto);
     container.appendChild(linha);
+  });
+
+  refreshLucideIcons();
+}
+
+function construirSlidesOperacionais(dados) {
+  const agendamentos = Object.values(dados.agendamentos || {});
+  const hojeIso = new Date().toISOString().slice(0, 10);
+  const agendadosHoje = agendamentos.filter(item => item?.data === hojeIso);
+  const diaSemana = new Date().getDay();
+  const diasComAbastecimento = [1, 3, 5];
+  const mostrarSlideEmpilhadeiras = diasComAbastecimento.includes(diaSemana);
+  const empilhadeirasPendentes = calcularPendenciasEmpilhadeiras(dados.abastecimentos || {});
+  const veiculosRua = Object.values(dados.veiculos || {}).filter(item => item?.emUso).length;
+  const chavesUso = Object.keys(dados.chaves || {}).length;
+  const jogosUso = Object.keys(dados.jogos || {}).length;
+  const guardasUso = Object.keys(dados.guardas || {}).length;
+
+  const slides = [
+    {
+      title: "Agenda e circulacao do dia",
+      text: agendadosHoje.length
+        ? `${agendadosHoje.length} veiculo(s) programado(s) para hoje. Proximo destino: ${agendadosHoje[0].local || "a definir"}.`
+        : "Nenhum veiculo agendado para hoje. A agenda da frota esta livre neste momento."
+    },
+    {
+      title: "Visao geral do turno",
+      text: `${veiculosRua} veiculo(s) na rua, ${chavesUso} chave(s), ${jogosUso} jogo(s) e ${guardasUso} guarda-chuva(s) em uso agora.`
+    }
+  ];
+
+  if (mostrarSlideEmpilhadeiras) {
+    slides.splice(1, 0, {
+      title: "Empilhadeiras",
+      text: empilhadeirasPendentes
+        ? `${empilhadeirasPendentes} empilhadeira(s) estao sem abastecimento de hoje e pedem atencao operacional.`
+        : "As empilhadeiras monitoradas ja tem abastecimento registrado hoje."
+    });
+  }
+
+  return slides;
+}
+
+function renderSlideOperacional() {
+  const title = getById("operationalTitle");
+  const text = getById("operationalText");
+  const dotsContainer = document.querySelector(".operational-dots");
+  if (!title || !text || dashboardState.slides.length === 0) return;
+
+  const atual = dashboardState.slides[dashboardState.activeIndex] || dashboardState.slides[0];
+  title.textContent = atual.title;
+  text.textContent = atual.text;
+
+  if (dotsContainer) {
+    dotsContainer.replaceChildren();
+    dashboardState.slides.forEach((_, index) => {
+      const dot = document.createElement("span");
+      dot.className = "operational-dot";
+      dot.classList.toggle("active", index === dashboardState.activeIndex);
+      dotsContainer.appendChild(dot);
+    });
+  }
+}
+
+function renderAgendaHome(dados) {
+  const lista = getById("homeScheduleList");
+  if (!lista) return;
+
+  lista.replaceChildren();
+
+  const hojeIso = obterDataIsoLocal();
+  const agendamentos = Object.values(dados.agendamentos || {})
+    .filter(item => item?.data)
+    .sort((a, b) => new Date(`${a.data}T${a.hora || "00:00"}`) - new Date(`${b.data}T${b.hora || "00:00"}`))
+    .filter(item => item.data >= hojeIso)
+    .slice(0, 5);
+
+  if (!agendamentos.length) {
+    const vazio = document.createElement("div");
+    vazio.className = "home-schedule-empty";
+    vazio.textContent = "Nenhum agendamento cadastrado para hoje ou para os próximos dias.";
+    lista.appendChild(vazio);
+    return;
+  }
+
+  agendamentos.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "home-schedule-item";
+
+    const tempo = document.createElement("div");
+    tempo.className = "home-schedule-time";
+    const hora = document.createElement("strong");
+    hora.textContent = formatarDataISOParaBR(item.data) || "-";
+    const data = document.createElement("span");
+    data.textContent = item.hora || "--:--";
+    tempo.append(hora, data);
+
+    const conteudo = document.createElement("div");
+    conteudo.className = "home-schedule-content";
+    const titulo = document.createElement("strong");
+    titulo.textContent = item.veiculo || "Veiculo";
+    const meta = document.createElement("div");
+    meta.className = "home-schedule-meta";
+    meta.textContent = item.local || "Destino a definir";
+    const detalhe = document.createElement("div");
+    detalhe.className = "home-schedule-detail";
+    detalhe.textContent = item.quem || "Condutor a definir";
+    conteudo.append(titulo, meta, detalhe);
+
+    card.append(tempo, conteudo);
+    lista.appendChild(card);
+  });
+}
+
+function renderListaAtencao(dados) {
+  const now = getById("attentionNow");
+  const next = getById("attentionNext");
+  const alert = getById("attentionAlert");
+  if (!now || !next || !alert) return;
+
+  limparConteudoElemento(now);
+  limparConteudoElemento(next);
+  limparConteudoElemento(alert);
+
+  const agora = new Date();
+  const horaAtual = agora.getHours();
+  const hojeIso = agora.toISOString().slice(0, 10);
+  const agendamentos = Object.values(dados.agendamentos || {});
+  const agendamentosHoje = agendamentos.filter(item => item?.data === hojeIso);
+  const proximoAgendamento = agendamentos
+    .filter(item => item?.data && new Date(`${item.data}T${item.hora || "00:00"}`) >= agora)
+    .sort((a, b) => new Date(`${a.data}T${a.hora || "00:00"}`) - new Date(`${b.data}T${b.hora || "00:00"}`))[0];
+
+  const veiculosRua = Object.values(dados.veiculos || {}).filter(item => item?.emUso).length;
+  const chavesUso = Object.keys(dados.chaves || {}).length;
+  const jogosUso = Object.keys(dados.jogos || {}).length;
+  const guardasUso = Object.keys(dados.guardas || {}).length;
+  const pendentesEmp = calcularPendenciasEmpilhadeiras(dados.abastecimentos || {});
+  const movimentosAbertos = veiculosRua + chavesUso + jogosUso + guardasUso;
+
+  function preencherLinha(container, iconName, kicker, title, text, primary = false) {
+    container.className = primary ? "attention-row attention-row-primary" : "attention-row";
+
+    const iconWrap = document.createElement("div");
+    iconWrap.className = "attention-row-icon";
+    iconWrap.appendChild(criarIconeLucide(iconName));
+
+    const content = document.createElement("div");
+    content.className = "attention-row-content";
+
+    const kickerEl = document.createElement("span");
+    kickerEl.className = "attention-kicker";
+    kickerEl.textContent = kicker;
+
+    const titleEl = document.createElement("strong");
+    titleEl.textContent = title;
+
+    const textEl = document.createElement("p");
+    textEl.textContent = text;
+
+    content.append(kickerEl, titleEl, textEl);
+    container.append(iconWrap, content);
+  }
+
+  if (pendentesEmp) {
+    preencherLinha(now, "shield-alert", "Agora", `${pendentesEmp} pendencia(s) de empilhadeira`, "Conferir os abastecimentos previstos para hoje antes da virada do turno.", true);
+  } else if (movimentosAbertos) {
+    preencherLinha(now, "shield-alert", "Agora", `${movimentosAbertos} movimentacao(oes) aberta(s)`, `${veiculosRua} veiculo(s), ${chavesUso} chave(s), ${jogosUso} jogo(s) e ${guardasUso} guarda-chuva(s) ainda em andamento.`, true);
+  } else {
+    preencherLinha(now, "shield-check", "Agora", "Turno sob controle", "Sem pendencias criticas e com a operacao estavel neste momento.", true);
+  }
+
+  if (proximoAgendamento) {
+    preencherLinha(next, "arrow-right-circle", "Proximo", `${proximoAgendamento.veiculo || "Veiculo"} as ${proximoAgendamento.hora || "--:--"}`, `${formatarDataISOParaBR(proximoAgendamento.data) || "-"} • ${proximoAgendamento.local || "Destino a definir"}`);
+  } else if (horaAtual < 6 || horaAtual >= 18) {
+    preencherLinha(next, "arrow-right-circle", "Proximo", "Acompanhar passagem de plantao", "Conferir os registros do posto e a rotina de troca de turno.");
+  } else {
+    preencherLinha(next, "arrow-right-circle", "Proximo", "Monitorar rotina operacional", "Seguir com acessos, agenda, emprestimos e movimentacoes da portaria.");
+  }
+
+  if (agendamentosHoje.length >= 4) {
+    preencherLinha(alert, "siren", "Atencao", `${agendamentosHoje.length} agendamentos concentrados hoje`, "Vale acompanhar a agenda para evitar conflito de horarios e veiculos.");
+  } else if (veiculosRua >= 3) {
+    preencherLinha(alert, "siren", "Atencao", `${veiculosRua} veiculo(s) seguem em operacao`, "Acompanhe os retornos para evitar virada de turno com pendencia.");
+  } else if (movimentosAbertos >= 4) {
+    preencherLinha(alert, "siren", "Atencao", `${movimentosAbertos} itens seguem abertos`, "O volume do turno esta alto e merece conferencia mais proxima.");
+  } else {
+    preencherLinha(alert, "siren", "Atencao", "Sem alerta operacional", "Nada fora do normal exigindo acao imediata.");
+  }
+
+  refreshLucideIcons();
+}
+
+function solicitarSenhaAcesso({
+  titulo = "Acesso protegido",
+  mensagem = "Digite a senha para continuar.",
+  detalhe = "",
+  placeholder = "Digite a senha",
+  confirmarTexto = "Entrar",
+  cancelarTexto = "Cancelar",
+  icone = "lock-keyhole"
+} = {}) {
+  return new Promise(resolve => {
+    const overlay = document.createElement("div");
+    overlay.className = "confirm-overlay";
+
+    const modal = document.createElement("div");
+    modal.className = "confirm-modal password-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-labelledby", "passwordModalTitle");
+
+    const iconWrap = document.createElement("div");
+    iconWrap.className = "confirm-icon password-modal-icon";
+    iconWrap.appendChild(criarIconeLucide(icone));
+
+    const content = document.createElement("div");
+    content.className = "confirm-content";
+
+    const titleEl = document.createElement("strong");
+    titleEl.id = "passwordModalTitle";
+    titleEl.textContent = titulo;
+
+    const messageEl = document.createElement("p");
+    messageEl.textContent = mensagem;
+    content.append(titleEl, messageEl);
+
+    if (detalhe) {
+      const detailEl = document.createElement("span");
+      detailEl.className = "confirm-detail";
+      detailEl.textContent = detalhe;
+      content.appendChild(detailEl);
+    }
+
+    const fieldWrap = document.createElement("label");
+    fieldWrap.className = "password-field";
+
+    const fieldLabel = document.createElement("span");
+    fieldLabel.className = "password-field-label";
+    fieldLabel.textContent = "Senha";
+
+    const inputWrap = document.createElement("div");
+    inputWrap.className = "password-input-wrap";
+
+    const input = document.createElement("input");
+    input.type = "password";
+    input.className = "password-input";
+    input.placeholder = placeholder;
+    input.autocomplete = "off";
+    input.inputMode = "numeric";
+    input.maxLength = 20;
+
+    inputWrap.appendChild(input);
+    fieldWrap.append(fieldLabel, inputWrap);
+
+    const feedback = document.createElement("span");
+    feedback.className = "password-feedback";
+
+    const actions = document.createElement("div");
+    actions.className = "confirm-actions";
+
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.className = "confirm-btn confirm-btn-cancel";
+    cancel.textContent = cancelarTexto;
+
+    const confirm = document.createElement("button");
+    confirm.type = "button";
+    confirm.className = "confirm-btn confirm-btn-primary";
+    confirm.textContent = confirmarTexto;
+
+    let encerrado = false;
+
+    const close = result => {
+      if (encerrado) return;
+      encerrado = true;
+      document.removeEventListener("keydown", onKeydown);
+      overlay.remove();
+      resolve(result);
+    };
+
+    const validar = texto => {
+      feedback.textContent = texto;
+      input.classList.add("is-invalid");
+      input.focus();
+      input.select();
+    };
+
+    const submit = () => {
+      const senha = String(input.value || "").trim();
+      if (!senha) {
+        validar("Digite a senha para continuar.");
+        return;
+      }
+      close(senha);
+    };
+
+    const onKeydown = event => {
+      if (!document.body.contains(overlay)) return;
+      if (event.key === "Escape") close(null);
+      if (event.key === "Enter") {
+        event.preventDefault();
+        submit();
+      }
+    };
+
+    input.addEventListener("input", () => {
+      feedback.textContent = "";
+      input.classList.remove("is-invalid");
+    });
+    cancel.addEventListener("click", () => close(null));
+    confirm.addEventListener("click", submit);
+    overlay.addEventListener("click", event => {
+      if (event.target === overlay) close(null);
+    });
+    document.addEventListener("keydown", onKeydown);
+
+    actions.append(cancel, confirm);
+    modal.append(iconWrap, content, fieldWrap, feedback, actions);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    refreshLucideIcons();
+    setTimeout(() => input.focus(), 0);
+  });
+}
+
+function atualizarPainelPendencias() {
+  return Promise.all([
+    db.ref("status_veiculos").once("value"),
+    db.ref("chaves_em_uso").once("value"),
+    db.ref("jogos_em_uso").once("value"),
+    db.ref("guardachuvas_em_uso").once("value"),
+    db.ref("agendamentos_veiculos").once("value"),
+    db.ref("abastecimentos").once("value"),
+    db.ref("pesagens_manuais").once("value")
+  ]).then(([veiculosSnap, chavesSnap, jogosSnap, guardasSnap, agendamentosSnap, abastecimentosSnap, pesagensSnap]) => {
+    const dados = {
+      veiculos: veiculosSnap.val() || {},
+      chaves: chavesSnap.val() || {},
+      jogos: jogosSnap.val() || {},
+      guardas: guardasSnap.val() || {},
+      agendamentos: agendamentosSnap.val() || {},
+      abastecimentos: abastecimentosSnap.val() || {},
+      pesagens: pesagensSnap.val() || {}
+    };
+
+    const veiculosRua = Object.values(dados.veiculos).filter(item => item?.emUso).length;
+    const chavesUso = Object.keys(dados.chaves).length;
+    const jogosUso = Object.keys(dados.jogos).length;
+    const guardasUso = Object.keys(dados.guardas).length;
+    const agendamentosHoje = Object.values(dados.agendamentos).filter(item => item?.data === new Date().toISOString().slice(0, 10)).length;
+    const empilhadeirasPendentes = calcularPendenciasEmpilhadeiras(dados.abastecimentos);
+    const pesagensAbertas = Object.values(dados.pesagens).filter(item => String(item?.statusPesagem || "AB") !== "FE").length;
+    const movimentosAbertos = veiculosRua + chavesUso + jogosUso + guardasUso;
+
+    atualizarIndicador("statVeiculosRua", veiculosRua);
+    atualizarIndicador("statChavesUso", chavesUso);
+    atualizarIndicador("statJogosUso", jogosUso);
+    atualizarIndicador("statGuardasUso", guardasUso);
+    atualizarIndicador("statAgendamentos", agendamentosHoje);
+    atualizarIndicador("statEmpilhadeirasPendentes", empilhadeirasPendentes);
+    atualizarIndicador("statPesagensAbertas", pesagensAbertas);
+    atualizarIndicador("statMovimentosAbertos", movimentosAbertos);
+
+    dashboardState.slides = construirSlidesOperacionais(dados);
+    dashboardState.activeIndex = 0;
+    renderSlideOperacional();
+    renderResumoHome(dados);
+    renderListaAtencao(dados);
+    renderAgendaHome(dados);
+    iniciarRotacaoPainel();
+  }).catch(() => undefined);
+}
+
+function renderCentralAvisosHome(dados) {
+  const lista = getById("homeAlertsList");
+  if (!lista) return;
+
+  lista.replaceChildren();
+
+  const avisosCadastrados = Object.values(dados.avisosCadastro || {})
+    .filter(item => item && item.ativo !== false)
+    .sort((a, b) => Number(b.atualizadoEmTs || b.criadoEmTs || 0) - Number(a.atualizadoEmTs || a.criadoEmTs || 0));
+
+  if (!avisosCadastrados.length) {
+    const vazio = document.createElement("div");
+    vazio.className = "home-alert-empty";
+    vazio.textContent = "Nenhum aviso cadastrado no momento.";
+    lista.appendChild(vazio);
+    return;
+  }
+
+  avisosCadastrados.slice(0, 3).forEach(item => {
+    const card = document.createElement("div");
+    card.className = "home-alert-item";
+
+    const iconWrap = document.createElement("div");
+    iconWrap.className = "home-alert-icon";
+    iconWrap.appendChild(criarIconeLucide(item.icone || "message-square"));
+
+    const content = document.createElement("div");
+    content.className = "home-alert-content";
+
+    const title = document.createElement("strong");
+    title.textContent = item.nome || "Aviso";
+
+    const text = document.createElement("p");
+    text.textContent = item.mensagem || "";
+
+    content.append(title, text);
+    card.append(iconWrap, content);
+    lista.appendChild(card);
+  });
+
+  refreshLucideIcons();
+}
+
+function renderCentralAvisosHome(dados) {
+  const lista = getById("homeAlertsList");
+  if (!lista) return;
+
+  lista.replaceChildren();
+
+  const avisosCadastrados = Object.values(dados.avisosCadastro || {})
+    .filter(item => item && item.ativo !== false)
+    .sort((a, b) => Number(b.atualizadoEmTs || b.criadoEmTs || 0) - Number(a.atualizadoEmTs || a.criadoEmTs || 0));
+
+  if (!avisosCadastrados.length) {
+    const vazio = document.createElement("div");
+    vazio.className = "home-alert-empty";
+    vazio.textContent = "Nenhum aviso cadastrado no momento.";
+    lista.appendChild(vazio);
+    return;
+  }
+
+  avisosCadastrados.slice(0, 3).forEach(item => {
+    const card = document.createElement("div");
+    card.className = "home-alert-item";
+
+    const iconWrap = document.createElement("div");
+    iconWrap.className = "home-alert-icon";
+    iconWrap.appendChild(criarIconeLucide(item.icone || "message-square"));
+
+    const content = document.createElement("div");
+    content.className = "home-alert-content";
+
+    const title = document.createElement("strong");
+    title.textContent = item.nome || "Aviso";
+
+    const text = document.createElement("p");
+    text.textContent = item.mensagem || "";
+
+    content.append(title, text);
+    card.append(iconWrap, content);
+    lista.appendChild(card);
+  });
+
+  refreshLucideIcons();
+}
+
+function renderCentralAvisosHome(dados) {
+  const lista = getById("homeAlertsList");
+  if (!lista) return;
+
+  lista.replaceChildren();
+
+  const agora = new Date();
+  const hojeIso = agora.toISOString().slice(0, 10);
+  const agendamentosHoje = Object.values(dados.agendamentos || {}).filter(item => item?.data === hojeIso);
+  const veiculosRua = Object.values(dados.veiculos || {}).filter(item => item?.emUso).length;
+  const chavesUso = Object.keys(dados.chaves || {}).length;
+  const jogosUso = Object.keys(dados.jogos || {}).length;
+  const guardasUso = Object.keys(dados.guardas || {}).length;
+  const pendentesEmp = calcularPendenciasEmpilhadeiras(dados.abastecimentos || {});
+  const pesagensAbertas = Object.values(dados.pesagens || {}).filter(item => String(item?.statusPesagem || "AB") !== "FE").length;
+  const avisosCadastrados = Object.values(dados.avisosCadastro || {})
+    .filter(item => item && item.ativo !== false)
+    .sort((a, b) => Number(b.atualizadoEmTs || b.criadoEmTs || 0) - Number(a.atualizadoEmTs || a.criadoEmTs || 0));
+
+  const avisos = [];
+
+  avisosCadastrados.forEach(item => {
+    avisos.push({
+      icon: "message-square",
+      kicker: "Manual",
+      title: item.nome || "Aviso",
+      text: item.mensagem || ""
+    });
+  });
+
+  if (pendentesEmp) {
+    avisos.push({
+      icon: "forklift",
+      kicker: "Prioridade",
+      title: `${pendentesEmp} empilhadeira(s) pendente(s)`,
+      text: "Conferir os abastecimentos previstos para hoje."
+    });
+  }
+
+  if (veiculosRua || chavesUso || jogosUso || guardasUso) {
+    avisos.push({
+      icon: "clipboard-list",
+      kicker: "Em aberto",
+      title: `${veiculosRua + chavesUso + jogosUso + guardasUso} movimentação(ões) em andamento`,
+      text: `${veiculosRua} veículo(s), ${chavesUso} chave(s), ${jogosUso} jogo(s) e ${guardasUso} guarda-chuva(s).`
+    });
+  }
+
+  if (pesagensAbertas) {
+    avisos.push({
+      icon: "truck",
+      kicker: "Balança",
+      title: `${pesagensAbertas} pesagem(ns) aberta(s)`,
+      text: "Existem tickets aguardando fechamento ou segunda pesagem."
+    });
+  }
+
+  if (agendamentosHoje.length >= 3) {
+    avisos.push({
+      icon: "calendar-days",
+      kicker: "Agenda",
+      title: `${agendamentosHoje.length} agendamento(s) hoje`,
+      text: "Dia com agenda mais carregada e que merece acompanhamento."
+    });
+  }
+
+  if (!avisos.length) {
+    const vazio = document.createElement("div");
+    vazio.className = "home-alert-empty";
+    vazio.textContent = "Nenhum aviso importante no momento.";
+    lista.appendChild(vazio);
+    return;
+  }
+
+  avisos.slice(0, 3).forEach(item => {
+    const card = document.createElement("div");
+    card.className = "home-alert-item";
+
+    const iconWrap = document.createElement("div");
+    iconWrap.className = "home-alert-icon";
+    iconWrap.appendChild(criarIconeLucide(item.icon));
+
+    const content = document.createElement("div");
+    content.className = "home-alert-content";
+
+    const kicker = document.createElement("span");
+    kicker.textContent = item.kicker;
+    const title = document.createElement("strong");
+    title.textContent = item.title;
+    const text = document.createElement("p");
+    text.textContent = item.text;
+
+    content.append(kicker, title, text);
+    card.append(iconWrap, content);
+    lista.appendChild(card);
+  });
+
+  refreshLucideIcons();
+}
+
+function atualizarPainelPendencias() {
+  return Promise.all([
+    db.ref("status_veiculos").once("value"),
+    db.ref("chaves_em_uso").once("value"),
+    db.ref("jogos_em_uso").once("value"),
+    db.ref("guardachuvas_em_uso").once("value"),
+    db.ref("agendamentos_veiculos").once("value"),
+    db.ref("abastecimentos").once("value"),
+    db.ref("pesagens_manuais").once("value")
+  ]).then(([veiculosSnap, chavesSnap, jogosSnap, guardasSnap, agendamentosSnap, abastecimentosSnap, pesagensSnap]) => {
+    const dados = {
+      veiculos: veiculosSnap.val() || {},
+      chaves: chavesSnap.val() || {},
+      jogos: jogosSnap.val() || {},
+      guardas: guardasSnap.val() || {},
+      agendamentos: agendamentosSnap.val() || {},
+      abastecimentos: abastecimentosSnap.val() || {},
+      pesagens: pesagensSnap.val() || {}
+    };
+
+    const hojeIsoLocal = obterDataIsoLocal();
+    const pesagensAbertas = Object.values(dados.pesagens).filter(item => String(item?.statusPesagem || "AB") !== "FE").length;
+
+    atualizarIndicador("statVeiculosRua", Object.values(dados.veiculos).filter(item => item?.emUso).length);
+    atualizarIndicador("statChavesUso", Object.keys(dados.chaves).length);
+    atualizarIndicador("statJogosUso", Object.keys(dados.jogos).length);
+    atualizarIndicador("statGuardasUso", Object.keys(dados.guardas).length);
+    atualizarIndicador("statAgendamentos", Object.values(dados.agendamentos).filter(item => item?.data === hojeIsoLocal).length);
+    atualizarIndicador("statEmpilhadeirasPendentes", calcularPendenciasEmpilhadeiras(dados.abastecimentos));
+    atualizarIndicador("statPesagensAbertas", pesagensAbertas);
+    renderResumoHome(dados);
+    renderCentralAvisosHome(dados);
+    renderAgendaHome(dados);
+  }).catch(() => undefined);
+}
+
+function obterDataIsoLocal() {
+  const agora = new Date();
+  const ano = agora.getFullYear();
+  const mes = String(agora.getMonth() + 1).padStart(2, "0");
+  const dia = String(agora.getDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+}
+
+function renderResumoHome(dados) {
+  const pesagensAbertas = Object.values(dados.pesagens || {}).filter(item => String(item?.statusPesagem || "AB") !== "FE").length;
+  const veiculosRua = Object.values(dados.veiculos || {}).filter(item => item?.emUso).length;
+  const chavesUso = Object.keys(dados.chaves || {}).length;
+  const jogosUso = Object.keys(dados.jogos || {}).length;
+  const guardasUso = Object.keys(dados.guardas || {}).length;
+  const movimentosAbertos = veiculosRua + chavesUso + jogosUso + guardasUso;
+
+  atualizarIndicador("statPesagensAbertas", pesagensAbertas);
+  atualizarIndicador("statMovimentosAbertos", movimentosAbertos);
+}
+
+function atualizarPainelPendencias() {
+  return Promise.all([
+    db.ref("status_veiculos").once("value"),
+    db.ref("chaves_em_uso").once("value"),
+    db.ref("jogos_em_uso").once("value"),
+    db.ref("guardachuvas_em_uso").once("value"),
+    db.ref("agendamentos_veiculos").once("value"),
+    db.ref("abastecimentos").once("value"),
+    db.ref("pesagens_manuais").once("value")
+  ]).then(([veiculosSnap, chavesSnap, jogosSnap, guardasSnap, agendamentosSnap, abastecimentosSnap, pesagensSnap]) => {
+    const dados = {
+      veiculos: veiculosSnap.val() || {},
+      chaves: chavesSnap.val() || {},
+      jogos: jogosSnap.val() || {},
+      guardas: guardasSnap.val() || {},
+      agendamentos: agendamentosSnap.val() || {},
+      abastecimentos: abastecimentosSnap.val() || {},
+      pesagens: pesagensSnap.val() || {}
+    };
+
+    atualizarIndicador("statVeiculosRua", Object.values(dados.veiculos).filter(item => item?.emUso).length);
+    atualizarIndicador("statChavesUso", Object.keys(dados.chaves).length);
+    atualizarIndicador("statJogosUso", Object.keys(dados.jogos).length);
+    atualizarIndicador("statGuardasUso", Object.keys(dados.guardas).length);
+    atualizarIndicador("statAgendamentos", Object.values(dados.agendamentos).filter(item => item?.data === hojeIsoLocal).length);
+    atualizarIndicador("statEmpilhadeirasPendentes", calcularPendenciasEmpilhadeiras(dados.abastecimentos));
+
+    dashboardState.slides = construirSlidesOperacionais(dados);
+    dashboardState.activeIndex = 0;
+    renderSlideOperacional();
+    renderResumoHome(dados);
+    renderAgendaHome(dados);
+    iniciarRotacaoPainel();
+  }).catch(() => undefined);
+}
+
+function obterResumoTurnoHome() {
+  const hora = new Date().getHours();
+  if (hora >= 6 && hora < 18) {
+    return { nome: "1º turno", janela: "06:00 às 18:00" };
+  }
+  return { nome: "2º turno", janela: "18:00 às 06:00" };
+}
+
+function renderResumoHome(dados) {
+  const shiftName = getById("homeShiftName");
+  const shiftWindow = getById("homeShiftWindow");
+  const openTotal = getById("homeOpenTotal");
+  const openDetail = getById("homeOpenDetail");
+  const weightsOpen = getById("homeWeightsOpen");
+  const weightsDetail = getById("homeWeightsDetail");
+  const nextHighlight = getById("homeNextAgendaHighlight");
+  const nextDetail = getById("homeNextAgendaDetail");
+  if (!shiftName || !shiftWindow || !openTotal || !openDetail || !weightsOpen || !weightsDetail || !nextHighlight || !nextDetail) return;
+
+  const turno = obterResumoTurnoHome();
+  const veiculosRua = Object.values(dados.veiculos || {}).filter(item => item?.emUso).length;
+  const chavesUso = Object.keys(dados.chaves || {}).length;
+  const jogosUso = Object.keys(dados.jogos || {}).length;
+  const guardasUso = Object.keys(dados.guardas || {}).length;
+  const movimentosAbertos = veiculosRua + chavesUso + jogosUso + guardasUso;
+  const pesagensAbertas = Object.values(dados.pesagens || {}).filter(item => String(item?.statusPesagem || "AB") !== "FE").length;
+  const agora = new Date();
+  const proximoAgendamento = Object.values(dados.agendamentos || {})
+    .filter(item => item?.data && new Date(`${item.data}T${item.hora || "00:00"}`) >= agora)
+    .sort((a, b) => new Date(`${a.data}T${a.hora || "00:00"}`) - new Date(`${b.data}T${b.hora || "00:00"}`))[0];
+
+  shiftName.textContent = turno.nome;
+  shiftWindow.textContent = turno.janela;
+  openTotal.textContent = String(movimentosAbertos);
+  openDetail.textContent = movimentosAbertos
+    ? `${veiculosRua} veículo(s), ${chavesUso} chave(s), ${jogosUso} jogo(s) e ${guardasUso} guarda-chuva(s) em aberto.`
+    : "Sem veículos, chaves ou empréstimos em aberto agora.";
+  weightsOpen.textContent = String(pesagensAbertas);
+  weightsDetail.textContent = pesagensAbertas
+    ? `${pesagensAbertas} ticket(s) aguardando a segunda pesagem ou fechamento.`
+    : "Nenhuma pesagem pendente neste momento.";
+  nextHighlight.textContent = proximoAgendamento
+    ? `${proximoAgendamento.veiculo || "Veículo"} às ${proximoAgendamento.hora || "--:--"}`
+    : "Agenda livre";
+  nextDetail.textContent = proximoAgendamento
+    ? `${formatarDataISOParaBR(proximoAgendamento.data) || "-"} • ${proximoAgendamento.local || "Destino a definir"}`
+    : "Nenhum agendamento futuro cadastrado.";
+}
+
+function atualizarPainelPendencias() {
+  return Promise.all([
+    db.ref("status_veiculos").once("value"),
+    db.ref("chaves_em_uso").once("value"),
+    db.ref("jogos_em_uso").once("value"),
+    db.ref("guardachuvas_em_uso").once("value"),
+    db.ref("agendamentos_veiculos").once("value"),
+    db.ref("abastecimentos").once("value"),
+    db.ref("pesagens_manuais").once("value")
+  ]).then(([veiculosSnap, chavesSnap, jogosSnap, guardasSnap, agendamentosSnap, abastecimentosSnap, pesagensSnap]) => {
+    const dados = {
+      veiculos: veiculosSnap.val() || {},
+      chaves: chavesSnap.val() || {},
+      jogos: jogosSnap.val() || {},
+      guardas: guardasSnap.val() || {},
+      agendamentos: agendamentosSnap.val() || {},
+      abastecimentos: abastecimentosSnap.val() || {},
+      pesagens: pesagensSnap.val() || {}
+    };
+
+    const veiculosRua = Object.values(dados.veiculos).filter(item => item?.emUso).length;
+    const chavesUso = Object.keys(dados.chaves).length;
+    const jogosUso = Object.keys(dados.jogos).length;
+    const guardasUso = Object.keys(dados.guardas).length;
+    const agendamentosHoje = Object.values(dados.agendamentos).filter(item => item?.data === new Date().toISOString().slice(0, 10)).length;
+    const empilhadeirasPendentes = calcularPendenciasEmpilhadeiras(dados.abastecimentos);
+    const pesagensAbertas = Object.values(dados.pesagens).filter(item => String(item?.statusPesagem || "AB") !== "FE").length;
+    const movimentosAbertos = veiculosRua + chavesUso + jogosUso + guardasUso;
+
+    atualizarIndicador("statVeiculosRua", veiculosRua);
+    atualizarIndicador("statChavesUso", chavesUso);
+    atualizarIndicador("statJogosUso", jogosUso);
+    atualizarIndicador("statGuardasUso", guardasUso);
+    atualizarIndicador("statAgendamentos", agendamentosHoje);
+    atualizarIndicador("statEmpilhadeirasPendentes", empilhadeirasPendentes);
+    atualizarIndicador("statPesagensAbertas", pesagensAbertas);
+    atualizarIndicador("statMovimentosAbertos", movimentosAbertos);
+
+    dashboardState.slides = construirSlidesOperacionais(dados);
+    dashboardState.activeIndex = 0;
+    renderSlideOperacional();
+    renderResumoHome(dados);
+    renderListaAtencao(dados);
+    renderAgendaHome(dados);
+    iniciarRotacaoPainel();
+  }).catch(() => undefined);
+}
+
+function obterResumoTurnoHome() {
+  const hora = new Date().getHours();
+  if (hora >= 6 && hora < 18) {
+    return {
+      nome: "1º turno",
+      janela: "06:00 às 18:00"
+    };
+  }
+
+  return {
+    nome: "2º turno",
+    janela: "18:00 às 06:00"
+  };
+}
+
+function renderResumoHome(dados) {
+  const shiftName = getById("homeShiftName");
+  const shiftWindow = getById("homeShiftWindow");
+  const openTotal = getById("homeOpenTotal");
+  const openDetail = getById("homeOpenDetail");
+  const weightsOpen = getById("homeWeightsOpen");
+  const weightsDetail = getById("homeWeightsDetail");
+  const nextHighlight = getById("homeNextAgendaHighlight");
+  const nextDetail = getById("homeNextAgendaDetail");
+
+  if (!shiftName || !shiftWindow || !openTotal || !openDetail || !weightsOpen || !weightsDetail || !nextHighlight || !nextDetail) {
+    return;
+  }
+
+  const turno = obterResumoTurnoHome();
+  const veiculosRua = Object.values(dados.veiculos || {}).filter(item => item?.emUso).length;
+  const chavesUso = Object.keys(dados.chaves || {}).length;
+  const jogosUso = Object.keys(dados.jogos || {}).length;
+  const guardasUso = Object.keys(dados.guardas || {}).length;
+  const movimentosAbertos = veiculosRua + chavesUso + jogosUso + guardasUso;
+  const pesagensAbertas = Object.values(dados.pesagens || {}).filter(item => String(item?.statusPesagem || "AB") !== "FE").length;
+  const agora = new Date();
+  const proximoAgendamento = Object.values(dados.agendamentos || {})
+    .filter(item => item?.data && new Date(`${item.data}T${item.hora || "00:00"}`) >= agora)
+    .sort((a, b) => new Date(`${a.data}T${a.hora || "00:00"}`) - new Date(`${b.data}T${b.hora || "00:00"}`))[0];
+
+  shiftName.textContent = turno.nome;
+  shiftWindow.textContent = turno.janela;
+  openTotal.textContent = String(movimentosAbertos);
+  openDetail.textContent = movimentosAbertos
+    ? `${veiculosRua} veículo(s), ${chavesUso} chave(s), ${jogosUso} jogo(s) e ${guardasUso} guarda-chuva(s) em aberto.`
+    : "Sem veículos, chaves ou empréstimos em aberto agora.";
+  weightsOpen.textContent = String(pesagensAbertas);
+  weightsDetail.textContent = pesagensAbertas
+    ? `${pesagensAbertas} ticket(s) aguardando a segunda pesagem ou fechamento.`
+    : "Nenhuma pesagem pendente neste momento.";
+  nextHighlight.textContent = proximoAgendamento
+    ? `${proximoAgendamento.veiculo || "Veículo"} às ${proximoAgendamento.hora || "--:--"}`
+    : "Agenda livre";
+  nextDetail.textContent = proximoAgendamento
+    ? `${formatarDataISOParaBR(proximoAgendamento.data) || "-"} • ${proximoAgendamento.local || "Destino a definir"}`
+    : "Nenhum agendamento futuro cadastrado.";
+}
+
+function construirSlidesOperacionais(dados) {
+  const agendamentos = Object.values(dados.agendamentos || {});
+  const hojeIso = new Date().toISOString().slice(0, 10);
+  const agendadosHoje = agendamentos.filter(item => item?.data === hojeIso);
+  const diaSemana = new Date().getDay();
+  const diasComAbastecimento = [1, 3, 5];
+  const mostrarSlideEmpilhadeiras = diasComAbastecimento.includes(diaSemana);
+  const empilhadeirasPendentes = calcularPendenciasEmpilhadeiras(dados.abastecimentos || {});
+  const veiculosRua = Object.values(dados.veiculos || {}).filter(item => item?.emUso).length;
+  const chavesUso = Object.keys(dados.chaves || {}).length;
+  const jogosUso = Object.keys(dados.jogos || {}).length;
+  const guardasUso = Object.keys(dados.guardas || {}).length;
+
+  const slides = [
+    {
+      title: "Agenda e circulacao do dia",
+      text: agendadosHoje.length
+        ? `${agendadosHoje.length} veiculo(s) programado(s) para hoje. Proximo destino: ${agendadosHoje[0].local || "a definir"}.`
+        : "Nenhum veiculo agendado para hoje. A agenda da frota esta livre neste momento."
+    },
+    {
+      title: "Visao geral do turno",
+      text: `${veiculosRua} veiculo(s) na rua, ${chavesUso} chave(s), ${jogosUso} jogo(s) e ${guardasUso} guarda-chuva(s) em uso agora.`
+    }
+  ];
+
+  if (mostrarSlideEmpilhadeiras) {
+    slides.splice(1, 0, {
+      title: "Empilhadeiras",
+      text: empilhadeirasPendentes
+        ? `${empilhadeirasPendentes} empilhadeira(s) estao sem abastecimento de hoje e pedem atencao operacional.`
+        : "As empilhadeiras monitoradas ja tem abastecimento registrado hoje."
+    });
+  }
+
+  return slides;
+}
+
+function renderSlideOperacional() {
+  const title = getById("operationalTitle");
+  const text = getById("operationalText");
+  const dotsContainer = document.querySelector(".operational-dots");
+  if (!title || !text || dashboardState.slides.length === 0) return;
+
+  const atual = dashboardState.slides[dashboardState.activeIndex] || dashboardState.slides[0];
+  title.textContent = atual.title;
+  text.textContent = atual.text;
+
+  if (dotsContainer) {
+    dotsContainer.replaceChildren();
+    dashboardState.slides.forEach((_, index) => {
+      const dot = document.createElement("span");
+      dot.className = "operational-dot";
+      dot.classList.toggle("active", index === dashboardState.activeIndex);
+      dotsContainer.appendChild(dot);
+    });
+  }
+}
+
+function renderAgendaHome(dados) {
+  const lista = getById("homeScheduleList");
+  if (!lista) return;
+
+  lista.replaceChildren();
+
+  const agora = new Date();
+  const agendamentos = Object.values(dados.agendamentos || {})
+    .filter(item => item?.data)
+    .sort((a, b) => new Date(`${a.data}T${a.hora || "00:00"}`) - new Date(`${b.data}T${b.hora || "00:00"}`))
+    .filter(item => new Date(`${item.data}T${item.hora || "00:00"}`) >= agora)
+    .slice(0, 4);
+
+  if (!agendamentos.length) {
+    const vazio = document.createElement("div");
+    vazio.className = "home-schedule-empty";
+    vazio.textContent = "Nenhum agendamento futuro cadastrado no momento.";
+    lista.appendChild(vazio);
+    return;
+  }
+
+  agendamentos.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "home-schedule-item";
+
+    const tempo = document.createElement("div");
+    tempo.className = "home-schedule-time";
+    const hora = document.createElement("strong");
+    hora.textContent = item.hora || "--:--";
+    const data = document.createElement("span");
+    data.textContent = formatarDataISOParaBR(item.data) || "-";
+    tempo.append(hora, data);
+
+    const conteudo = document.createElement("div");
+    conteudo.className = "home-schedule-content";
+    const titulo = document.createElement("strong");
+    titulo.textContent = item.veiculo || "Veiculo";
+    const meta = document.createElement("div");
+    meta.className = "home-schedule-meta";
+    meta.textContent = item.local || "Destino a definir";
+    const detalhe = document.createElement("div");
+    detalhe.className = "home-schedule-detail";
+    detalhe.textContent = item.quem || "Condutor a definir";
+    conteudo.append(titulo, meta, detalhe);
+
+    card.append(tempo, conteudo);
+    lista.appendChild(card);
+  });
+}
+
+function renderListaAtencao(dados) {
+  const now = getById("attentionNow");
+  const next = getById("attentionNext");
+  const alert = getById("attentionAlert");
+  if (!now || !next || !alert) return;
+
+  limparConteudoElemento(now);
+  limparConteudoElemento(next);
+  limparConteudoElemento(alert);
+
+  const agora = new Date();
+  const horaAtual = agora.getHours();
+  const hojeIso = agora.toISOString().slice(0, 10);
+  const agendamentos = Object.values(dados.agendamentos || {});
+  const agendamentosHoje = agendamentos.filter(item => item?.data === hojeIso);
+  const proximoAgendamento = agendamentos
+    .filter(item => item?.data && new Date(`${item.data}T${item.hora || "00:00"}`) >= agora)
+    .sort((a, b) => new Date(`${a.data}T${a.hora || "00:00"}`) - new Date(`${b.data}T${b.hora || "00:00"}`))[0];
+
+  const veiculosRua = Object.values(dados.veiculos || {}).filter(item => item?.emUso).length;
+  const chavesUso = Object.keys(dados.chaves || {}).length;
+  const jogosUso = Object.keys(dados.jogos || {}).length;
+  const guardasUso = Object.keys(dados.guardas || {}).length;
+  const pendentesEmp = calcularPendenciasEmpilhadeiras(dados.abastecimentos || {});
+  const movimentosAbertos = veiculosRua + chavesUso + jogosUso + guardasUso;
+
+  function preencherLinha(container, iconName, kicker, title, text, primary = false) {
+    container.className = primary ? "attention-row attention-row-primary" : "attention-row";
+
+    const iconWrap = document.createElement("div");
+    iconWrap.className = "attention-row-icon";
+    iconWrap.appendChild(criarIconeLucide(iconName));
+
+    const content = document.createElement("div");
+    content.className = "attention-row-content";
+
+    const kickerEl = document.createElement("span");
+    kickerEl.className = "attention-kicker";
+    kickerEl.textContent = kicker;
+
+    const titleEl = document.createElement("strong");
+    titleEl.textContent = title;
+
+    const textEl = document.createElement("p");
+    textEl.textContent = text;
+
+    content.append(kickerEl, titleEl, textEl);
+    container.append(iconWrap, content);
+  }
+
+  if (pendentesEmp) {
+    preencherLinha(now, "shield-alert", "Agora", `${pendentesEmp} pendencia(s) de empilhadeira`, "Conferir os abastecimentos previstos para hoje antes da virada do turno.", true);
+  } else if (movimentosAbertos) {
+    preencherLinha(now, "shield-alert", "Agora", `${movimentosAbertos} movimentacao(oes) aberta(s)`, `${veiculosRua} veiculo(s), ${chavesUso} chave(s), ${jogosUso} jogo(s) e ${guardasUso} guarda-chuva(s) ainda em andamento.`, true);
+  } else {
+    preencherLinha(now, "shield-check", "Agora", "Turno sob controle", "Sem pendencias criticas e com a operacao estavel neste momento.", true);
+  }
+
+  if (proximoAgendamento) {
+    preencherLinha(next, "arrow-right-circle", "Proximo", `${proximoAgendamento.veiculo || "Veiculo"} as ${proximoAgendamento.hora || "--:--"}`, `${formatarDataISOParaBR(proximoAgendamento.data) || "-"} • ${proximoAgendamento.local || "Destino a definir"}`);
+  } else if (horaAtual < 6 || horaAtual >= 18) {
+    preencherLinha(next, "arrow-right-circle", "Proximo", "Acompanhar passagem de plantao", "Conferir os registros do posto e a rotina de troca de turno.");
+  } else {
+    preencherLinha(next, "arrow-right-circle", "Proximo", "Monitorar rotina operacional", "Seguir com acessos, agenda, emprestimos e movimentacoes da portaria.");
+  }
+
+  if (agendamentosHoje.length >= 4) {
+    preencherLinha(alert, "siren", "Atencao", `${agendamentosHoje.length} agendamentos concentrados hoje`, "Vale acompanhar a agenda para evitar conflito de horarios e veiculos.");
+  } else if (veiculosRua >= 3) {
+    preencherLinha(alert, "siren", "Atencao", `${veiculosRua} veiculo(s) seguem em operacao`, "Acompanhe os retornos para evitar virada de turno com pendencia.");
+  } else if (movimentosAbertos >= 4) {
+    preencherLinha(alert, "siren", "Atencao", `${movimentosAbertos} itens seguem abertos`, "O volume do turno esta alto e merece conferencia mais proxima.");
+  } else {
+    preencherLinha(alert, "siren", "Atencao", "Sem alerta operacional", "Nada fora do normal exigindo acao imediata.");
+  }
+
+  refreshLucideIcons();
+}
+
+function atualizarPainelPendencias() {
+  return Promise.all([
+    db.ref("status_veiculos").once("value"),
+    db.ref("chaves_em_uso").once("value"),
+    db.ref("jogos_em_uso").once("value"),
+    db.ref("guardachuvas_em_uso").once("value"),
+    db.ref("agendamentos_veiculos").once("value"),
+    db.ref("abastecimentos").once("value"),
+    db.ref("pesagens_manuais").once("value"),
+    db.ref("cadastros/avisos").once("value")
+  ]).then(([veiculosSnap, chavesSnap, jogosSnap, guardasSnap, agendamentosSnap, abastecimentosSnap, pesagensSnap, avisosSnap]) => {
+    const dados = {
+      veiculos: veiculosSnap.val() || {},
+      chaves: chavesSnap.val() || {},
+      jogos: jogosSnap.val() || {},
+      guardas: guardasSnap.val() || {},
+      agendamentos: agendamentosSnap.val() || {},
+      abastecimentos: abastecimentosSnap.val() || {},
+      pesagens: pesagensSnap.val() || {},
+      avisosCadastro: avisosSnap.val() || {}
+    };
+
+    atualizarIndicador("statVeiculosRua", Object.values(dados.veiculos).filter(item => item?.emUso).length);
+    atualizarIndicador("statChavesUso", Object.keys(dados.chaves).length);
+    atualizarIndicador("statJogosUso", Object.keys(dados.jogos).length);
+    atualizarIndicador("statGuardasUso", Object.keys(dados.guardas).length);
+    atualizarIndicador("statAgendamentos", Object.values(dados.agendamentos).filter(item => item?.data === new Date().toISOString().slice(0, 10)).length);
+    atualizarIndicador("statEmpilhadeirasPendentes", calcularPendenciasEmpilhadeiras(dados.abastecimentos));
+    renderResumoHome(dados);
+
+    dashboardState.slides = construirSlidesOperacionais(dados);
+    dashboardState.activeIndex = 0;
+    renderSlideOperacional();
+    renderListaAtencao(dados);
+    renderCentralAvisosHomeManual(dados);
+    renderAgendaHome(dados);
+    iniciarRotacaoPainel();
+  }).catch(() => undefined);
+}
+
+function renderCentralAvisosHomeManual(dados) {
+  const lista = getById("homeAlertsList");
+  if (!lista) return;
+
+  lista.replaceChildren();
+
+  const avisosCadastrados = Object.values(dados.avisosCadastro || {})
+    .filter(item => item && item.ativo !== false)
+    .sort((a, b) => Number(b.atualizadoEmTs || b.criadoEmTs || 0) - Number(a.atualizadoEmTs || a.criadoEmTs || 0));
+
+  if (!avisosCadastrados.length) {
+    const vazio = document.createElement("div");
+    vazio.className = "home-alert-empty";
+    vazio.textContent = "Nenhum aviso cadastrado no momento.";
+    lista.appendChild(vazio);
+    return;
+  }
+
+  avisosCadastrados.slice(0, 3).forEach(item => {
+    const card = document.createElement("div");
+    card.className = "home-alert-item";
+
+    const iconWrap = document.createElement("div");
+    iconWrap.className = "home-alert-icon";
+    iconWrap.appendChild(criarIconeLucide(item.icone || "message-square"));
+
+    const content = document.createElement("div");
+    content.className = "home-alert-content";
+
+    const title = document.createElement("strong");
+    title.textContent = item.nome || "Aviso";
+
+    const text = document.createElement("p");
+    text.textContent = item.mensagem || "";
+
+    content.append(title, text);
+    card.append(iconWrap, content);
+    lista.appendChild(card);
   });
 
   refreshLucideIcons();
@@ -1042,6 +2250,7 @@ function atualizarPainelPendencias() {
 
 window.addEventListener("DOMContentLoaded", () => {
   const fields = document.querySelectorAll("input, textarea, select");
+  inicializarTema();
   vincularAcoesDeclarativas();
   configurarCamposMaiusculos();
   configurarAutocomplete("v_condutor", "lista_condutores", condutoresAutorizados);
@@ -1107,8 +2316,11 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   document.querySelectorAll("form").forEach(f => f.setAttribute("autocomplete", "off"));
+  getById("themeToggle")?.addEventListener("click", alternarTema);
+  adicionarAtalhoHomeSecoes();
   abrir("inicio");
   atualizarPainelPendencias();
+  aplicarContrasteCamposTema();
   refreshLucideIcons();
 });
 
@@ -1276,4 +2488,232 @@ function renderListaAtencao(dados) {
   }
 
   refreshLucideIcons();
+}
+
+function construirSlidesOperacionais(dados) {
+  const agendamentos = Object.values(dados.agendamentos || {});
+  const hojeIso = new Date().toISOString().slice(0, 10);
+  const agendadosHoje = agendamentos.filter(item => item?.data === hojeIso);
+  const diaSemana = new Date().getDay();
+  const diasComAbastecimento = [1, 3, 5];
+  const mostrarSlideEmpilhadeiras = diasComAbastecimento.includes(diaSemana);
+  const empilhadeirasPendentes = calcularPendenciasEmpilhadeiras(dados.abastecimentos || {});
+  const veiculosRua = Object.values(dados.veiculos || {}).filter(item => item?.emUso).length;
+  const chavesUso = Object.keys(dados.chaves || {}).length;
+  const jogosUso = Object.keys(dados.jogos || {}).length;
+  const guardasUso = Object.keys(dados.guardas || {}).length;
+
+  const slides = [
+    {
+      title: "Agenda e circulacao do dia",
+      text: agendadosHoje.length
+        ? `${agendadosHoje.length} veiculo(s) programado(s) para hoje. Proximo destino: ${agendadosHoje[0].local || "a definir"}.`
+        : "Nenhum veiculo agendado para hoje. A agenda da frota esta livre neste momento."
+    },
+    {
+      title: "Visao geral do turno",
+      text: `${veiculosRua} veiculo(s) na rua, ${chavesUso} chave(s), ${jogosUso} jogo(s) e ${guardasUso} guarda-chuva(s) em uso agora.`
+    }
+  ];
+
+  if (mostrarSlideEmpilhadeiras) {
+    slides.splice(1, 0, {
+      title: "Empilhadeiras",
+      text: empilhadeirasPendentes
+        ? `${empilhadeirasPendentes} empilhadeira(s) estao sem abastecimento de hoje e pedem atencao operacional.`
+        : "As empilhadeiras monitoradas ja tem abastecimento registrado hoje."
+    });
+  }
+
+  return slides;
+}
+
+function renderSlideOperacional() {
+  const title = getById("operationalTitle");
+  const text = getById("operationalText");
+  const dotsContainer = document.querySelector(".operational-dots");
+  if (!title || !text || dashboardState.slides.length === 0) return;
+
+  const atual = dashboardState.slides[dashboardState.activeIndex] || dashboardState.slides[0];
+  title.textContent = atual.title;
+  text.textContent = atual.text;
+
+  if (dotsContainer) {
+    dotsContainer.replaceChildren();
+    dashboardState.slides.forEach((_, index) => {
+      const dot = document.createElement("span");
+      dot.className = "operational-dot";
+      dot.classList.toggle("active", index === dashboardState.activeIndex);
+      dotsContainer.appendChild(dot);
+    });
+  }
+}
+
+function renderAgendaHome(dados) {
+  const lista = getById("homeScheduleList");
+  if (!lista) return;
+
+  lista.replaceChildren();
+
+  const agora = new Date();
+  const agendamentos = Object.values(dados.agendamentos || {})
+    .filter(item => item?.data)
+    .sort((a, b) => new Date(`${a.data}T${a.hora || "00:00"}`) - new Date(`${b.data}T${b.hora || "00:00"}`))
+    .filter(item => new Date(`${item.data}T${item.hora || "00:00"}`) >= agora)
+    .slice(0, 4);
+
+  if (!agendamentos.length) {
+    const vazio = document.createElement("div");
+    vazio.className = "home-schedule-empty";
+    vazio.textContent = "Nenhum agendamento futuro cadastrado no momento.";
+    lista.appendChild(vazio);
+    return;
+  }
+
+  agendamentos.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "home-schedule-item";
+
+    const tempo = document.createElement("div");
+    tempo.className = "home-schedule-time";
+    const hora = document.createElement("strong");
+    hora.textContent = item.hora || "--:--";
+    const data = document.createElement("span");
+    data.textContent = formatarDataISOParaBR(item.data) || "-";
+    tempo.append(hora, data);
+
+    const conteudo = document.createElement("div");
+    conteudo.className = "home-schedule-content";
+    const titulo = document.createElement("strong");
+    titulo.textContent = item.veiculo || "Veiculo";
+    const meta = document.createElement("div");
+    meta.className = "home-schedule-meta";
+    meta.textContent = item.local || "Destino a definir";
+    const detalhe = document.createElement("div");
+    detalhe.className = "home-schedule-detail";
+    detalhe.textContent = item.quem || "Condutor a definir";
+    conteudo.append(titulo, meta, detalhe);
+
+    card.append(tempo, conteudo);
+    lista.appendChild(card);
+  });
+}
+
+function renderListaAtencao(dados) {
+  const now = getById("attentionNow");
+  const next = getById("attentionNext");
+  const alert = getById("attentionAlert");
+  if (!now || !next || !alert) return;
+
+  limparConteudoElemento(now);
+  limparConteudoElemento(next);
+  limparConteudoElemento(alert);
+
+  const agora = new Date();
+  const horaAtual = agora.getHours();
+  const hojeIso = agora.toISOString().slice(0, 10);
+  const agendamentos = Object.values(dados.agendamentos || {});
+  const agendamentosHoje = agendamentos.filter(item => item?.data === hojeIso);
+  const proximoAgendamento = agendamentos
+    .filter(item => item?.data && new Date(`${item.data}T${item.hora || "00:00"}`) >= agora)
+    .sort((a, b) => new Date(`${a.data}T${a.hora || "00:00"}`) - new Date(`${b.data}T${b.hora || "00:00"}`))[0];
+
+  const veiculosRua = Object.values(dados.veiculos || {}).filter(item => item?.emUso).length;
+  const chavesUso = Object.keys(dados.chaves || {}).length;
+  const jogosUso = Object.keys(dados.jogos || {}).length;
+  const guardasUso = Object.keys(dados.guardas || {}).length;
+  const pendentesEmp = calcularPendenciasEmpilhadeiras(dados.abastecimentos || {});
+  const movimentosAbertos = veiculosRua + chavesUso + jogosUso + guardasUso;
+
+  function preencherLinha(container, iconName, kicker, title, text, primary = false) {
+    container.className = primary ? "attention-row attention-row-primary" : "attention-row";
+
+    const iconWrap = document.createElement("div");
+    iconWrap.className = "attention-row-icon";
+    iconWrap.appendChild(criarIconeLucide(iconName));
+
+    const content = document.createElement("div");
+    content.className = "attention-row-content";
+
+    const kickerEl = document.createElement("span");
+    kickerEl.className = "attention-kicker";
+    kickerEl.textContent = kicker;
+
+    const titleEl = document.createElement("strong");
+    titleEl.textContent = title;
+
+    const textEl = document.createElement("p");
+    textEl.textContent = text;
+
+    content.append(kickerEl, titleEl, textEl);
+    container.append(iconWrap, content);
+  }
+
+  if (pendentesEmp) {
+    preencherLinha(now, "shield-alert", "Agora", `${pendentesEmp} pendencia(s) de empilhadeira`, "Conferir os abastecimentos previstos para hoje antes da virada do turno.", true);
+  } else if (movimentosAbertos) {
+    preencherLinha(now, "shield-alert", "Agora", `${movimentosAbertos} movimentacao(oes) aberta(s)`, `${veiculosRua} veiculo(s), ${chavesUso} chave(s), ${jogosUso} jogo(s) e ${guardasUso} guarda-chuva(s) ainda em andamento.`, true);
+  } else {
+    preencherLinha(now, "shield-check", "Agora", "Turno sob controle", "Sem pendencias criticas e com a operacao estavel neste momento.", true);
+  }
+
+  if (proximoAgendamento) {
+    preencherLinha(next, "arrow-right-circle", "Proximo", `${proximoAgendamento.veiculo || "Veiculo"} as ${proximoAgendamento.hora || "--:--"}`, `${formatarDataISOParaBR(proximoAgendamento.data) || "-"} • ${proximoAgendamento.local || "Destino a definir"}`);
+  } else if (horaAtual < 6 || horaAtual >= 18) {
+    preencherLinha(next, "arrow-right-circle", "Proximo", "Acompanhar passagem de plantao", "Conferir os registros do posto e a rotina de troca de turno.");
+  } else {
+    preencherLinha(next, "arrow-right-circle", "Proximo", "Monitorar rotina operacional", "Seguir com acessos, agenda, emprestimos e movimentacoes da portaria.");
+  }
+
+  if (agendamentosHoje.length >= 4) {
+    preencherLinha(alert, "siren", "Atencao", `${agendamentosHoje.length} agendamentos concentrados hoje`, "Vale acompanhar a agenda para evitar conflito de horarios e veiculos.");
+  } else if (veiculosRua >= 3) {
+    preencherLinha(alert, "siren", "Atencao", `${veiculosRua} veiculo(s) seguem em operacao`, "Acompanhe os retornos para evitar virada de turno com pendencia.");
+  } else if (movimentosAbertos >= 4) {
+    preencherLinha(alert, "siren", "Atencao", `${movimentosAbertos} itens seguem abertos`, "O volume do turno esta alto e merece conferencia mais proxima.");
+  } else {
+    preencherLinha(alert, "siren", "Atencao", "Sem alerta operacional", "Nada fora do normal exigindo acao imediata.");
+  }
+
+  refreshLucideIcons();
+}
+
+function atualizarPainelPendencias() {
+  return Promise.all([
+    db.ref("status_veiculos").once("value"),
+    db.ref("chaves_em_uso").once("value"),
+    db.ref("jogos_em_uso").once("value"),
+    db.ref("guardachuvas_em_uso").once("value"),
+    db.ref("agendamentos_veiculos").once("value"),
+    db.ref("abastecimentos").once("value"),
+    db.ref("pesagens_manuais").once("value"),
+    db.ref("cadastros/avisos").once("value")
+  ]).then(([veiculosSnap, chavesSnap, jogosSnap, guardasSnap, agendamentosSnap, abastecimentosSnap, pesagensSnap, avisosSnap]) => {
+    const dados = {
+      veiculos: veiculosSnap.val() || {},
+      chaves: chavesSnap.val() || {},
+      jogos: jogosSnap.val() || {},
+      guardas: guardasSnap.val() || {},
+      agendamentos: agendamentosSnap.val() || {},
+      abastecimentos: abastecimentosSnap.val() || {},
+      pesagens: pesagensSnap.val() || {},
+      avisosCadastro: avisosSnap.val() || {}
+    };
+
+    atualizarIndicador("statVeiculosRua", Object.values(dados.veiculos).filter(item => item?.emUso).length);
+    atualizarIndicador("statChavesUso", Object.keys(dados.chaves).length);
+    atualizarIndicador("statJogosUso", Object.keys(dados.jogos).length);
+    atualizarIndicador("statGuardasUso", Object.keys(dados.guardas).length);
+    atualizarIndicador("statAgendamentos", Object.values(dados.agendamentos).filter(item => item?.data === new Date().toISOString().slice(0, 10)).length);
+    atualizarIndicador("statEmpilhadeirasPendentes", calcularPendenciasEmpilhadeiras(dados.abastecimentos));
+    renderResumoHome(dados);
+
+    dashboardState.slides = construirSlidesOperacionais(dados);
+    dashboardState.activeIndex = 0;
+    renderSlideOperacional();
+    renderListaAtencao(dados);
+    renderCentralAvisosHomeManual(dados);
+    renderAgendaHome(dados);
+    iniciarRotacaoPainel();
+  }).catch(() => undefined);
 }

@@ -23,7 +23,7 @@
 
     <header class="topo">
   <div class="topo-card">
-    <div class="logo-box">
+    <div class="logo-box" data-nav="inicio" role="button" tabindex="0" aria-label="Voltar para a Home" title="Voltar para a Home">
       <img class="logo-nf" src="imagens/logo-nortefrut.png" alt="Nortefrut">
     </div>
 
@@ -31,102 +31,148 @@
       <h2>PORTARIA NORTEFRUT</h2>
       <div class="topo-sub">Sistema de Controle • Nortefrut</div>
     </div>
+
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Ativar modo noturno" title="Alternar tema">
+      <i data-lucide="moon-star"></i>
+    </button>
   </div>
 </header>
 
 <main class="app-shell">
-    <div class="menu">
-        <button data-nav="inicio"><i data-lucide="house"></i><span>Início</span></button>
-        <button data-nav="veiculosGeral"><i data-lucide="car-front"></i><span>Veículos</span></button>
-        <button data-nav="posto"><i data-lucide="fuel"></i><span>Posto</span></button>
-        <button data-nav="chaves"><i data-lucide="key-round"></i><span>Chaves</span></button>
-        <button data-nav="empilhadeiras"><i data-lucide="forklift"></i><span>Empilhadeiras</span></button>
-        <button data-nav="vendas"><i data-lucide="banknote"></i><span>Vendas</span></button>
-        <button class="menu-jogos" data-nav="jogos"><i data-lucide="gamepad-2"></i><span>Jogos</span></button>
-        <button data-nav="guardachuvas"><i data-lucide="umbrella"></i><span>Guarda-Chuva</span></button>
-        <button data-nav="pesagemManual"><i data-lucide="truck"></i><span>Balança</span></button>
-        <button class="menu-relatorios" data-nav="relatorios"><i data-lucide="chart-column"></i><span>Relatórios</span></button>
-        <button data-nav="cadastros"><i data-lucide="settings-2"></i><span>Cadastros</span></button>
-    </div>
-
     <section id="inicio" class="section">
-        <div class="home-hero">
-            <div class="home-hero-grid">
-                <article class="operational-panel">
-                    <div class="operational-slide active" data-slide-index="0">
-                        <strong id="operationalTitle">Agendamentos do dia</strong>
-                        <p id="operationalText">Carregando dados operacionais...</p>
+        <div class="home-shell">
+            <article class="home-command-panel">
+                <div class="home-shortcuts-panel">
+                    <div class="home-panel-head">
+                        <span class="home-command-badge">Acessos rápidos</span>
+                        <strong>Entradas principais do sistema</strong>
                     </div>
-                    <div class="operational-dots">
-                        <span class="operational-dot active"></span>
-                        <span class="operational-dot"></span>
-                        <span class="operational-dot"></span>
-                    </div>
-                </article>
 
-                <div class="home-stats">
-                    <button class="home-stat-card" data-nav="veiculosGeral">
-                        <span>Veículos na rua</span>
-                        <strong id="statVeiculosRua">0</strong>
-                        <small>Acompanhar frota ativa</small>
-                    </button>
-                    <button class="home-stat-card" data-nav="chaves">
-                        <span>Chaves em uso</span>
-                        <strong id="statChavesUso">0</strong>
-                        <small>Ver retiradas abertas</small>
-                    </button>
-                    <button class="home-stat-card" data-nav="jogos">
-                        <span>Jogos em uso</span>
-                        <strong id="statJogosUso">0</strong>
-                        <small>Checar devoluções</small>
-                    </button>
-                    <button class="home-stat-card" data-nav="guardachuvas">
-                        <span>Guarda-chuvas em uso</span>
-                        <strong id="statGuardasUso">0</strong>
-                        <small>Ver empréstimos do turno</small>
-                    </button>
-                </div>
-            </div>
+                    <div class="home-shortcuts-group">
+                        <span class="home-mini-label">Movimentações do turno</span>
+                        <div class="home-shortcuts">
+                            <button class="home-shortcut home-shortcut-mobile-primary" data-nav="veiculosGeral">
+                                <i data-lucide="car-front"></i>
+                                <span>Veículos</span>
+                                <small>Saídas, retornos e agenda</small>
+                            </button>
+                            <button class="home-shortcut home-shortcut-mobile-primary" data-nav="posto">
+                                <i data-lucide="fuel"></i>
+                                <span>Posto</span>
+                                <small>Abastecimento, recebimento e plantão</small>
+                            </button>
+                            <button class="home-shortcut home-shortcut-mobile-primary" data-nav="chaves">
+                                <i data-lucide="key-round"></i>
+                                <span>Chaves</span>
+                                <small>Retiradas abertas e devoluções</small>
+                            </button>
+                            <button class="home-shortcut home-shortcut-mobile-primary" data-nav="empilhadeiras">
+                                <i data-lucide="forklift"></i>
+                                <span>Empilhadeiras</span>
+                                <small>Monitorar abastecimentos</small>
+                            </button>
+                            <button class="home-shortcut home-shortcut-mobile-secondary" data-nav="jogos">
+                                <i data-lucide="gamepad-2"></i>
+                                <span>Jogos</span>
+                                <small>Empréstimos e devoluções</small>
+                            </button>
+                            <button class="home-shortcut home-shortcut-mobile-secondary" data-nav="guardachuvas">
+                                <i data-lucide="umbrella"></i>
+                                <span>Guarda-chuvas</span>
+                                <small>Retiradas e retornos</small>
+                            </button>
+                        </div>
+                    </div>
 
-            <article class="home-attention">
-                <div class="home-attention-head">
-                    <span class="home-attention-badge">Painel do turno</span>
-                    <strong>Prioridades do turno</strong>
-                </div>
-                <div class="attention-board">
-                    <div id="attentionNow" class="attention-row attention-row-primary">
-                        <div class="attention-row-icon">
-                            <i data-lucide="shield-alert"></i>
-                        </div>
-                        <div class="attention-row-content">
-                            <span class="attention-kicker">Agora</span>
-                            <strong>Carregando prioridades...</strong>
-                            <p>Aguarde enquanto o sistema organiza o que pede atenção no turno.</p>
-                        </div>
-                    </div>
-                    <div id="attentionNext" class="attention-row">
-                        <div class="attention-row-icon">
-                            <i data-lucide="arrow-right-circle"></i>
-                        </div>
-                        <div class="attention-row-content">
-                            <span class="attention-kicker">Próximo</span>
-                            <strong>Carregando rotina...</strong>
-                            <p>Buscando a próxima ação importante do turno.</p>
-                        </div>
-                    </div>
-                    <div id="attentionAlert" class="attention-row">
-                        <div class="attention-row-icon">
-                            <i data-lucide="siren"></i>
-                        </div>
-                        <div class="attention-row-content">
-                            <span class="attention-kicker">Atenção</span>
-                            <strong>Carregando alertas...</strong>
-                            <p>Separando os avisos operacionais relevantes.</p>
+                    <div class="home-shortcuts-group">
+                        <span class="home-mini-label">Gestão e apoio</span>
+                        <div class="home-shortcuts home-shortcuts-secondary">
+                            <button class="home-shortcut home-shortcut-mobile-hidden" data-nav="pesagemManual">
+                                <i data-lucide="truck"></i>
+                                <span>Balança</span>
+                                <small>Pesagem e tickets</small>
+                            </button>
+                            <button class="home-shortcut home-shortcut-mobile-secondary" data-nav="cadastros">
+                                <i data-lucide="settings-2"></i>
+                                <span>Cadastros</span>
+                                <small>Base do sistema</small>
+                            </button>
+                            <button class="home-shortcut home-shortcut-mobile-secondary" data-nav="relatorios">
+                                <i data-lucide="chart-column"></i>
+                                <span>Relatórios</span>
+                                <small>Conferir e exportar</small>
+                            </button>
+                            <button class="home-shortcut home-shortcut-mobile-hidden" data-nav="vendas">
+                                <i data-lucide="banknote"></i>
+                                <span>Vendas</span>
+                                <small>Produtos e cupons</small>
+                            </button>
                         </div>
                     </div>
                 </div>
             </article>
 
+            <div class="home-stats-panel">
+                <div class="home-panel-head">
+                    <span class="home-command-badge">Resumo ao vivo</span>
+                    <strong>Números principais do turno</strong>
+                </div>
+
+                <div class="home-stats home-stats-expanded">
+                <button class="home-stat-card" data-nav="veiculosGeral">
+                    <span>Veículos na rua</span>
+                    <strong id="statVeiculosRua">0</strong>
+                    <small>Acompanhar frota ativa</small>
+                </button>
+                <button class="home-stat-card" data-nav="veiculosGeral">
+                    <span>Agendamentos do dia</span>
+                    <strong id="statAgendamentos">0</strong>
+                    <small>Programação da frota hoje</small>
+                </button>
+                <button class="home-stat-card" data-nav="chaves">
+                    <span>Chaves em uso</span>
+                    <strong id="statChavesUso">0</strong>
+                    <small>Ver retiradas abertas</small>
+                </button>
+                <button class="home-stat-card" data-nav="empilhadeiras">
+                    <span>Pendências de empilhadeiras</span>
+                    <strong id="statEmpilhadeirasPendentes">0</strong>
+                    <small>Itens sem abastecimento no dia</small>
+                </button>
+                <button class="home-stat-card" data-nav="pesagemManual">
+                    <span>Pesagens abertas</span>
+                    <strong id="statPesagensAbertas">0</strong>
+                    <small>Tickets aguardando fechamento</small>
+                </button>
+                <button class="home-stat-card" data-nav="guardachuvas">
+                    <span>Guarda-chuvas em uso</span>
+                    <strong id="statGuardasUso">0</strong>
+                    <small>Ver empréstimos do turno</small>
+                </button>
+                </div>
+            </div>
+
+            <div class="home-columns home-columns-agenda">
+                <article class="home-schedule-panel">
+                    <div class="home-attention-head">
+                        <span class="home-attention-badge">Agenda</span>
+                        <strong>Próximos agendamentos</strong>
+                    </div>
+                    <div id="homeScheduleList" class="home-schedule-list">
+                        <div class="home-schedule-empty">Carregando agenda operacional...</div>
+                    </div>
+                </article>
+
+                <article class="home-alerts-panel">
+                    <div class="home-attention-head">
+                        <span class="home-attention-badge">Avisos</span>
+                        <strong>Central de avisos</strong>
+                    </div>
+                    <div id="homeAlertsList" class="home-alerts-list">
+                        <div class="home-alert-empty">Carregando avisos operacionais...</div>
+                    </div>
+                </article>
+            </div>
         </div>
     </section>
 
@@ -139,6 +185,39 @@
 
         <button class="btn-submenu btn-primary-soft"
       data-subveiculos="agendamentoVeiculosContent"><i data-lucide="calendar-days"></i><span>AGENDAMENTO DE VIAGENS</span></button>
+        </div>
+
+        <div id="veiculosOverview" class="veiculos-overview">
+            <div class="veiculos-summary-grid">
+                <article class="veiculos-summary-card">
+                    <span>Veículos cadastrados</span>
+                    <strong id="veiculosOverviewTotal">0</strong>
+                    <small>Frota disponível no sistema</small>
+                </article>
+                <article class="veiculos-summary-card">
+                    <span>Na rua</span>
+                    <strong id="veiculosOverviewRua">0</strong>
+                    <small>Veículos em operação agora</small>
+                </article>
+                <article class="veiculos-summary-card">
+                    <span>Disponíveis agora</span>
+                    <strong id="veiculosOverviewDisponiveis">0</strong>
+                    <small>Prontos para nova saída</small>
+                </article>
+                <article class="veiculos-summary-card">
+                    <span>Agendamentos hoje</span>
+                    <strong id="veiculosOverviewHoje">0</strong>
+                    <small>Programação do dia corrente</small>
+                </article>
+            </div>
+
+            <div class="veiculos-next-board">
+                <div class="veiculos-next-head">
+                    <span class="veiculos-next-kicker">Agenda</span>
+                    <strong>Próximos agendamentos</strong>
+                </div>
+                <div id="veiculosOverviewAgenda" class="veiculos-next-list"></div>
+            </div>
         </div>
 
         <div id="listaVeiculosContent" class="form-oculto">
@@ -446,8 +525,8 @@
             <button class="botao btn-secondary" type="button" data-action="abrir-posto-recebimento">
                 <i data-lucide="download"></i><span data-mobile-label="Receber">Registrar Recebimento</span>
             </button>
-            <button class="botao relatorio relatorio-acao-atual" type="button" data-action="abrir-posto-plantao">
-                <i data-lucide="clipboard-pen-line"></i><span data-mobile-label="Plantão">Fechamento de Plantão</span>
+            <button class="botao relatorio relatorio-acao-atual" type="button" data-action="abrir-posto-plantao-resumo">
+                <i data-lucide="clipboard-list"></i><span data-mobile-label="Plantão">Plantão</span>
             </button>
         </div>
 
@@ -467,7 +546,7 @@
                     <div id="lista_posto_setores" class="autocomplete-list"></div>
                 </div>
                 <input id="postoMovQuantidade" type="text" inputmode="decimal" placeholder="Quant.">
-                <input id="postoMovContador" type="number" min="0" max="999999999" step="1" placeholder="Contador">
+                <input id="postoMovContador" type="text" inputmode="decimal" placeholder="Contador">
                 <input id="postoMovKm" type="number" min="0" step="0.01" placeholder="KM do carro">
                 <div class="posto-mov-actions">
                     <button class="botao btn-secondary" type="button" data-action="cancelar-posto-movimentacao">
@@ -482,63 +561,107 @@
 
         <div id="postoPlantaoForm" class="form-panel is-hidden">
             <h4 id="postoPlantaoTitulo">Fechamento de Plantão</h4>
+            <input id="postoPlantaoModo" type="hidden" value="fechamento">
+            <p id="postoPlantaoHint" class="posto-plantao-hint"></p>
             <div class="posto-plantao-grid">
                 <article class="posto-product-card">
                     <strong>S10</strong>
-                    <label class="posto-field-stack">
-                        <span>Es. inicial</span>
-                        <input id="postoS10EstoqueInicial" type="number" min="0" max="99999" step="1">
-                    </label>
-                    <label class="posto-field-stack posto-field-stack--final">
-                        <span>Es. final</span>
-                        <input id="postoS10EstoqueFinal" type="number" min="0" max="99999" step="1">
-                    </label>
-                    <label class="posto-field-stack">
-                        <span>Cont. inicial</span>
-                        <input id="postoS10ContadorInicial" type="number" min="0" max="999999999" step="1">
-                    </label>
-                    <label class="posto-field-stack posto-field-stack--final">
-                        <span>Cont. final</span>
-                        <input id="postoS10ContadorFinal" type="number" min="0" max="999999999" step="1">
-                    </label>
+                    <div class="posto-metric-group">
+                        <span class="posto-metric-title">Estoque</span>
+                        <div class="posto-metric-values">
+                            <label class="posto-field-stack">
+                                <span>Inicial</span>
+                                <div id="postoS10EstoqueInicialDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoS10EstoqueInicial" type="number" min="0" max="99999" step="1">
+                            </label>
+                            <label class="posto-field-stack posto-field-stack--final">
+                                <span>Final</span>
+                                <div id="postoS10EstoqueFinalDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoS10EstoqueFinal" type="number" min="0" max="99999" step="1">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="posto-metric-group">
+                        <span class="posto-metric-title">Contador</span>
+                        <div class="posto-metric-values">
+                            <label class="posto-field-stack">
+                                <span>Inicial</span>
+                                <div id="postoS10ContadorInicialDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoS10ContadorInicial" type="number" min="0" max="999999999" step="1">
+                            </label>
+                            <label class="posto-field-stack posto-field-stack--final">
+                                <span>Final</span>
+                                <div id="postoS10ContadorFinalDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoS10ContadorFinal" type="number" min="0" max="999999999" step="1">
+                            </label>
+                        </div>
+                    </div>
                 </article>
                 <article class="posto-product-card">
                     <strong>S500</strong>
-                    <label class="posto-field-stack">
-                        <span>Es. inicial</span>
-                        <input id="postoS500EstoqueInicial" type="number" min="0" max="99999" step="1">
-                    </label>
-                    <label class="posto-field-stack posto-field-stack--final">
-                        <span>Es. final</span>
-                        <input id="postoS500EstoqueFinal" type="number" min="0" max="99999" step="1">
-                    </label>
-                    <label class="posto-field-stack">
-                        <span>Cont. inicial</span>
-                        <input id="postoS500ContadorInicial" type="number" min="0" max="999999999" step="1">
-                    </label>
-                    <label class="posto-field-stack posto-field-stack--final">
-                        <span>Cont. final</span>
-                        <input id="postoS500ContadorFinal" type="number" min="0" max="999999999" step="1">
-                    </label>
+                    <div class="posto-metric-group">
+                        <span class="posto-metric-title">Estoque</span>
+                        <div class="posto-metric-values">
+                            <label class="posto-field-stack">
+                                <span>Inicial</span>
+                                <div id="postoS500EstoqueInicialDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoS500EstoqueInicial" type="number" min="0" max="99999" step="1">
+                            </label>
+                            <label class="posto-field-stack posto-field-stack--final">
+                                <span>Final</span>
+                                <div id="postoS500EstoqueFinalDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoS500EstoqueFinal" type="number" min="0" max="99999" step="1">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="posto-metric-group">
+                        <span class="posto-metric-title">Contador</span>
+                        <div class="posto-metric-values">
+                            <label class="posto-field-stack">
+                                <span>Inicial</span>
+                                <div id="postoS500ContadorInicialDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoS500ContadorInicial" type="number" min="0" max="999999999" step="1">
+                            </label>
+                            <label class="posto-field-stack posto-field-stack--final">
+                                <span>Final</span>
+                                <div id="postoS500ContadorFinalDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoS500ContadorFinal" type="number" min="0" max="999999999" step="1">
+                            </label>
+                        </div>
+                    </div>
                 </article>
                 <article class="posto-product-card">
                     <strong>ARLA</strong>
-                    <label class="posto-field-stack">
-                        <span>Es. inicial</span>
-                        <input id="postoArlaEstoqueInicial" type="number" min="0" max="99999" step="1">
-                    </label>
-                    <label class="posto-field-stack posto-field-stack--final">
-                        <span>Es. final</span>
-                        <input id="postoArlaEstoqueFinal" type="number" min="0" max="99999" step="1">
-                    </label>
-                    <label class="posto-field-stack">
-                        <span>Cont. inicial</span>
-                        <input id="postoArlaContadorInicial" type="number" min="0" max="999999999" step="1">
-                    </label>
-                    <label class="posto-field-stack posto-field-stack--final">
-                        <span>Cont. final</span>
-                        <input id="postoArlaContadorFinal" type="number" min="0" max="999999999" step="1">
-                    </label>
+                    <div class="posto-metric-group">
+                        <span class="posto-metric-title">Estoque</span>
+                        <div class="posto-metric-values">
+                            <label class="posto-field-stack">
+                                <span>Inicial</span>
+                                <div id="postoArlaEstoqueInicialDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoArlaEstoqueInicial" type="number" min="0" max="99999" step="1">
+                            </label>
+                            <label class="posto-field-stack posto-field-stack--final">
+                                <span>Final</span>
+                                <div id="postoArlaEstoqueFinalDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoArlaEstoqueFinal" type="number" min="0" max="99999" step="1">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="posto-metric-group">
+                        <span class="posto-metric-title">Contador</span>
+                        <div class="posto-metric-values">
+                            <label class="posto-field-stack">
+                                <span>Inicial</span>
+                                <div id="postoArlaContadorInicialDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoArlaContadorInicial" type="number" min="0" max="999999999" step="1">
+                            </label>
+                            <label class="posto-field-stack posto-field-stack--final">
+                                <span>Final</span>
+                                <div id="postoArlaContadorFinalDisplay" class="posto-readonly-value">0</div>
+                                <input id="postoArlaContadorFinal" type="number" min="0" max="999999999" step="1">
+                            </label>
+                        </div>
+                    </div>
                 </article>
             </div>
 
@@ -547,7 +670,7 @@
                     <span>Cancelar</span>
                 </button>
                 <button class="botao btn-primary" type="button" data-action="salvar-posto-plantao">
-                    <i data-lucide="save"></i><span>Salvar Plantão</span>
+                    <i data-lucide="save"></i><span id="postoPlantaoSubmitLabel">Salvar Plantão</span>
                 </button>
             </div>
         </div>
@@ -795,6 +918,7 @@
     <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="guardas">Guarda-chuvas</button>
     <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="jogos">Jogos</button>
     <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="vendas">Vendas</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="avisos">Avisos</button>
     <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="porteiros">Porteiros</button>
   </div>
   <div class="cadastro-grid">
@@ -1041,6 +1165,33 @@
           <div id="listaCadastroVendaPagamentos" class="cadastro-list"></div>
         </div>
       </div>
+    </article>
+
+    <article class="cadastro-panel cadastro-panel-wide" data-cadastro-panel="avisos">
+      <div class="cadastro-panel-head">
+        <strong>Avisos</strong>
+        <span>Cadastre avisos manuais para aparecerem na central de avisos da Home.</span>
+      </div>
+      <div class="cadastro-form cadastro-form--avisos">
+        <input id="cadastroAvisoTitulo" placeholder="Título do aviso" data-uppercase>
+        <select id="cadastroAvisoIcone">
+          <option value="message-square">Mensagem</option>
+          <option value="triangle-alert">Alerta</option>
+          <option value="info">Informação</option>
+          <option value="siren">Urgente</option>
+          <option value="calendar-days">Agenda</option>
+          <option value="truck">Transporte</option>
+          <option value="forklift">Empilhadeira</option>
+          <option value="car-front">Veículo</option>
+          <option value="key-round">Chave</option>
+          <option value="umbrella">Guarda-chuva</option>
+        </select>
+        <textarea id="cadastroAvisoMensagem" placeholder="Mensagem do aviso..." data-uppercase></textarea>
+        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-aviso-cadastro">
+          <i data-lucide="plus"></i><span>Salvar Aviso</span>
+        </button>
+      </div>
+      <div id="listaCadastroAvisos" class="cadastro-list"></div>
     </article>
 
     <article class="cadastro-panel cadastro-panel-wide is-active" data-cadastro-panel="frota">
@@ -1376,11 +1527,11 @@
     <button class="bottom-nav-btn" data-nav="chaves"><i data-lucide="key-round"></i><span>Chaves</span></button>
     <button class="bottom-nav-btn" data-nav="empilhadeiras"><i data-lucide="forklift"></i><span>Empilh.</span></button>
     <button class="bottom-nav-btn" data-nav="vendas"><i data-lucide="banknote"></i><span>Vendas</span></button>
-    <button class="bottom-nav-btn" data-nav="jogos"><i data-lucide="gamepad-2"></i><span>Jogos</span></button>
-    <button class="bottom-nav-btn" data-nav="guardachuvas"><i data-lucide="umbrella"></i><span>Guarda</span></button>
-    <button class="bottom-nav-btn" data-nav="pesagemManual"><i data-lucide="truck"></i><span>Balança</span></button>
-    <button class="bottom-nav-btn" data-nav="relatorios"><i data-lucide="chart-column"></i><span>Relat.</span></button>
-    <button class="bottom-nav-btn" data-nav="cadastros"><i data-lucide="settings-2"></i><span>Cad.</span></button>
+    <button class="bottom-nav-btn bottom-nav-mobile-extra" data-nav="jogos"><i data-lucide="gamepad-2"></i><span>Jogos</span></button>
+    <button class="bottom-nav-btn bottom-nav-mobile-extra" data-nav="guardachuvas"><i data-lucide="umbrella"></i><span>Guarda</span></button>
+    <button class="bottom-nav-btn bottom-nav-mobile-extra" data-nav="pesagemManual"><i data-lucide="truck"></i><span>Balança</span></button>
+    <button class="bottom-nav-btn bottom-nav-mobile-extra" data-nav="relatorios"><i data-lucide="chart-column"></i><span>Relat.</span></button>
+    <button class="bottom-nav-btn bottom-nav-mobile-extra" data-nav="cadastros"><i data-lucide="settings-2"></i><span>Cad.</span></button>
 </nav>
 
         <script src="js/data.js"></script>

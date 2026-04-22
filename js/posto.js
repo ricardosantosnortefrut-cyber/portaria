@@ -9,6 +9,8 @@ const postoState = {
   plantoes: {}
 };
 const OPERADOR_POSTO_PADRAO = "PORTEIRO";
+let postoAutoSyncPromise = null;
+let postoUltimaChaveSincronizada = "";
 
 function obterConfiguracaoBasePosto() {
   return window.postoConfigCadastro || {};
@@ -60,6 +62,10 @@ function formatarEstoquePosto(valor) {
 
 function formatarContadorPosto(valor) {
   return formatarNumeroPosto(Number(valor || 0) / 1000, "", 3);
+}
+
+function parseContadorPosto(valor) {
+  return Math.round(parseDecimalPosto(valor) * 1000);
 }
 
 function parseDecimalPosto(valor) {
@@ -129,6 +135,22 @@ function limitarNumeroInteiroCampo(campo, maxDigitos) {
   campo.value = bruto;
 }
 
+function limitarNumeroDecimalCampo(campo, maxInteiros = 5, maxDecimais = 3) {
+  if (!campo) return;
+
+  let texto = String(campo.value || "").replace(/[^\d.,]/g, "");
+  const ultimoSeparador = Math.max(texto.lastIndexOf(","), texto.lastIndexOf("."));
+
+  if (ultimoSeparador === -1) {
+    campo.value = texto.replace(/[^\d]/g, "").slice(0, maxInteiros);
+    return;
+  }
+
+  const parteInteira = texto.slice(0, ultimoSeparador).replace(/[^\d]/g, "").slice(0, maxInteiros);
+  const parteDecimal = texto.slice(ultimoSeparador + 1).replace(/[^\d]/g, "").slice(0, maxDecimais);
+  campo.value = parteDecimal ? `${parteInteira},${parteDecimal}` : `${parteInteira},`;
+}
+
 function obterUltimoContadorPorTipo(tipo) {
   const resumo = obterResumoCalculadoPosto();
   return Number(resumo.contador?.[tipo] || 0);
@@ -145,11 +167,12 @@ function sincronizarContadorMovimentacaoPosto() {
   const contadorAtualizado = modo === "abastecimento"
     ? contadorBase + Math.round(Math.max(quantidade, 0) * 1000)
     : contadorBase;
-  campoContador.value = formatarNumeroInputPosto(contadorAtualizado, 0);
+  campoContador.value = formatarContadorPosto(contadorAtualizado);
+  if (typeof aplicarContrasteCamposTema === "function") aplicarContrasteCamposTema();
 }
 
-function definirDataHoraAtualPosto() {
-  const agora = new Date();
+function definirDataHoraAtualPosto(referencia = new Date()) {
+  const agora = new Date(referencia);
   const data = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}-${String(agora.getDate()).padStart(2, "0")}`;
   const hora = `${String(agora.getHours()).padStart(2, "0")}:${String(agora.getMinutes()).padStart(2, "0")}`;
   return { data, hora };
@@ -183,6 +206,11 @@ function obterChaveTurnoPosto(referencia = new Date()) {
   const { inicio, turno } = obterJanelaTurnoPosto(referencia);
   const data = `${inicio.getFullYear()}${String(inicio.getMonth() + 1).padStart(2, "0")}${String(inicio.getDate()).padStart(2, "0")}`;
   return `${data}_${turno}`;
+}
+
+function obterReferenciaTurnoAnteriorPosto(referencia = new Date()) {
+  const { inicio } = obterJanelaTurnoPosto(referencia);
+  return new Date(inicio.getTime() - 60000);
 }
 
 function limparCamposPostoMovimentacao() {
@@ -266,26 +294,26 @@ function limparCamposPostoPlantao() {
   });
 }
 
-function obterPlantaoAtualPosto(plantoes = postoState.plantoes) {
-  const chaveAtual = obterChaveTurnoPosto();
+function obterPlantaoAtualPosto(plantoes = postoState.plantoes, referencia = new Date()) {
+  const chaveAtual = obterChaveTurnoPosto(referencia);
   return Object.values(plantoes || {})
     .find(item => item?.plantaoChave === chaveAtual) || null;
 }
 
-function obterPlantaoAnteriorPosto(plantoes = postoState.plantoes) {
-  const chaveAtual = obterChaveTurnoPosto();
+function obterPlantaoAnteriorPosto(plantoes = postoState.plantoes, referencia = new Date()) {
+  const chaveAtual = obterChaveTurnoPosto(referencia);
   return Object.values(plantoes || {})
     .filter(item => item?.plantaoChave !== chaveAtual)
     .sort((a, b) => Number(b.atualizadoEm || b.criadoEm || 0) - Number(a.atualizadoEm || a.criadoEm || 0))[0] || null;
 }
 
-function obterResumoCalculadoPosto(movimentacoes = postoState.movimentacoes, plantoes = postoState.plantoes) {
+function obterResumoCalculadoPosto(movimentacoes = postoState.movimentacoes, plantoes = postoState.plantoes, referencia = new Date()) {
   const saldo = { S10: 0, S500: 0, ARLA: 0 };
   const contador = { S10: 0, S500: 0, ARLA: 0 };
   const baseConfig = obterConfiguracaoBasePosto();
-  const plantaoAtual = obterPlantaoAtualPosto(plantoes);
-  const plantaoAnterior = obterPlantaoAnteriorPosto(plantoes);
-  const { inicio, fim, turno } = obterJanelaTurnoPosto();
+  const plantaoAtual = obterPlantaoAtualPosto(plantoes, referencia);
+  const plantaoAnterior = obterPlantaoAnteriorPosto(plantoes, referencia);
+  const { inicio, fim, turno } = obterJanelaTurnoPosto(referencia);
 
   const baseS10 = plantaoAtual?.s10
     ? { estoqueInicial: plantaoAtual.s10.estoqueInicial, contadorInicial: plantaoAtual.s10.contadorInicial }
@@ -357,10 +385,29 @@ function preencherCamposProdutoPlantao(prefixo, produto, resumo) {
     contadorFinal: getById(`${prefixo}ContadorFinal`)
   };
 
-  if (campos.estoqueInicial) campos.estoqueInicial.value = formatarNumeroInputPosto(anterior.estoqueFinal ?? 0, 0);
-  if (campos.contadorInicial) campos.contadorInicial.value = formatarNumeroInputPosto(anterior.contadorFinal ?? 0, 0);
-  if (campos.estoqueFinal) campos.estoqueFinal.value = formatarNumeroInputPosto(resumo.saldo[produto] ?? 0, 0);
-  if (campos.contadorFinal) campos.contadorFinal.value = formatarNumeroInputPosto(resumo.contador[produto] ?? 0, 0);
+  const displays = {
+    estoqueInicial: getById(`${prefixo}EstoqueInicialDisplay`),
+    estoqueFinal: getById(`${prefixo}EstoqueFinalDisplay`),
+    contadorInicial: getById(`${prefixo}ContadorInicialDisplay`),
+    contadorFinal: getById(`${prefixo}ContadorFinalDisplay`)
+  };
+
+  const valores = {
+    estoqueInicial: anterior.estoqueInicial ?? 0,
+    estoqueFinal: resumo.saldo[produto] ?? 0,
+    contadorInicial: anterior.contadorInicial ?? 0,
+    contadorFinal: resumo.contador[produto] ?? 0
+  };
+
+  if (campos.estoqueInicial) campos.estoqueInicial.value = formatarNumeroInputPosto(valores.estoqueInicial, 0);
+  if (campos.contadorInicial) campos.contadorInicial.value = formatarNumeroInputPosto(valores.contadorInicial, 0);
+  if (campos.estoqueFinal) campos.estoqueFinal.value = formatarNumeroInputPosto(valores.estoqueFinal, 0);
+  if (campos.contadorFinal) campos.contadorFinal.value = formatarNumeroInputPosto(valores.contadorFinal, 0);
+
+  if (displays.estoqueInicial) displays.estoqueInicial.textContent = formatarNumeroInputPosto(valores.estoqueInicial, 0);
+  if (displays.contadorInicial) displays.contadorInicial.textContent = formatarNumeroInputPosto(valores.contadorInicial, 0);
+  if (displays.estoqueFinal) displays.estoqueFinal.textContent = formatarNumeroInputPosto(valores.estoqueFinal, 0);
+  if (displays.contadorFinal) displays.contadorFinal.textContent = formatarNumeroInputPosto(valores.contadorFinal, 0);
 }
 
 function sincronizarCamposPlantaoPosto() {
@@ -370,15 +417,31 @@ function sincronizarCamposPlantaoPosto() {
   preencherCamposProdutoPlantao("postoArla", "ARLA", resumo);
 }
 
+function obterModoPlantaoPosto() {
+  return getById("postoPlantaoModo")?.value || "fechamento";
+}
+
 function atualizarTituloPlantaoPosto() {
   const form = getById("postoPlantaoForm");
   const titulo = getById("postoPlantaoTitulo");
-  if (!titulo || !form) return;
+  const hint = getById("postoPlantaoHint");
+  const submitLabel = getById("postoPlantaoSubmitLabel");
+  if (!titulo || !form || !hint || !submitLabel) return;
 
   const resumo = obterResumoCalculadoPosto();
-  const ehFechamento = Boolean(resumo.plantaoAtual);
-  titulo.textContent = ehFechamento ? "Fechamento de Plantao" : "Abertura de Plantao";
-  form.classList.toggle("is-abertura", !ehFechamento);
+  const turno = resumo.turnoAtual === "DIA" ? "1º turno" : "2º turno";
+  const modo = obterModoPlantaoPosto();
+  const ehAbertura = modo === "abertura";
+  const ehResumo = modo === "resumo";
+  titulo.textContent = ehResumo ? "Plantao Atual" : (ehAbertura ? "Abrir Plantao" : "Fechar Plantao");
+  hint.textContent = ehResumo
+    ? `Estoque e contador registrados na abertura automatica do ${turno}.`
+    : ehAbertura
+      ? `Confirme a base herdada para iniciar o ${turno}.`
+      : `Confira os saldos calculados do ${turno} e confirme o fechamento do plantao atual.`;
+  submitLabel.textContent = ehAbertura ? "Confirmar Abertura" : "Confirmar Fechamento";
+  form.classList.toggle("is-abertura", ehAbertura || ehResumo);
+  form.classList.toggle("is-resumo", ehResumo);
 }
 
 function configurarCamposAutomaticosPlantaoPosto() {
@@ -395,7 +458,19 @@ function configurarCamposAutomaticosPlantaoPosto() {
   });
 }
 
-function abrirFormPostoPlantao() {
+function abrirFormPostoPlantaoAbertura() {
+  sincronizarPlantoesAutomaticosPosto(postoState.movimentacoes, postoState.plantoes, { forcar: true });
+  avisoInfo("O plantão abre automaticamente às 06:00 e às 18:00.", "clock-3");
+}
+
+function abrirFormPostoPlantaoFechamento() {
+  sincronizarPlantoesAutomaticosPosto(postoState.movimentacoes, postoState.plantoes, { forcar: true });
+  avisoInfo("O plantão fecha automaticamente às 18:00 e às 06:00.", "clock-3");
+}
+
+function abrirResumoPlantaoPosto() {
+  const campoModo = getById("postoPlantaoModo");
+  if (campoModo) campoModo.value = "resumo";
   limparCamposPostoPlantao();
   mostrarElemento("postoPlantaoForm");
   ocultarElemento("postoMovForm");
@@ -437,7 +512,7 @@ function salvarMovimentacaoPosto() {
     setor: normalizarTexto(getById("postoMovSetor")?.value || ""),
     quantidade: parseDecimalPosto(getById("postoMovQuantidade")?.value || 0),
     quantidadeTextoOriginal: String(getById("postoMovQuantidade")?.value || "").trim(),
-    contador: Number(getById("postoMovContador")?.value || 0),
+    contador: parseContadorPosto(getById("postoMovContador")?.value || 0),
     km: Number(getById("postoMovKm")?.value || 0),
     criadoEm: Date.now()
   };
@@ -472,7 +547,132 @@ function coletarProdutoPlantao(prefixo) {
   };
 }
 
-function salvarPlantaoPosto() {
+function montarProdutoPlantaoPeloResumo(resumo, tipo) {
+  const estoque = Number(resumo?.saldo?.[tipo] ?? 0);
+  const contador = Number(resumo?.contador?.[tipo] ?? 0);
+  return {
+    estoqueInicial: estoque,
+    estoqueFinal: estoque,
+    contadorInicial: contador,
+    contadorFinal: contador
+  };
+}
+
+function montarDadosPlantaoAberturaPosto(resumo, agora, referencia = new Date()) {
+  const { inicio, turno } = obterJanelaTurnoPosto(referencia);
+  const plantaoChave = obterChaveTurnoPosto(referencia);
+  return {
+    plantaoChave,
+    data: agora.data,
+    porteiro: OPERADOR_POSTO_PADRAO,
+    turno,
+    s10: montarProdutoPlantaoPeloResumo(resumo, "S10"),
+    s500: montarProdutoPlantaoPeloResumo(resumo, "S500"),
+    arla: montarProdutoPlantaoPeloResumo(resumo, "ARLA"),
+    criadoEm: inicio.getTime(),
+    atualizadoEm: inicio.getTime(),
+    status: "ABERTO"
+  };
+}
+
+function montarDadosPlantaoFechamentoPosto(resumo, agora, plantaoAtual, referencia = new Date()) {
+  const { fim, turno } = obterJanelaTurnoPosto(referencia);
+  const plantaoChave = obterChaveTurnoPosto(referencia);
+  return {
+    plantaoChave,
+    data: agora.data,
+    porteiro: OPERADOR_POSTO_PADRAO,
+    turno,
+    s10: {
+      estoqueInicial: Number(plantaoAtual?.s10?.estoqueInicial ?? resumo?.saldo?.S10 ?? 0),
+      estoqueFinal: Number(resumo?.saldo?.S10 ?? 0),
+      contadorInicial: Number(plantaoAtual?.s10?.contadorInicial ?? resumo?.contador?.S10 ?? 0),
+      contadorFinal: Number(resumo?.contador?.S10 ?? 0)
+    },
+    s500: {
+      estoqueInicial: Number(plantaoAtual?.s500?.estoqueInicial ?? resumo?.saldo?.S500 ?? 0),
+      estoqueFinal: Number(resumo?.saldo?.S500 ?? 0),
+      contadorInicial: Number(plantaoAtual?.s500?.contadorInicial ?? resumo?.contador?.S500 ?? 0),
+      contadorFinal: Number(resumo?.contador?.S500 ?? 0)
+    },
+    arla: {
+      estoqueInicial: Number(plantaoAtual?.arla?.estoqueInicial ?? resumo?.saldo?.ARLA ?? 0),
+      estoqueFinal: Number(resumo?.saldo?.ARLA ?? 0),
+      contadorInicial: Number(plantaoAtual?.arla?.contadorInicial ?? resumo?.contador?.ARLA ?? 0),
+      contadorFinal: Number(resumo?.contador?.ARLA ?? 0)
+    },
+    criadoEm: plantaoAtual?.criadoEm || obterJanelaTurnoPosto(referencia).inicio.getTime(),
+    atualizadoEm: fim.getTime(),
+    status: "FECHADO"
+  };
+}
+
+function formatarResumoPlantaoPosto(resumo) {
+  return POSTO_TIPOS
+    .map(tipo => `${tipo}: ${formatarEstoquePosto(resumo?.saldo?.[tipo] ?? 0)} / ${formatarContadorPosto(resumo?.contador?.[tipo] ?? 0)}`)
+    .join(" • ");
+}
+
+function construirAssinaturaAutoSyncPosto(movimentacoes = postoState.movimentacoes, plantoes = postoState.plantoes, referencia = new Date()) {
+  const chaveAtual = obterChaveTurnoPosto(referencia);
+  const chaveAnterior = obterChaveTurnoPosto(obterReferenciaTurnoAnteriorPosto(referencia));
+  return [
+    chaveAtual,
+    chaveAnterior,
+    Object.keys(movimentacoes || {}).length,
+    Object.keys(plantoes || {}).length,
+    plantoes?.[chaveAtual]?.status || "",
+    plantoes?.[chaveAnterior]?.status || ""
+  ].join("|");
+}
+
+function sincronizarPlantoesAutomaticosPosto(movimentacoes = postoState.movimentacoes, plantoes = postoState.plantoes, { forcar = false } = {}) {
+  if (postoAutoSyncPromise) return postoAutoSyncPromise;
+
+  const referenciaAtual = new Date();
+  const referenciaAnterior = obterReferenciaTurnoAnteriorPosto(referenciaAtual);
+  const assinatura = construirAssinaturaAutoSyncPosto(movimentacoes, plantoes, referenciaAtual);
+  if (!forcar && assinatura === postoUltimaChaveSincronizada) {
+    return Promise.resolve(false);
+  }
+
+  const resumoAtual = obterResumoCalculadoPosto(movimentacoes, plantoes, referenciaAtual);
+  const resumoAnterior = obterResumoCalculadoPosto(movimentacoes, plantoes, referenciaAnterior);
+  const plantaoAtual = obterPlantaoAtualPosto(plantoes, referenciaAtual);
+  const plantaoAnterior = obterPlantaoAtualPosto(plantoes, referenciaAnterior);
+  const atualData = definirDataHoraAtualPosto(obterJanelaTurnoPosto(referenciaAtual).inicio);
+  const anteriorData = definirDataHoraAtualPosto(obterJanelaTurnoPosto(referenciaAnterior).inicio);
+  const atualDesejado = montarDadosPlantaoAberturaPosto(resumoAtual, atualData, referenciaAtual);
+  const anteriorDesejado = montarDadosPlantaoFechamentoPosto(resumoAnterior, anteriorData, plantaoAnterior, referenciaAnterior);
+  const updates = {};
+
+  if (!plantaoAnterior || plantaoAnterior.status !== "FECHADO") {
+    updates[anteriorDesejado.plantaoChave] = anteriorDesejado;
+  }
+
+  if (!plantaoAtual) {
+    updates[atualDesejado.plantaoChave] = atualDesejado;
+  }
+
+  if (!Object.keys(updates).length) {
+    postoUltimaChaveSincronizada = assinatura;
+    return Promise.resolve(false);
+  }
+
+  postoAutoSyncPromise = db.ref("posto_plantoes").update(updates)
+    .then(() => {
+      postoUltimaChaveSincronizada = "";
+      return true;
+    })
+    .catch(() => false)
+    .finally(() => {
+      postoAutoSyncPromise = null;
+    });
+
+  return postoAutoSyncPromise;
+}
+
+function salvarPlantaoPostoLegado() {
   const botao = document.activeElement;
   const agora = definirDataHoraAtualPosto();
   const resumo = obterResumoCalculadoPosto();
@@ -504,10 +704,64 @@ function salvarPlantaoPosto() {
     .finally(() => alternarBotaoCarregando(botao, false, "Salvar Plantão"));
 }
 
+function salvarPlantaoPosto() {
+  const botao = document.activeElement;
+  const agora = definirDataHoraAtualPosto();
+  const resumo = obterResumoCalculadoPosto();
+  const plantaoAtual = resumo.plantaoAtual;
+  const plantaoAberto = obterPlantaoAbertoPosto();
+  const plantaoChave = obterChaveTurnoPosto();
+  const modo = obterModoPlantaoPosto();
+
+  if (modo === "abertura" && plantaoAtual) {
+    avisoValidacao("O plantao deste turno ja foi iniciado.");
+    return;
+  }
+
+  if (modo === "fechamento" && !plantaoAberto) {
+    avisoValidacao("Nao existe plantao aberto para este turno.");
+    return;
+  }
+
+  const dados = {
+    plantaoChave,
+    data: agora.data,
+    porteiro: OPERADOR_POSTO_PADRAO,
+    turno: obterTurnoAtualPosto(),
+    s10: coletarProdutoPlantao("postoS10"),
+    s500: coletarProdutoPlantao("postoS500"),
+    arla: coletarProdutoPlantao("postoArla"),
+    criadoEm: plantaoAtual?.criadoEm || Date.now(),
+    atualizadoEm: Date.now(),
+    status: modo === "abertura" ? "ABERTO" : "FECHADO"
+  };
+
+  if (!validarPlantaoPosto(dados)) return;
+
+  alternarBotaoCarregando(botao, true);
+  db.ref(`posto_plantoes/${plantaoChave}`).set(dados)
+    .then(() => {
+      avisoSucesso(
+        modo === "abertura" ? "Plantao aberto com sucesso." : "Plantao fechado com sucesso.",
+        "clipboard-check"
+      );
+      sincronizarCamposPlantaoPosto();
+      atualizarTituloPlantaoPosto();
+      cancelarFormPostoPlantao();
+    })
+    .catch(() => avisoErro("Erro ao salvar o plantÃ£o do posto."))
+    .finally(() => alternarBotaoCarregando(
+      botao,
+      false,
+      modo === "abertura" ? "Confirmar Abertura" : "Confirmar Fechamento"
+    ));
+}
+
 function renderMovimentacoesPosto(registros) {
   const container = getById("listaPostoMovimentacoes");
   if (!container) return;
   limparConteudoElemento(container);
+  const tabela = container.closest(".posto-table");
 
   const { inicio, fim } = obterJanelaOperacionalPosto();
   const lista = Object.values(registros || {})
@@ -518,9 +772,13 @@ function renderMovimentacoesPosto(registros) {
     })
     .sort((a, b) => Number(a.criadoEm || 0) - Number(b.criadoEm || 0));
 
+  if (tabela) {
+    tabela.classList.toggle("is-empty", !lista.length);
+  }
+
   if (!lista.length) {
     const empty = document.createElement("div");
-    empty.className = "empilhadeira-table-empty";
+    empty.className = "empilhadeira-table-empty posto-table-empty";
     empty.textContent = "Nenhum abastecimento registrado no dia operacional atual.";
     container.appendChild(empty);
     return;
@@ -541,6 +799,11 @@ function renderMovimentacoesPosto(registros) {
     `;
     container.appendChild(row);
   });
+}
+
+function obterPlantaoAbertoPosto(plantoes = postoState.plantoes) {
+  const registroAtual = obterPlantaoAtualPosto(plantoes);
+  return registroAtual?.status === "ABERTO" ? registroAtual : null;
 }
 
 function ajustarTabelaMovimentacoesPostoMobile() {
@@ -569,6 +832,7 @@ function ajustarTabelaMovimentacoesPostoMobile() {
     if (row.querySelector(".posto-row-toggle")) return;
 
     const valores = {
+      data: spans[0]?.textContent?.trim() || "-",
       hora: spans[1]?.textContent?.trim() || "-",
       motorista: spans[3]?.textContent?.trim() || "-",
       setor: spans[4]?.textContent?.trim() || "-",
@@ -586,6 +850,7 @@ function ajustarTabelaMovimentacoesPostoMobile() {
     details.className = "posto-row-details";
     details.hidden = true;
     details.innerHTML = `
+      <div class="posto-row-detail"><small>Data</small><strong>${escaparHtml(valores.data)}</strong></div>
       <div class="posto-row-detail"><small>Horario</small><strong>${escaparHtml(valores.hora)}</strong></div>
       <div class="posto-row-detail"><small>Motorista</small><strong>${escaparHtml(valores.motorista)}</strong></div>
       <div class="posto-row-detail"><small>Setor</small><strong>${escaparHtml(valores.setor)}</strong></div>
@@ -652,6 +917,7 @@ function atualizarResumoPosto(movimentacoes = {}, plantoes = {}) {
 
   sincronizarCamposPlantaoPosto();
   sincronizarContadorMovimentacaoPosto();
+  if (typeof aplicarContrasteCamposTema === "function") aplicarContrasteCamposTema();
 }
 
 function obterMovimentosDiaOperacionalPosto(modo) {
@@ -915,8 +1181,11 @@ window.addEventListener("DOMContentLoaded", () => {
     getById(id)?.addEventListener("input", event => limitarNumeroInteiroCampo(event.target, 9));
   });
 
+  getById("postoMovQuantidade")?.addEventListener("input", event => {
+    limitarNumeroDecimalCampo(event.target, 5, 3);
+    sincronizarContadorMovimentacaoPosto();
+  });
   getById("postoMovTipo")?.addEventListener("change", sincronizarContadorMovimentacaoPosto);
-  getById("postoMovQuantidade")?.addEventListener("input", sincronizarContadorMovimentacaoPosto);
 
   let cacheMov = {};
   let cachePlantoes = {};
@@ -925,6 +1194,7 @@ window.addEventListener("DOMContentLoaded", () => {
     window.postoConfigCadastro = snap.val() || {};
     atualizarResumoPosto(cacheMov, cachePlantoes);
     atualizarTituloPlantaoPosto();
+    sincronizarPlantoesAutomaticosPosto(cacheMov, cachePlantoes, { forcar: true });
   });
 
   db.ref("posto_movimentacoes").on("value", snap => {
@@ -933,6 +1203,7 @@ window.addEventListener("DOMContentLoaded", () => {
     renderMovimentacoesPosto(cacheMov);
     ajustarTabelaMovimentacoesPostoMobile();
     atualizarResumoPosto(cacheMov, cachePlantoes);
+    sincronizarPlantoesAutomaticosPosto(cacheMov, cachePlantoes);
   });
 
   db.ref("posto_plantoes").on("value", snap => {
@@ -941,7 +1212,12 @@ window.addEventListener("DOMContentLoaded", () => {
     renderPlantoesPosto(cachePlantoes);
     atualizarResumoPosto(cacheMov, cachePlantoes);
     atualizarTituloPlantaoPosto();
+    sincronizarPlantoesAutomaticosPosto(cacheMov, cachePlantoes);
   });
+
+  setInterval(() => {
+    sincronizarPlantoesAutomaticosPosto(cacheMov, cachePlantoes);
+  }, 60000);
 });
 
 
