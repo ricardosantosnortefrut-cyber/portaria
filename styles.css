@@ -6338,7 +6338,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   .report-insight-label{
-    font-size: .62rem;
+    font-size: .68rem;
   }
 
   .report-insight-value{
@@ -6794,7 +6794,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
     background: transparent;
     color: #6f8599;
     font-family: "Manrope", sans-serif;
-    font-size: 7.2px;
+    font-size: 7.8px;
     font-weight: 800;
     cursor: pointer;
     text-align: center;
@@ -6825,7 +6825,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   .veiculos-summary-card span{
-    font-size: 10px;
+    font-size: 10.5px;
   }
 
   .veiculos-summary-card strong{
@@ -6833,7 +6833,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   .veiculos-summary-card small{
-    font-size: .68rem;
+    font-size: .72rem;
   }
 
   .veiculos-next-board{
@@ -7069,7 +7069,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   .posto-metric-title{
-    font-size: .62rem;
+    font-size: .68rem;
   }
 
   .posto-metric-values{
@@ -7081,7 +7081,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   .posto-field-stack span{
-    font-size: .62rem;
+    font-size: .68rem;
   }
 
   .posto-product-card input{
@@ -7344,7 +7344,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   .topo-sub{
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .section{
@@ -7470,7 +7470,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   .info small{
-    font-size: .64rem;
+    font-size: .7rem;
   }
 
   .status-badge{
@@ -7499,7 +7499,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
 
   .card-chave small,
   .card-agenda small{
-    font-size: .64rem;
+    font-size: .69rem;
     line-height: 1.2;
   }
 
@@ -7507,7 +7507,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
     margin-top: 6px;
     min-height: 24px;
     padding: 4px 10px;
-    font-size: .58rem;
+    font-size: .64rem;
   }
 
   .card-actionable b{
@@ -7516,7 +7516,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
 
   .empilhadeira-table-head{
     padding: 7px 8px;
-    font-size: .58rem;
+    font-size: .64rem;
     gap: 6px;
   }
 
@@ -7580,7 +7580,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   .venda-toggle-preview{
-    font-size: .66rem;
+    font-size: .72rem;
     padding: 6px 10px;
   }
 
@@ -7614,7 +7614,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   .venda-items-head span{
-    font-size: .68rem;
+    font-size: .72rem;
   }
 
   .venda-items-block{
@@ -7643,7 +7643,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
 
   .venda-item-card-info span,
   .venda-item-card-info small{
-    font-size: .67rem;
+    font-size: .71rem;
     line-height: 1.2;
   }
 
@@ -7703,7 +7703,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   .venda-list-main span{
-    font-size: .68rem;
+    font-size: .72rem;
     line-height: 1.25;
   }
 
@@ -7731,7 +7731,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   .venda-cupom-text{
-    font-size: .68rem;
+    font-size: .72rem;
     line-height: 1.45;
     padding: 9px 10px;
   }
@@ -7911,7 +7911,7 @@ body.theme-dark .password-modal .confirm-btn-cancel{
     min-width: 0;
     width: auto;
     padding: 4px 2px 3px;
-    font-size: 6.8px;
+    font-size: 7.4px;
     gap: 3px;
   }
 
@@ -8289,38 +8289,6 @@ body.theme-dark #pesagemManual .pesagem-table-row:hover{
 
 body.theme-dark #pesagemManual .pesagem-table-row.is-selected{
   background: #dcebfb;
-}
-
-body.theme-dark .venda-list-row,
-body.theme-dark .card-chave,
-body.theme-dark .card-agenda,
-body.theme-dark .lista-veiculos .veiculo,
-body.theme-dark .cadastro-row,
-body.theme-dark .empilhadeira-table,
-body.theme-dark .posto-table,
-body.theme-dark .posto-table .empilhadeira-table-row{
-  background: rgba(255,255,255,.96);
-  color: #14273b;
-}
-
-body.theme-dark .venda-list-main strong,
-body.theme-dark .venda-list-main span,
-body.theme-dark .venda-list-total,
-body.theme-dark .card-chave b,
-body.theme-dark .card-agenda b,
-body.theme-dark .card-chave small,
-body.theme-dark .card-agenda small,
-body.theme-dark .lista-veiculos .info b,
-body.theme-dark .lista-veiculos .info small,
-body.theme-dark .cadastro-row-info strong,
-body.theme-dark .cadastro-row-info span,
-body.theme-dark .cadastro-row-subline,
-body.theme-dark .cadastro-row-detail,
-body.theme-dark .empilhadeira-table-head > span,
-body.theme-dark .empilhadeira-table-row > span,
-body.theme-dark .posto-table .empilhadeira-table-head > span,
-body.theme-dark .posto-table .empilhadeira-table-row > span{
-  color: #14273b !important;
 }
 
 #cadastros .btn-secondary,
@@ -9005,7 +8973,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   .topo-sub{
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .home-shell{
@@ -9052,11 +9020,11 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   .home-command-badge,
   .home-attention-badge{
     padding: 5px 9px;
-    font-size: 9.5px;
+    font-size: 10.5px;
   }
 
   .home-mini-label{
-    font-size: .62rem;
+    font-size: .68rem;
   }
 
   .home-shortcuts,
@@ -9087,7 +9055,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   .home-shortcut small{
-    font-size: .68rem;
+    font-size: .72rem;
     line-height: 1.2;
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -9112,7 +9080,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
 
   .home-stat-card span{
     margin-bottom: 6px;
-    font-size: 10px;
+    font-size: 10.5px;
   }
 
   .home-stat-card strong{
@@ -9144,7 +9112,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   .home-attention-head strong{
-    font-size: .84rem;
+    font-size: .88rem;
   }
 
   .home-schedule-list,
@@ -9186,7 +9154,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   .home-schedule-time span{
-    font-size: .62rem;
+    font-size: .68rem;
   }
 
   .home-schedule-content strong,
@@ -9198,7 +9166,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   .home-schedule-meta,
   .home-schedule-detail,
   .home-alert-content p{
-    font-size: .68rem;
+    font-size: .72rem;
     line-height: 1.24;
   }
 
@@ -9251,7 +9219,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   body.theme-dark .home-shortcut small{
-    font-size: .68rem;
+    font-size: .72rem;
     line-height: 1.2;
   }
 
@@ -9268,7 +9236,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
 
   body.theme-dark .home-stat-card span{
     margin-bottom: 6px;
-    font-size: 10px;
+    font-size: 10.5px;
   }
 
   body.theme-dark .home-stat-card strong{
@@ -9300,7 +9268,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   body.theme-dark .home-attention-head strong{
-    font-size: .84rem;
+    font-size: .88rem;
   }
 
   body.theme-dark .home-schedule-list,
@@ -9342,7 +9310,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   body.theme-dark .home-schedule-time span{
-    font-size: .62rem;
+    font-size: .68rem;
   }
 
   body.theme-dark .home-schedule-content strong,
@@ -9354,7 +9322,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   body.theme-dark .home-schedule-meta,
   body.theme-dark .home-schedule-detail,
   body.theme-dark .home-alert-content p{
-    font-size: .68rem;
+    font-size: .72rem;
     line-height: 1.24;
   }
 
@@ -9371,6 +9339,270 @@ body.theme-dark #guardachuvas .btn-secondary::before{
 
   body.theme-dark .home-alert-content{
     gap: 2px;
+  }
+
+  body.theme-dark #veiculosGeral .veiculos-summary-grid{
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  body.theme-dark #veiculosGeral .veiculos-summary-card{
+    min-height: 0;
+    padding: 10px 11px;
+    border-radius: 14px;
+  }
+
+  body.theme-dark #veiculosGeral .veiculos-next-board{
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  body.theme-dark #veiculosGeral .veiculos-next-item{
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 8px;
+    padding: 9px 10px;
+    border-radius: 13px;
+  }
+
+  body.theme-dark #posto .posto-stock-grid{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  body.theme-dark #posto .posto-stock-card{
+    gap: 5px;
+    min-height: 0;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  body.theme-dark #posto .posto-stock-card span{
+    font-size: .82rem;
+  }
+
+  body.theme-dark #posto .posto-stock-card strong{
+    font-size: 1.26rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  body.theme-dark #posto .posto-stock-card small{
+    font-size: .72rem;
+    line-height: 1.25;
+  }
+
+  body.theme-dark #posto .posto-actions-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  body.theme-dark #posto .posto-actions-grid .botao{
+    min-height: 44px;
+    margin-top: 0;
+    padding: 10px 12px;
+    border-radius: 15px;
+  }
+
+  body.theme-dark #posto .posto-form-grid,
+  body.theme-dark #posto .posto-plantao-grid{
+    gap: 8px;
+  }
+
+  body.theme-dark #posto .posto-product-card{
+    gap: 6px;
+    padding: 10px 11px;
+    border-radius: 14px;
+  }
+
+  body.theme-dark #posto .posto-product-card strong{
+    font-size: .86rem;
+  }
+
+  body.theme-dark #posto .posto-metric-group{
+    gap: 4px;
+  }
+
+  body.theme-dark #posto .posto-metric-values{
+    gap: 6px;
+  }
+
+  body.theme-dark #posto .posto-field-stack{
+    gap: 2px;
+  }
+
+  body.theme-dark #posto .posto-field-stack span{
+    font-size: .68rem;
+  }
+
+  body.theme-dark #posto .posto-readonly-value{
+    min-height: 32px;
+    padding: 7px 10px;
+    border-radius: 12px;
+    font-size: .78rem;
+  }
+
+  body.theme-dark #vendas .venda-layout{
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  body.theme-dark #vendas .venda-card{
+    gap: 8px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  body.theme-dark #vendas .venda-card-head{
+    gap: 2px;
+  }
+
+  body.theme-dark #vendas .venda-card-head-row{
+    gap: 8px;
+  }
+
+  body.theme-dark #vendas .venda-card-head strong{
+    font-size: .86rem;
+  }
+
+  body.theme-dark #vendas .venda-card-head span{
+    font-size: .7rem;
+    line-height: 1.22;
+  }
+
+  body.theme-dark #vendas .venda-toggle-preview{
+    font-size: .72rem;
+    padding: 6px 10px;
+  }
+
+  body.theme-dark #vendas .venda-form-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  body.theme-dark #vendas .venda-items-head{
+    align-items: flex-start;
+    gap: 2px;
+    flex-direction: column;
+  }
+
+  body.theme-dark #vendas .venda-items-head strong{
+    font-size: .8rem;
+  }
+
+  body.theme-dark #vendas .venda-items-head span{
+    font-size: .72rem;
+  }
+
+  body.theme-dark #vendas .venda-items-block{
+    gap: 6px;
+  }
+
+  body.theme-dark #vendas .venda-item-card{
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px 9px;
+    border-radius: 13px;
+  }
+
+  body.theme-dark #vendas .venda-item-card-info{
+    gap: 2px;
+  }
+
+  body.theme-dark #vendas .venda-item-card-info strong{
+    font-size: .76rem;
+  }
+
+  body.theme-dark #vendas .venda-item-card-info span,
+  body.theme-dark #vendas .venda-item-card-info small{
+    font-size: .71rem;
+    line-height: 1.2;
+  }
+
+  body.theme-dark #vendas .venda-actions{
+    gap: 6px;
+  }
+
+  body.theme-dark #vendas .venda-actions-inline .botao,
+  body.theme-dark #vendas .venda-actions .botao,
+  body.theme-dark #vendas .venda-cupom-preview + .venda-actions .botao{
+    flex: 1 1 100%;
+    width: 100%;
+    min-height: 38px;
+    padding: 7px 10px;
+    font-size: .76rem;
+    border-radius: 13px;
+  }
+
+  body.theme-dark #vendas .venda-card > .venda-actions{
+    flex-wrap: nowrap;
+  }
+
+  body.theme-dark #vendas .venda-card > .venda-actions .botao{
+    flex: 1 1 0;
+    width: auto;
+  }
+
+  body.theme-dark #vendas .venda-card > .venda-actions .btn-secondary{
+    order: 1;
+  }
+
+  body.theme-dark #vendas .venda-card > .venda-actions .btn-primary{
+    order: 2;
+  }
+
+  body.theme-dark #vendas .venda-form-grid--item .venda-actions-inline{
+    margin-top: 0;
+  }
+
+  body.theme-dark #vendas .venda-form-grid--item .venda-actions-inline .botao{
+    min-height: 38px;
+  }
+
+  body.theme-dark #vendas .venda-list-row{
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px 11px;
+    border-radius: 13px;
+  }
+
+  body.theme-dark #vendas .venda-list-main strong{
+    font-size: .78rem;
+  }
+
+  body.theme-dark #vendas .venda-list-main span{
+    font-size: .72rem;
+    line-height: 1.25;
+  }
+
+  body.theme-dark #vendas .venda-list-total{
+    font-size: .76rem;
+  }
+
+  body.theme-dark #vendas .venda-cupom-preview{
+    min-height: 180px;
+    padding: 10px;
+    border-radius: 13px;
+  }
+
+  body.theme-dark #vendas .venda-cupom-card{
+    gap: 7px;
+  }
+
+  body.theme-dark #vendas .venda-cupom-card strong{
+    font-size: .92rem;
+  }
+
+  body.theme-dark #vendas .venda-cupom-meta,
+  body.theme-dark #vendas .venda-cupom-details span{
+    font-size: .74rem;
+  }
+
+  body.theme-dark #vendas .venda-cupom-text{
+    font-size: .72rem;
+    line-height: 1.45;
+    padding: 9px 10px;
   }
 }
 
@@ -9399,7 +9631,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   .home-shortcut small{
-    font-size: .65rem;
+    font-size: .69rem;
   }
 
   .home-stat-card{
@@ -9412,7 +9644,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   .home-stat-card small{
-    font-size: .69rem;
+    font-size: .72rem;
   }
 
   .home-attention-head{
@@ -9428,7 +9660,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   .home-attention-head strong{
-    font-size: .8rem;
+    font-size: .84rem;
   }
 
   .home-schedule-empty,
@@ -9453,7 +9685,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   .home-alert-content p{
-    font-size: .66rem;
+    font-size: .7rem;
   }
 
   body.theme-dark .home-shortcuts,
@@ -9472,7 +9704,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   body.theme-dark .home-shortcut small{
-    font-size: .65rem;
+    font-size: .69rem;
   }
 
   body.theme-dark .home-stat-card{
@@ -9485,7 +9717,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   body.theme-dark .home-stat-card small{
-    font-size: .69rem;
+    font-size: .72rem;
   }
 
   body.theme-dark .home-attention-head{
@@ -9501,7 +9733,7 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   body.theme-dark .home-attention-head strong{
-    font-size: .8rem;
+    font-size: .84rem;
   }
 
   body.theme-dark .home-schedule-empty,
@@ -9526,6 +9758,6 @@ body.theme-dark #guardachuvas .btn-secondary::before{
   }
 
   body.theme-dark .home-alert-content p{
-    font-size: .66rem;
+    font-size: .7rem;
   }
 }
