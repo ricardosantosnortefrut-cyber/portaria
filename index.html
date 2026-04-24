@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
@@ -17,9 +18,49 @@
 
         <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="auth-pending">
 
     <div id="toast">Registro realizado com sucesso!</div>
+
+    <div id="authGate" class="auth-gate" aria-hidden="true">
+      <div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+        <div class="auth-card-brand">
+          <img src="imagens/logo-nortefrut.png" alt="Nortefrut">
+        </div>
+
+        <div class="auth-card-head">
+          <div class="auth-card-icon">
+            <i data-lucide="shield-check"></i>
+          </div>
+          <div class="auth-card-copy">
+            <strong id="authTitle">Acesso ao sistema</strong>
+          </div>
+        </div>
+
+        <form id="authForm" class="auth-form" novalidate>
+          <label class="auth-field" for="authEmail">
+            <span>E-mail</span>
+            <div class="auth-input-wrap">
+              <input id="authEmail" type="email" inputmode="email" autocomplete="username" placeholder="seuemail@empresa.com">
+            </div>
+          </label>
+
+          <label class="auth-field" for="authPassword">
+            <span>Senha</span>
+            <div class="auth-input-wrap">
+              <input id="authPassword" type="password" autocomplete="current-password" placeholder="Digite sua senha">
+            </div>
+          </label>
+
+          <p id="authFeedback" class="auth-feedback" aria-live="polite"></p>
+
+          <button id="authSubmit" class="auth-submit" type="submit">
+            <i data-lucide="log-in"></i>
+            <span>Entrar</span>
+          </button>
+        </form>
+      </div>
+    </div>
 
     <header class="topo">
   <div class="topo-card">
@@ -32,6 +73,11 @@
       <div class="topo-sub">Sistema de Controle • Nortefrut</div>
     </div>
 
+    <button id="logoutButton" class="logout-button is-hidden" type="button" aria-label="Encerrar sessão" title="Encerrar sessão">
+      <i data-lucide="log-out"></i>
+      <span>Sair</span>
+    </button>
+
     <button id="themeToggle" class="theme-toggle" type="button" aria-label="Ativar modo noturno" title="Alternar tema">
       <i data-lucide="moon-star"></i>
     </button>
@@ -39,13 +85,35 @@
 </header>
 
 <main class="app-shell">
+    <aside class="portal-sidebar" aria-label="Navegação principal">
+        <div class="portal-sidebar-card">
+            <div class="portal-sidebar-kicker">Portal</div>
+            <strong class="portal-sidebar-title">Navegação</strong>
+            <p class="portal-sidebar-text">Acesse os módulos principais do sistema.</p>
+        </div>
+
+        <nav class="portal-nav-list">
+            <button class="portal-nav-btn" data-nav="inicio"><i data-lucide="house"></i><span>Início</span></button>
+            <button class="portal-nav-btn" data-nav="veiculosGeral"><i data-lucide="car-front"></i><span>Frota</span></button>
+            <button class="portal-nav-btn" data-nav="posto"><i data-lucide="fuel"></i><span>Posto</span></button>
+            <button class="portal-nav-btn" data-nav="chaves"><i data-lucide="key-round"></i><span>Chaves</span></button>
+            <button class="portal-nav-btn" data-nav="empilhadeiras"><i data-lucide="forklift"></i><span>Empilhadeiras</span></button>
+            <button class="portal-nav-btn" data-nav="jogos"><i data-lucide="gamepad-2"></i><span>Jogos</span></button>
+            <button class="portal-nav-btn" data-nav="guardachuvas"><i data-lucide="umbrella"></i><span>Guarda-chuvas</span></button>
+            <button class="portal-nav-btn" data-nav="vendas"><i data-lucide="banknote"></i><span>Vendas</span></button>
+            <button class="portal-nav-btn" data-nav="pesagemManual"><i data-lucide="truck"></i><span>Balança</span></button>
+            <button class="portal-nav-btn" data-nav="relatorios"><i data-lucide="chart-column"></i><span>Relatórios</span></button>
+            <button class="portal-nav-btn" data-nav="cadastros"><i data-lucide="settings-2"></i><span>Cadastros</span></button>
+        </nav>
+    </aside>
+
+    <div class="app-shell-content">
     <section id="inicio" class="section">
         <div class="home-shell">
             <article class="home-command-panel">
                 <div class="home-shortcuts-panel">
                     <div class="home-panel-head">
                         <span class="home-command-badge">Acessos rápidos</span>
-                        <strong>Entradas principais do sistema</strong>
                     </div>
 
                     <div class="home-shortcuts-group">
@@ -115,7 +183,6 @@
             <div class="home-stats-panel">
                 <div class="home-panel-head">
                     <span class="home-command-badge">Resumo ao vivo</span>
-                    <strong>Números principais do turno</strong>
                 </div>
 
                 <div class="home-stats home-stats-expanded">
@@ -1518,6 +1585,7 @@
   </div>
 </div>
 
+    </div>
 </main>
 
 <nav class="bottom-nav" aria-label="Navegação principal">
@@ -1536,6 +1604,7 @@
 
         <script src="js/data.js"></script>
         <script src="js/ui.js"></script>
+        <script src="js/auth.js"></script>
         <script src="js/autocomplete.js"></script>
         <script src="js/cadastros.js"></script>
         <script src="js/veiculos.js"></script>

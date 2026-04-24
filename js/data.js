@@ -1,9 +1,16 @@
 ﻿const firebaseConfig = {
+  apiKey: "AIzaSyAHzJiTYaSomxAvGbq3G_Nvc2BGNXjcWyw",
+  authDomain: "portarianortefrut.firebaseapp.com",
   databaseURL: "https://portarianortefrut-default-rtdb.firebaseio.com/",
-  projectId: "portarianortefrut"
+  projectId: "portarianortefrut",
+  storageBucket: "portarianortefrut.firebasestorage.app",
+  messagingSenderId: "350089005789",
+  appId: "1:350089005789:web:2c10cad278719b70876934",
+  measurementId: "G-PCZZD4L400"
 };
 
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const db = firebase.database();
 
 const veiculosCadastrados = [
