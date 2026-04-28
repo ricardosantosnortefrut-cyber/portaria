@@ -15,10 +15,11 @@ function fecharFormGuarda() {
 }
 
 function limparFormGuarda() {
-  ["gu_num", "gu_quem", "gu_setor", "gu_porteiro"].forEach(id => {
+  ["gu_num", "gu_quem", "gu_setor"].forEach(id => {
     getById(id).value = "";
   });
-  ["lista_guardas_num", "lista_guardas_setor", "lista_guardas_porteiro"].forEach(id => {
+  if (typeof preencherCamposOperadorAtual === "function") preencherCamposOperadorAtual();
+  ["lista_guardas_num", "lista_guardas_setor"].forEach(id => {
     const lista = getById(id);
     if (!lista) return;
     limparConteudoElemento(lista);
@@ -101,7 +102,6 @@ function configurarAutocompleteGuarda(inputId, listaId, getOpcoes) {
 function configurarAutocompletesGuarda() {
   configurarAutocompleteGuarda("gu_num", "lista_guardas_num", obterGuardasLivres);
   configurarAutocompleteGuarda("gu_setor", "lista_guardas_setor", () => setoresGuardas);
-  configurarAutocompleteGuarda("gu_porteiro", "lista_guardas_porteiro", () => porteirosAutorizados);
 }
 
 function obterGuardasLivres() {
@@ -113,35 +113,37 @@ function obterGuardasLivres() {
 }
 
 function preencherOpcoesGuarda() {
-  ["gu_num", "gu_setor", "gu_porteiro"].forEach(id => {
+  ["gu_num", "gu_setor"].forEach(id => {
     const campo = getById(id);
     if (campo) campo.value = "";
   });
+  if (typeof preencherCamposOperadorAtual === "function") preencherCamposOperadorAtual();
 }
 
 function salvarGuarda() {
   const botao = document.activeElement;
+  const assinatura = typeof obterAssinaturaUsuarioAtual === "function"
+    ? obterAssinaturaUsuarioAtual()
+    : { usuarioUid: "", usuarioLogin: "", usuarioNome: "" };
   const gu = {
     numero: normalizarTexto(getById("gu_num").value),
     quem: normalizarTexto(getById("gu_quem").value),
     setor: normalizarTexto(getById("gu_setor").value),
-    porteiro: normalizarTexto(getById("gu_porteiro").value),
+    porteiro: normalizarTexto(assinatura.usuarioNome || getById("gu_porteiro").value || ""),
+    usuarioUid: assinatura.usuarioUid || "",
+    usuarioLogin: assinatura.usuarioLogin || "",
+    usuarioNome: assinatura.usuarioNome || "",
     dataRetirada: new Date().toLocaleDateString("pt-BR"),
     horaRetirada: new Date().toLocaleTimeString("pt-BR", { hour12: false })
   };
 
   if (!gu.numero || !gu.quem || !gu.setor || !gu.porteiro) {
-    avisoValidacao("Preencha número, quem retirou, setor e porteiro.");
+    avisoValidacao("Preencha número, quem retirou e setor.");
     return;
   }
 
   if (!guardasDisponiveis.includes(gu.numero)) {
     avisoValidacao("Selecione um guarda-chuva válido da lista.");
-    return;
-  }
-
-  if (!validarPorteiroAutorizado(gu.porteiro)) {
-    avisoValidacao("Selecione um porteiro válido na lista.");
     return;
   }
 
@@ -191,7 +193,7 @@ function renderGuardasAtivos(dados) {
       linhas: [
         { icon: "user-round", text: `Retirado por: ${guarda.quem || "-"}` },
         { icon: "map-pin", text: `Setor: ${guarda.setor || "-"}` },
-        { icon: "shield-check", text: `Porteiro: ${guarda.porteiro || "-"}` }
+        { icon: "shield-check", text: `Registrado por: ${guarda.usuarioNome || guarda.porteiro || "-"}` }
       ],
       actionText: "Registrar devolução",
       actionName: "devolver-guarda",
@@ -217,8 +219,14 @@ function devolverGuarda(id) {
       return;
     }
 
+    const assinatura = typeof obterAssinaturaUsuarioAtual === "function"
+      ? obterAssinaturaUsuarioAtual()
+      : { usuarioUid: "", usuarioLogin: "", usuarioNome: "" };
     const dados = {
       ...original,
+      usuarioDevolucaoUid: assinatura.usuarioUid || "",
+      usuarioDevolucaoLogin: assinatura.usuarioLogin || "",
+      usuarioDevolucaoNome: assinatura.usuarioNome || "",
       dataDevolucao: new Date().toLocaleDateString("pt-BR"),
       horaDevolucao: new Date().toLocaleTimeString("pt-BR", { hour12: false })
     };

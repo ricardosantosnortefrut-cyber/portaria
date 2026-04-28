@@ -6,23 +6,29 @@ function pesagemDisponivelNoDispositivoAtual() {
 
 // --- Navegacao ---
 async function abrir(id) {
-  if (id === "pesagemManual" && !pesagemDisponivelNoDispositivoAtual()) {
-    avisoInfo("A pesagem manual está disponível apenas no desktop.", "monitor-smartphone");
+  if (typeof verificarPermissaoNavegacao === "function" && !verificarPermissaoNavegacao(id, { avisar: true })) {
     return;
   }
 
-  if (id === "cadastros") {
+  if (id === "cadastros" && typeof solicitarSenhaAcesso === "function") {
     const senha = await solicitarSenhaAcesso({
       titulo: "Acesso a Cadastros",
       mensagem: "Digite a senha para abrir a area de configuracoes.",
       placeholder: "Senha de acesso",
       confirmarTexto: "Liberar acesso"
     });
+
     if (senha === null) return;
+
     if (String(senha).trim() !== "1840") {
       avisoErro("Senha incorreta.");
       return;
     }
+  }
+
+  if (id === "pesagemManual" && !pesagemDisponivelNoDispositivoAtual()) {
+    avisoInfo("A pesagem manual está disponível apenas no desktop.", "monitor-smartphone");
+    return;
   }
 
   const secao = getById(id);
@@ -35,6 +41,8 @@ async function abrir(id) {
   ocultarSecoes();
   secao.classList.add("section-active");
   secao.style.display = "block";
+  resetarRolagemSecao(secao);
+  sincronizarTravaRolagemDesktop();
 
   const menu = document.querySelector(".menu");
   if (menu) {
@@ -63,14 +71,14 @@ async function abrir(id) {
   }
 
   atualizarNavegacaoAtiva(id);
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  rolarParaTopoContextual("smooth");
 }
 
 function voltarVeiculos() {
   limparFormularioVeiculos();
   abrir("veiculosGeral");
   exibirSubVeiculos("listaVeiculosContent");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  rolarParaTopoContextual("smooth");
 }
 
 // --- Veiculos ---
@@ -82,7 +90,7 @@ function exibirSubVeiculos(idSub) {
   if (idSub === "listaVeiculosContent") {
     renderListaVeiculos(statusVeiculosAtual);
   }
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  rolarParaTopoContextual("smooth");
 }
 
 function fecharSubVeiculos() {
@@ -90,7 +98,7 @@ function fecharSubVeiculos() {
   getById("containerBotoesVeiculos").style.display = "grid";
   mostrarElemento("veiculosOverview");
   renderVisaoGeralVeiculos();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  rolarParaTopoContextual("smooth");
 }
 
 function obterAgendamentosVeiculosOrdenados() {
@@ -243,6 +251,7 @@ function prepararForm(placa) {
   limparFormularioVeiculos();
   abrir("veiculosForm");
   getById("v_placa").value = placa;
+  if (typeof preencherCamposOperadorAtual === "function") preencherCamposOperadorAtual();
   if (typeof aplicarContrasteCamposTema === "function") aplicarContrasteCamposTema();
 
   db.ref(`status_veiculos/${placa}`).once("value").then(snap => {
@@ -262,13 +271,16 @@ function prepararForm(placa) {
 }
 
 function limparFormularioVeiculos() {
-  ["v_km_saida", "v_condutor", "v_destino", "v_km_retorno", "v_porteiro_retorno", "v_obs"].forEach(id => {
+  ["v_km_saida", "v_condutor", "v_destino", "v_km_retorno", "v_obs"].forEach(id => {
     getById(id).value = "";
   });
+  if (typeof preencherCamposOperadorAtual === "function") preencherCamposOperadorAtual();
   getById("info_saida").innerText = "";
-  ["lista_condutores", "lista_porteiros_retorno"].forEach(id => {
-    limparConteudoElemento(id);
-    ocultarListaAutocomplete(getById(id));
+  ["lista_condutores"].forEach(id => {
+    const lista = getById(id);
+    if (!lista) return;
+    limparConteudoElemento(lista);
+    ocultarListaAutocomplete(lista);
   });
   document.querySelectorAll('input[name="c_luz"], input[name="c_pneu"], input[name="c_limp"], input[name="c_pneu_visual"]').forEach(r => {
     r.checked = false;
@@ -297,13 +309,21 @@ function processarVeiculo() {
       return;
     }
 
+    const assinaturaSaida = typeof obterAssinaturaUsuarioAtual === "function"
+      ? obterAssinaturaUsuarioAtual()
+      : { usuarioUid: "", usuarioLogin: "", usuarioNome: "" };
     const dados = {
       emUso: true,
       placa,
+      dataSaida: new Date().toLocaleDateString("pt-BR"),
       kmSaida,
       condutor,
       destino,
-      horaSaida: new Date().toLocaleTimeString("pt-BR", { hour12: false })
+      horaSaida: new Date().toLocaleTimeString("pt-BR", { hour12: false }),
+      porteiroSaida: assinaturaSaida.usuarioNome || "",
+      usuarioSaidaUid: assinaturaSaida.usuarioUid || "",
+      usuarioSaidaLogin: assinaturaSaida.usuarioLogin || "",
+      usuarioSaidaNome: assinaturaSaida.usuarioNome || ""
     };
 
     alternarBotaoCarregando(botao, true);
@@ -329,8 +349,11 @@ function processarVeiculo() {
       return;
     }
 
+    const assinaturaRetorno = typeof obterAssinaturaUsuarioAtual === "function"
+      ? obterAssinaturaUsuarioAtual()
+      : { usuarioUid: "", usuarioLogin: "", usuarioNome: "" };
     const kmRetorno = getById("v_km_retorno").value.trim();
-    const porteiroRetorno = getById("v_porteiro_retorno").value.trim().toUpperCase();
+    const porteiroRetorno = normalizarTexto(assinaturaRetorno.usuarioNome || getById("v_porteiro_retorno").value || "");
     if (!kmRetorno) {
       avisoValidacao("Informe o KM do retorno.");
       alternarBotaoCarregando(botao, false, "Gravar Registro");
@@ -347,20 +370,17 @@ function processarVeiculo() {
       return;
     }
     if (!porteiroRetorno) {
-      avisoValidacao("Informe o porteiro do retorno.");
+      avisoValidacao("Nao foi possivel identificar o usuario logado para registrar o retorno.");
       alternarBotaoCarregando(botao, false, "Gravar Registro");
       return;
     }
-    if (!validarPorteiroAutorizado(porteiroRetorno)) {
-      avisoValidacao("Selecione um porteiro válido na lista.");
-      alternarBotaoCarregando(botao, false, "Gravar Registro");
-      return;
-    }
-
     const historico = {
       ...registroSaida,
       kmRetorno,
       porteiroRetorno,
+      usuarioRetornoUid: assinaturaRetorno.usuarioUid || "",
+      usuarioRetornoLogin: assinaturaRetorno.usuarioLogin || "",
+      usuarioRetornoNome: assinaturaRetorno.usuarioNome || "",
       dataRetorno: new Date().toLocaleDateString("pt-BR"),
       horaRetorno: new Date().toLocaleTimeString("pt-BR", { hour12: false }),
       checklist_luz: document.querySelector('input[name="c_luz"]:checked')?.value || "N/A",
@@ -377,7 +397,7 @@ function processarVeiculo() {
         limparFormularioVeiculos();
         abrir("veiculosGeral");
         exibirSubVeiculos("listaVeiculosContent");
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        rolarParaTopoContextual("smooth");
       })
       .catch(() => {
         avisoErro("Erro ao registrar o retorno.");

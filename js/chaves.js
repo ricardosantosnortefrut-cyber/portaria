@@ -11,9 +11,10 @@ function cancelarFormChave() {
 }
 
 function limparFormChaves() {
-  ["ch_sala", "ch_num", "ch_quem", "ch_porteiro"].forEach(id => {
+  ["ch_sala", "ch_num", "ch_quem"].forEach(id => {
     getById(id).value = "";
   });
+  if (typeof preencherCamposOperadorAtual === "function") preencherCamposOperadorAtual();
   const lista = getById("lista_chaves_setor");
   if (lista) {
     limparConteudoElemento(lista);
@@ -26,21 +27,24 @@ function salvarChave() {
   const sala = getById("ch_sala").value.trim().toUpperCase();
   const num = getById("ch_num").value.trim();
   const quem = normalizarTexto(getById("ch_quem").value);
-  const porteiro = normalizarTexto(getById("ch_porteiro").value);
+  const assinatura = typeof obterAssinaturaUsuarioAtual === "function"
+    ? obterAssinaturaUsuarioAtual()
+    : { usuarioUid: "", usuarioLogin: "", usuarioNome: "" };
+  const porteiro = normalizarTexto(assinatura.usuarioNome || getById("ch_porteiro").value || "");
 
-  if (!sala || !num || !quem || !porteiro) {
-    avisoValidacao("Preencha sala, chave, quem retirou e porteiro.");
+  if (!porteiro) {
+    avisoValidacao("Nao foi possivel identificar o usuario logado para registrar a retirada.");
+    return;
+  }
+
+  if (!sala || !num || !quem) {
+    avisoValidacao("Preencha sala, chave e quem retirou.");
     return;
   }
 
   const chaveExiste = chavesCadastradas.some(item => item.sala.toUpperCase() === sala && String(item.numero) === String(num));
   if (!chaveExiste) {
     avisoValidacao("Selecione uma sala ou setor válido na lista.");
-    return;
-  }
-
-  if (!validarPorteiroAutorizado(porteiro)) {
-    avisoValidacao("Selecione um porteiro válido na lista.");
     return;
   }
 
@@ -57,6 +61,9 @@ function salvarChave() {
       num,
       quem,
       porteiro,
+      usuarioUid: assinatura.usuarioUid || "",
+      usuarioLogin: assinatura.usuarioLogin || "",
+      usuarioNome: assinatura.usuarioNome || "",
       dataRetirada: new Date().toLocaleDateString("pt-BR"),
       horaRetirada: new Date().toLocaleTimeString("pt-BR", { hour12: false })
     };
@@ -72,38 +79,6 @@ function salvarChave() {
     }).finally(() => {
       alternarBotaoCarregando(botao, false, "Salvar Retirada");
     });
-  });
-}
-
-function configurarAutocompletePorteiroChaves() {
-  const input = getById("ch_porteiro");
-  const lista = getById("lista_porteiros_chaves");
-  if (!input || !lista) return;
-  habilitarTecladoAutocomplete(input, lista);
-
-  function renderResultados(termo) {
-    const busca = termo.trim().toUpperCase();
-    const resultados = busca ? porteirosAutorizados.filter(nome => nome.includes(busca)) : porteirosAutorizados;
-    if (resultados.length === 0) {
-      limparConteudoElemento(lista);
-      ocultarListaAutocomplete(lista);
-      return;
-    }
-
-    preencherAutocompleteLista(lista, resultados.map(nome =>
-      criarItemAutocomplete(nome, () => {
-        input.value = nome;
-        ocultarListaAutocomplete(lista);
-      })
-    ));
-
-    mostrarListaAutocomplete(lista);
-  }
-
-  input.addEventListener("input", function () { renderResultados(this.value); });
-  input.addEventListener("focus", function () { renderResultados(this.value); });
-  document.addEventListener("click", function (e) {
-    if (!input.contains(e.target) && !lista.contains(e.target)) ocultarListaAutocomplete(lista);
   });
 }
 
@@ -123,7 +98,7 @@ function renderChavesAtivas(dados) {
       titulo: `Nº ${chave.num} - ${chave.sala}`,
       linhas: [
         { icon: "user-round", text: `Retirado por: ${chave.quem || "-"}` },
-        { icon: "shield-check", text: `Porteiro: ${chave.porteiro || "-"}` },
+        { icon: "shield-check", text: `Registrado por: ${chave.usuarioNome || chave.porteiro || "-"}` },
         { icon: "calendar-days", text: `Data: ${chave.dataRetirada || "-"} às ${chave.horaRetirada || "-"}` }
       ],
       actionText: "Registrar devolução",
@@ -149,8 +124,14 @@ function devolverChave(id) {
       return;
     }
 
+    const assinatura = typeof obterAssinaturaUsuarioAtual === "function"
+      ? obterAssinaturaUsuarioAtual()
+      : { usuarioUid: "", usuarioLogin: "", usuarioNome: "" };
     const dadosHistorico = {
       ...dadosOriginais,
+      usuarioDevolucaoUid: assinatura.usuarioUid || "",
+      usuarioDevolucaoLogin: assinatura.usuarioLogin || "",
+      usuarioDevolucaoNome: assinatura.usuarioNome || "",
       dataDevolucao: new Date().toLocaleDateString("pt-BR"),
       horaDevolucao: new Date().toLocaleTimeString("pt-BR", { hour12: false })
     };

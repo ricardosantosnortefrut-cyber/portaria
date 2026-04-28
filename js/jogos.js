@@ -37,67 +37,35 @@ function configurarAutocompleteNomeJogos() {
   input.dataset.autocompleteJogosReady = "true";
 }
 
-function configurarAutocompletePorteiroJogos() {
-  const input = getById("jo_porteiro");
-  const lista = getById("lista_jogos_porteiro");
-  if (!input || !lista || input.dataset.autocompleteReady === "true") return;
-  habilitarTecladoAutocomplete(input, lista);
-
-  function renderResultados() {
-    const termo = normalizarTexto(input.value || "");
-    const resultados = termo
-      ? porteirosAutorizados.filter(nome => nome.includes(termo))
-      : porteirosAutorizados;
-
-    if (!resultados.length) {
-      limparConteudoElemento(lista);
-      ocultarListaAutocomplete(lista);
-      return;
-    }
-
-    preencherAutocompleteLista(lista, resultados.map(nome =>
-      criarItemAutocomplete(nome, () => {
-        input.value = nome;
-        ocultarListaAutocomplete(lista);
-      })
-    ));
-    mostrarListaAutocomplete(lista);
-  }
-
-  input.addEventListener("input", renderResultados);
-  input.addEventListener("focus", renderResultados);
-  document.addEventListener("click", e => {
-    if (!input.contains(e.target) && !lista.contains(e.target)) {
-      ocultarListaAutocomplete(lista);
-    }
-  });
-
-  input.dataset.autocompleteReady = "true";
-}
-
 function salvarJogo() {
   const botao = document.activeElement;
+  const assinatura = typeof obterAssinaturaUsuarioAtual === "function"
+    ? obterAssinaturaUsuarioAtual()
+    : { usuarioUid: "", usuarioLogin: "", usuarioNome: "" };
   const jo = {
     funcionario: normalizarTexto(getById("jo_func").value),
     autorizador: normalizarTexto(getById("jo_aut").value),
     jogo: normalizarTexto(getById("jo_jogo").value),
-    porteiro: normalizarTexto(getById("jo_porteiro").value),
+    porteiro: normalizarTexto(assinatura.usuarioNome || getById("jo_porteiro").value || ""),
+    usuarioUid: assinatura.usuarioUid || "",
+    usuarioLogin: assinatura.usuarioLogin || "",
+    usuarioNome: assinatura.usuarioNome || "",
     data: new Date().toLocaleDateString("pt-BR"),
     hora: new Date().toLocaleTimeString("pt-BR", { hour12: false })
   };
 
-  if (!jo.funcionario || !jo.autorizador || !jo.jogo || !jo.porteiro) {
-    avisoValidacao("Preencha funcionário, autorizador, jogo e porteiro.");
+  if (!jo.porteiro) {
+    avisoValidacao("Nao foi possivel identificar o usuario logado para registrar a retirada.");
+    return;
+  }
+
+  if (!jo.funcionario || !jo.autorizador || !jo.jogo) {
+    avisoValidacao("Preencha funcionario, autorizador e jogo.");
     return;
   }
 
   if (!jogosDisponiveis.includes(jo.jogo)) {
-    avisoValidacao("Selecione um jogo válido na lista.");
-    return;
-  }
-
-  if (!validarPorteiroAutorizado(jo.porteiro)) {
-    avisoValidacao("Selecione um porteiro válido na lista.");
+    avisoValidacao("Selecione um jogo vÃ¡lido na lista.");
     return;
   }
 
@@ -106,7 +74,7 @@ function salvarJogo() {
     const jogosAtivos = Object.values(snap.val() || {});
     const jogoJaEmUso = jogosAtivos.some(item => normalizarTexto(item.jogo || "") === jo.jogo);
     if (jogoJaEmUso) {
-      avisoValidacao("Esse jogo já está em uso no momento.");
+      avisoValidacao("Esse jogo jÃ¡ estÃ¡ em uso no momento.");
       return;
     }
 
@@ -134,14 +102,14 @@ function renderJogosAtivos(jogos) {
   Object.entries(jogos).forEach(([id, jogo]) => {
     container.appendChild(criarCardRegistro({
       classes: "card-chave card-chave--jogo",
-      titulo: jogo.jogo || "-",
-      linhas: [
-        { icon: "user-round", text: `Funcionário: ${jogo.funcionario || "-"}` },
-        { icon: "shield-check", text: `Autorizador: ${jogo.autorizador || "-"}` },
-        { icon: "badge-check", text: `Porteiro: ${jogo.porteiro || "-"}` },
-        { icon: "calendar-days", text: `Data: ${jogo.data || "-"} às ${jogo.hora || "-"}`.trim() }
-      ],
-      actionText: "Registrar devolução",
+        titulo: jogo.jogo || "-",
+        linhas: [
+          { icon: "user-round", text: `FuncionÃ¡rio: ${jogo.funcionario || "-"}` },
+          { icon: "shield-check", text: `Autorizador: ${jogo.autorizador || "-"}` },
+          { icon: "badge-check", text: `Registrado por: ${jogo.usuarioNome || jogo.porteiro || "-"}` },
+          { icon: "calendar-days", text: `Data: ${jogo.data || "-"} Ã s ${jogo.hora || "-"}`.trim() }
+        ],
+      actionText: "Registrar devoluÃ§Ã£o",
       actionName: "devolver-jogo",
       actionId: id
     }));
@@ -160,12 +128,18 @@ function devolverJogo(id) {
   db.ref(`jogos_em_uso/${id}`).once("value").then(snap => {
     const original = snap.val();
     if (!original) {
-      avisoErro("Jogo não encontrado.");
+      avisoErro("Jogo nÃ£o encontrado.");
       return;
     }
 
+    const assinatura = typeof obterAssinaturaUsuarioAtual === "function"
+      ? obterAssinaturaUsuarioAtual()
+      : { usuarioUid: "", usuarioLogin: "", usuarioNome: "" };
     const dados = {
       ...original,
+      usuarioDevolucaoUid: assinatura.usuarioUid || "",
+      usuarioDevolucaoLogin: assinatura.usuarioLogin || "",
+      usuarioDevolucaoNome: assinatura.usuarioNome || "",
       dataDevolucao: new Date().toLocaleDateString("pt-BR"),
       horaDevolucao: new Date().toLocaleTimeString("pt-BR", { hour12: false })
     };
@@ -175,7 +149,7 @@ function devolverJogo(id) {
       .then(() => avisoSucesso("Jogo devolvido com sucesso.", "gamepad-2"))
       .catch(error => {
         console.error("Erro ao devolver jogo:", error);
-        avisoErro("Erro ao registrar a devolução.");
+        avisoErro("Erro ao registrar a devoluÃ§Ã£o.");
       });
   });
 }
@@ -184,20 +158,13 @@ function abrirFormJogo() {
   getById("formJogoReal")?.reset();
   const jogo = getById("jo_jogo");
   if (jogo) jogo.value = "";
-  const porteiro = getById("jo_porteiro");
-  if (porteiro) porteiro.value = "";
+  if (typeof preencherCamposOperadorAtual === "function") preencherCamposOperadorAtual();
   const listaJogos = getById("lista_jogos_nome");
   if (listaJogos) {
     limparConteudoElemento(listaJogos);
     ocultarListaAutocomplete(listaJogos);
   }
-  const lista = getById("lista_jogos_porteiro");
-  if (lista) {
-    limparConteudoElemento(lista);
-    ocultarListaAutocomplete(lista);
-  }
   configurarAutocompleteNomeJogos();
-  configurarAutocompletePorteiroJogos();
   mostrarElemento("formJogoContainer");
   ocultarElemento("btnAbrirJogo");
 }
@@ -206,17 +173,11 @@ function fecharFormJogo() {
   getById("formJogoReal")?.reset();
   const jogo = getById("jo_jogo");
   if (jogo) jogo.value = "";
-  const porteiro = getById("jo_porteiro");
-  if (porteiro) porteiro.value = "";
+  if (typeof preencherCamposOperadorAtual === "function") preencherCamposOperadorAtual();
   const listaJogos = getById("lista_jogos_nome");
   if (listaJogos) {
     limparConteudoElemento(listaJogos);
     ocultarListaAutocomplete(listaJogos);
-  }
-  const lista = getById("lista_jogos_porteiro");
-  if (lista) {
-    limparConteudoElemento(lista);
-    ocultarListaAutocomplete(lista);
   }
   ocultarElemento("formJogoContainer");
   mostrarElemento("btnAbrirJogo");

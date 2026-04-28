@@ -10,6 +10,248 @@ const dashboardState = {
 };
 
 const THEME_STORAGE_KEY = "nortefrut-theme";
+const NAV_PERMISSION_MAP = Object.freeze({
+  relatorioFrota: "relatorios",
+  relatorioAgendamentos: "relatorios",
+  relatorioPosto: "relatorios",
+  relatorioEmpilhadeiras: "relatorios",
+  relatorioChaves: "relatorios",
+  relatorioGuarda: "relatorios",
+  relatorioJogos: "relatorios",
+  relatorioVendas: "relatorios"
+});
+const ACTION_PERMISSION_MAP = Object.freeze({
+  "abrir-agendamento": { key: "veiculosGeral", level: "edit" },
+  "salvar-agendamento": { key: "veiculosGeral", level: "edit" },
+  "processar-veiculo": { key: "veiculosGeral", level: "edit" },
+  "abrir-chave": { key: "chaves", level: "edit" },
+  "salvar-chave": { key: "chaves", level: "edit" },
+  "abrir-guarda": { key: "guardachuvas", level: "edit" },
+  "salvar-guarda": { key: "guardachuvas", level: "edit" },
+  "abrir-jogo": { key: "jogos", level: "edit" },
+  "salvar-jogo": { key: "jogos", level: "edit" },
+  "adicionar-item-venda": { key: "vendas", level: "edit" },
+  "salvar-venda": { key: "vendas", level: "edit" },
+  "nova-venda": { key: "vendas", level: "edit" },
+  "abrir-empilhadeira": { key: "empilhadeiras", level: "edit" },
+  "salvar-empilhadeira": { key: "empilhadeiras", level: "edit" },
+  "abrir-posto-abastecimento": { key: "posto", level: "edit" },
+  "abrir-posto-recebimento": { key: "posto", level: "edit" },
+  "salvar-posto-movimentacao": { key: "posto", level: "edit" },
+  "abrir-posto-plantao-abertura": { key: "posto", level: "edit" },
+  "abrir-posto-plantao-fechamento": { key: "posto", level: "edit" },
+  "salvar-posto-plantao": { key: "posto", level: "edit" },
+  "nova-pesagem-manual": { key: "pesagemManual", level: "edit" },
+  "editar-pesagem-manual": { key: "pesagemManual", level: "edit" },
+  "salvar-pesagem-manual": { key: "pesagemManual", level: "edit" },
+  "enviar-relatorio-pesagem-manual": { key: "pesagemManual", level: "edit" },
+  "exportar-posto-filtrado": { key: "posto", level: "edit" },
+  "exportar-veiculos-filtrado": { key: "veiculosGeral", level: "edit" },
+  "exportar-agendamentos-filtrado": { key: "veiculosGeral", level: "edit" },
+  "exportar-vendas-filtrado": { key: "vendas", level: "edit" },
+  "exportar-empilhadeiras-filtrado": { key: "empilhadeiras", level: "edit" },
+  "exportar-chaves-filtrado": { key: "chaves", level: "edit" },
+  "exportar-guardas-filtrado": { key: "guardachuvas", level: "edit" },
+  "exportar-jogos-filtrado": { key: "jogos", level: "edit" }
+});
+const ITEM_ACTION_PERMISSION_MAP = Object.freeze({
+  "abrir-veiculo": { key: "veiculosGeral", level: "view" },
+  "finalizar-agendamento": { key: "veiculosGeral", level: "edit" },
+  "devolver-chave": { key: "chaves", level: "edit" },
+  "devolver-jogo": { key: "jogos", level: "edit" },
+  "devolver-guarda": { key: "guardachuvas", level: "edit" },
+  "abrir-venda": { key: "vendas", level: "view" },
+  "remover-item-venda": { key: "vendas", level: "edit" },
+  "abrir-pesagem-manual": { key: "pesagemManual", level: "view" },
+  "ticket-pesagem-manual": { key: "pesagemManual", level: "view" },
+  "imprimir-pesagem-manual": { key: "pesagemManual", level: "view" }
+});
+const EXPORT_PERMISSION_MAP = Object.freeze({
+  "veiculos-semanal": { key: "veiculosGeral", level: "edit" },
+  "agendamentos-mensal": { key: "veiculosGeral", level: "edit" },
+  "empilhadeiras-mensal": { key: "empilhadeiras", level: "edit" },
+  "chaves-mensal": { key: "chaves", level: "edit" },
+  "guarda-mensal": { key: "guardachuvas", level: "edit" },
+  "jogos-mensal": { key: "jogos", level: "edit" }
+});
+const APP_PERMISSION_ORDER = [
+  "inicio",
+  "veiculosGeral",
+  "posto",
+  "chaves",
+  "empilhadeiras",
+  "jogos",
+  "guardachuvas",
+  "vendas",
+  "pesagemManual",
+  "relatorios",
+  "cadastros",
+  "perfilUsuario"
+];
+
+const OPERATIONAL_PERMISSION_SECTIONS = new Set([
+  "veiculosGeral",
+  "posto",
+  "chaves",
+  "empilhadeiras",
+  "jogos",
+  "guardachuvas",
+  "vendas",
+  "pesagemManual"
+]);
+
+function usuarioPodeAcaoSistema(chaveAcao = "") {
+  return typeof window.usuarioPodeAcaoCadastro === "function"
+    ? window.usuarioPodeAcaoCadastro(chaveAcao)
+    : true;
+}
+
+function obterAcaoPermissaoNavegacao(chave = "") {
+  const chaveNormalizada = obterChavePermissaoNavegacao(chave);
+  if (chaveNormalizada === "inicio" || chaveNormalizada === "perfilUsuario") return "livre";
+  if (chaveNormalizada === "relatorios") return "consulta";
+  if (chaveNormalizada === "cadastros") return "configuracao";
+  if (OPERATIONAL_PERMISSION_SECTIONS.has(chaveNormalizada)) return "inclusao";
+  return "livre";
+}
+
+function obterAcaoPermissaoOperacional() {
+  return "inclusao";
+}
+
+function normalizarNivelPermissaoRequerido(nivel = "view") {
+  return nivel === "edit" ? "edit" : "view";
+}
+
+function obterChavePermissaoNavegacao(destino = "") {
+  const mapa = NAV_PERMISSION_MAP[destino] || destino;
+  return typeof window.normalizarChavePermissaoAcesso === "function"
+    ? window.normalizarChavePermissaoAcesso(mapa)
+    : mapa;
+}
+
+function obterRotuloPermissaoUi(chave = "") {
+  return typeof window.obterRotuloPermissaoAcesso === "function"
+    ? window.obterRotuloPermissaoAcesso(chave)
+    : chave;
+}
+
+function usuarioTemPermissao(chave, nivel = "view") {
+  const chaveNormalizada = obterChavePermissaoNavegacao(chave);
+  if (chaveNormalizada === "cadastros") {
+    return usuarioPodeAcaoSistema("alteracao")
+      || usuarioPodeAcaoSistema("exclusao")
+      || usuarioPodeAcaoSistema("configuracao");
+  }
+  const acao = obterAcaoPermissaoNavegacao(chave);
+  if (acao === "livre") return true;
+  return usuarioPodeAcaoSistema(acao);
+}
+
+function avisarPermissaoNegada(chave, nivel = "view") {
+  const acao = obterAcaoPermissaoNavegacao(chave);
+  const chaveNormalizada = obterChavePermissaoNavegacao(chave);
+  const mensagem = chaveNormalizada === "cadastros"
+    ? "Seu login precisa de Alteracao, Exclusao ou Configuracao para acessar cadastros."
+    : acao === "consulta"
+    ? "Seu login nao possui permissao de Consulta para acessar relatorios."
+    : acao === "configuracao"
+      ? "Seu login nao possui permissao de Configuracao para acessar esta area."
+      : "Seu login nao possui permissao de Inclusao para acessar a operacao.";
+  avisoErro(mensagem);
+}
+
+function verificarPermissaoNavegacao(destino, { avisar = true } = {}) {
+  const chave = obterChavePermissaoNavegacao(destino);
+  const permitido = usuarioTemPermissao(chave, "view");
+  if (!permitido && avisar) avisarPermissaoNegada(chave, "view");
+  return permitido;
+}
+
+function verificarPermissaoAcao(acao, { avisar = true } = {}) {
+  const regra = ACTION_PERMISSION_MAP[acao];
+  if (!regra) return true;
+  const acaoRequerida = String(acao || "").startsWith("exportar-") ? "consulta" : obterAcaoPermissaoOperacional();
+  const permitido = usuarioPodeAcaoSistema(acaoRequerida);
+  if (!permitido && avisar) {
+    avisoErro(acaoRequerida === "consulta"
+      ? "Seu login nao possui permissao de Consulta para exportar relatorios."
+      : "Seu login nao possui permissao de Inclusao para operar o sistema.");
+  }
+  return permitido;
+}
+
+function verificarPermissaoItemAcao(acao, { avisar = true } = {}) {
+  const regra = ITEM_ACTION_PERMISSION_MAP[acao];
+  if (!regra) return true;
+  const permitido = usuarioPodeAcaoSistema(obterAcaoPermissaoOperacional());
+  if (!permitido && avisar) avisoErro("Seu login nao possui permissao de Inclusao para operar o sistema.");
+  return permitido;
+}
+
+function verificarPermissaoExportacao(acao, { avisar = true } = {}) {
+  const regra = EXPORT_PERMISSION_MAP[acao];
+  if (!regra) return true;
+  const permitido = usuarioPodeAcaoSistema("consulta");
+  if (!permitido && avisar) avisoErro("Seu login nao possui permissao de Consulta para exportar relatorios.");
+  return permitido;
+}
+
+function obterPrimeiraSecaoPermitida() {
+  return APP_PERMISSION_ORDER.find(chave => usuarioTemPermissao(chave, "view")) || "inicio";
+}
+
+function sincronizarPermissoesInterface() {
+  document.querySelectorAll("[data-nav]").forEach(elemento => {
+    const permitido = verificarPermissaoNavegacao(elemento.dataset.nav, { avisar: false });
+    elemento.classList.toggle("permission-hidden", !permitido);
+  });
+
+  document.querySelectorAll("[data-action]").forEach(elemento => {
+    const regra = ACTION_PERMISSION_MAP[elemento.dataset.action];
+    const permitido = regra ? usuarioTemPermissao(regra.key, regra.level) : true;
+    elemento.classList.toggle("permission-hidden", Boolean(regra) && !permitido);
+    if (Boolean(regra)) {
+      elemento.disabled = !permitido;
+    }
+  });
+
+  document.querySelectorAll("[data-item-action]").forEach(elemento => {
+    const regra = ITEM_ACTION_PERMISSION_MAP[elemento.dataset.itemAction];
+    const permitido = regra ? usuarioTemPermissao(regra.key, regra.level) : true;
+    elemento.classList.toggle("permission-hidden", Boolean(regra) && !permitido);
+  });
+
+  document.querySelectorAll("[data-export]").forEach(elemento => {
+    const regra = EXPORT_PERMISSION_MAP[elemento.dataset.export];
+    const permitido = regra ? usuarioTemPermissao(regra.key, regra.level) : true;
+    elemento.classList.toggle("permission-hidden", Boolean(regra) && !permitido);
+  });
+
+  getById("cadastros")?.classList.toggle(
+    "is-readonly-access",
+    usuarioTemPermissao("cadastros", "view") && !usuarioTemPermissao("cadastros", "edit")
+  );
+
+  const secaoAtiva = obterSecaoAtiva();
+  const authPronto = document.body.classList.contains("auth-ready");
+  const destino = obterPrimeiraSecaoPermitida();
+
+  if (!secaoAtiva) {
+    if (authPronto && typeof abrir === "function" && destino) {
+      abrir(destino);
+    }
+    return;
+  }
+
+  if (secaoAtiva && !verificarPermissaoNavegacao(secaoAtiva.id, { avisar: false })) {
+    if (typeof abrir === "function" && destino) {
+      abrir(destino);
+    }
+  }
+}
+
+window.sincronizarPermissoesInterface = sincronizarPermissoesInterface;
 
 function atualizarBotaoTema() {
   const botao = getById("themeToggle");
@@ -102,6 +344,68 @@ function getById(id) {
   return document.getElementById(id);
 }
 
+function obterContainerRolagemSecao(secaoOuId) {
+  const secao = typeof secaoOuId === "string" ? getById(secaoOuId) : secaoOuId;
+  if (!secao) return null;
+  return secao.querySelector(":scope > .section-scroll-body") || secao;
+}
+
+function obterSecaoAtiva() {
+  return document.querySelector(".app-shell-content > .section.section-active");
+}
+
+function usaRolagemInternaDesktop(secao = obterSecaoAtiva()) {
+  return Boolean(secao && window.innerWidth >= 1025);
+}
+
+function sincronizarTravaRolagemDesktop() {
+  document.body.classList.toggle("section-desktop-lock", usaRolagemInternaDesktop());
+}
+
+function resetarRolagemSecao(secaoOuId) {
+  const container = obterContainerRolagemSecao(secaoOuId);
+  if (!container) return;
+  container.scrollTop = 0;
+}
+
+function rolarParaTopoContextual(behavior = "smooth") {
+  const secaoAtiva = obterSecaoAtiva();
+  if (usaRolagemInternaDesktop(secaoAtiva)) {
+    obterContainerRolagemSecao(secaoAtiva)?.scrollTo({ top: 0, behavior });
+    return;
+  }
+
+  window.scrollTo({ top: 0, behavior });
+}
+
+function estruturarSecoesRolagemDesktop() {
+  document.querySelectorAll(".app-shell-content > .section").forEach(secao => {
+    if (secao.querySelector(":scope > .section-scroll-body")) return;
+
+    const filhos = Array.from(secao.children);
+    const corpo = document.createElement("div");
+    corpo.className = "section-scroll-body";
+
+    const itensFixos = new Set();
+    const atalhoHome = filhos.find(el => el.classList?.contains("section-home-link"));
+    const titulo = filhos.find(el => el.tagName === "H3");
+
+    if (atalhoHome) itensFixos.add(atalhoHome);
+    if (titulo) itensFixos.add(titulo);
+    if (secao.id === "cadastros") {
+      const tabs = filhos.find(el => el.classList?.contains("cadastro-tabs"));
+      if (tabs) itensFixos.add(tabs);
+    }
+
+    filhos.forEach(filho => {
+      if (itensFixos.has(filho)) return;
+      corpo.appendChild(filho);
+    });
+
+    secao.appendChild(corpo);
+  });
+}
+
 function mostrarElemento(id) {
   const element = typeof id === "string" ? getById(id) : id;
   if (element) {
@@ -129,6 +433,7 @@ function ocultarSecoes() {
     secao.classList.remove("section-active");
     secao.style.display = "none";
   });
+  document.body.classList.remove("section-desktop-lock");
 }
 
 function adicionarAtalhoHomeSecoes() {
@@ -247,11 +552,31 @@ function vincularAcoesDeclarativas() {
 
     const trigger = event.target.closest("[data-nav], [data-subveiculos], [data-action], [data-export], [data-item-action]");
     if (!trigger) return;
-    if (trigger.dataset.nav) return void abrir(trigger.dataset.nav);
+    if (trigger.dataset.nav) {
+      if (!verificarPermissaoNavegacao(trigger.dataset.nav)) return;
+      abrir(trigger.dataset.nav);
+      if (typeof preencherCamposOperadorAtual === "function") {
+        setTimeout(() => preencherCamposOperadorAtual(), 0);
+      }
+      return;
+    }
     if (trigger.dataset.subveiculos) return void exibirSubVeiculos(trigger.dataset.subveiculos);
-    if (trigger.dataset.action) return void actionHandlers[trigger.dataset.action]?.(trigger);
-    if (trigger.dataset.export) return void exportHandlers[trigger.dataset.export]?.(Number(trigger.dataset.offset || 0));
-    if (trigger.dataset.itemAction) return void itemHandlers[trigger.dataset.itemAction]?.(trigger);
+    if (trigger.dataset.action) {
+      if (!verificarPermissaoAcao(trigger.dataset.action)) return;
+      actionHandlers[trigger.dataset.action]?.(trigger);
+      if (typeof preencherCamposOperadorAtual === "function") {
+        setTimeout(() => preencherCamposOperadorAtual(), 0);
+      }
+      return;
+    }
+    if (trigger.dataset.export) {
+      if (!verificarPermissaoExportacao(trigger.dataset.export)) return;
+      return void exportHandlers[trigger.dataset.export]?.(Number(trigger.dataset.offset || 0));
+    }
+    if (trigger.dataset.itemAction) {
+      if (!verificarPermissaoItemAcao(trigger.dataset.itemAction)) return;
+      return void itemHandlers[trigger.dataset.itemAction]?.(trigger);
+    }
   });
 
   document.addEventListener("click", event => {
@@ -268,6 +593,7 @@ function vincularAcoesDeclarativas() {
     if (!trigger) return;
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
+    if (!verificarPermissaoNavegacao(trigger.dataset.nav)) return;
     abrir(trigger.dataset.nav);
   });
 }
@@ -368,10 +694,6 @@ function avisoInfo(texto, icone = "info") {
 
 function avisoErro(texto = "Não foi possível concluir a ação.") {
   mostrarAviso(texto, "error", "triangle-alert");
-}
-
-function validarPorteiroAutorizado(nome) {
-  return porteirosAutorizados.includes(nome);
 }
 
 function validarNumeroPositivo(valor) {
@@ -2254,11 +2576,8 @@ window.addEventListener("DOMContentLoaded", () => {
   vincularAcoesDeclarativas();
   configurarCamposMaiusculos();
   configurarAutocomplete("v_condutor", "lista_condutores", condutoresAutorizados);
-  configurarAutocomplete("v_porteiro_retorno", "lista_porteiros_retorno", porteirosAutorizados);
-  configurarAutocomplete("postoPlantaoPorteiro", "lista_posto_porteiros", porteirosAutorizados);
   configurarAutocomplete("postoMovSetor", "lista_posto_setores", setoresPosto);
   configurarAutocompleteChaves();
-  configurarAutocompletePorteiroChaves();
 
   fields.forEach(el => {
     el.setAttribute("autocomplete", "off");
@@ -2268,12 +2587,8 @@ window.addEventListener("DOMContentLoaded", () => {
     if ((el.tagName === "INPUT" || el.tagName === "TEXTAREA") && !el.hasAttribute("readonly")) {
       if ([
         "v_condutor",
-        "v_porteiro_retorno",
-        "postoPlantaoPorteiro",
         "postoMovSetor",
         "ch_sala",
-        "ch_porteiro",
-        "cadastroPorteiroNome",
         "cadastroCondutorNome",
         "cadastroSetorNome",
         "cadastroPostoSetorNome",
@@ -2317,11 +2632,21 @@ window.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll("form").forEach(f => f.setAttribute("autocomplete", "off"));
   getById("themeToggle")?.addEventListener("click", alternarTema);
+  window.addEventListener("resize", sincronizarTravaRolagemDesktop);
   adicionarAtalhoHomeSecoes();
-  abrir("inicio");
+  estruturarSecoesRolagemDesktop();
+  ocultarSecoes();
+  if (document.body.classList.contains("auth-ready") || !getById("authGate")) {
+    abrir("inicio");
+  }
   atualizarPainelPendencias();
   aplicarContrasteCamposTema();
+  sincronizarPermissoesInterface();
   refreshLucideIcons();
+});
+
+window.addEventListener("nortefrut-auth-context", () => {
+  sincronizarPermissoesInterface();
 });
 
 let toastTimerId = null;

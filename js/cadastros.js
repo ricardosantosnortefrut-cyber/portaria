@@ -1,6 +1,5 @@
 ﻿// --- Cadastros ---
 const cadastroRefs = {
-  porteiros: "cadastros/porteiros",
   condutores: "cadastros/condutores",
   setores: "cadastros/setores",
   postoSetores: "cadastros/postoSetores",
@@ -18,7 +17,6 @@ const cadastroRefs = {
 };
 
 const cadastroState = {
-  porteiros: {},
   condutores: {},
   setores: {},
   postoSetores: {},
@@ -43,6 +41,55 @@ const cadastroEditando = {
   avisos: null
 };
 
+const CADASTRO_SALVAR_TIPO_MAP = Object.freeze({
+  "salvar-condutor": "condutores",
+  "salvar-setor": "setores",
+  "salvar-posto-setor": "postoSetores",
+  "salvar-jogo-cadastro": "jogos",
+  "salvar-venda-produto": "vendaProdutos",
+  "salvar-venda-caracteristica": "vendaCaracteristicas",
+  "salvar-venda-pagamento": "vendaPagamentos",
+  "salvar-aviso-cadastro": "avisos",
+  "salvar-chave-cadastro": "chaves",
+  "salvar-empilhadeira-cadastro": "empilhadeiras",
+  "salvar-guarda-cadastro": "guardas",
+  "salvar-agendamento-veiculo-cadastro": "agendamentoVeiculos",
+  "salvar-veiculo-cadastro": "veiculos"
+});
+
+const CADASTRO_ACAO_LABELS = Object.freeze({
+  inclusao: "Inclusao",
+  alteracao: "Alteracao",
+  exclusao: "Exclusao",
+  consulta: "Consulta",
+  configuracao: "Configuracao"
+});
+
+function obterPermissaoAcaoCadastroRequerida(action = "") {
+  if (action === "salvar-posto-config" || action === "limpar-posto-config") return "configuracao";
+  if (action.startsWith("excluir-")) return "exclusao";
+  if (action.startsWith("editar-") || action.startsWith("ativar-") || action.startsWith("desativar-")) return "alteracao";
+
+  const tipoSalvar = CADASTRO_SALVAR_TIPO_MAP[action];
+  if (tipoSalvar) return "alteracao";
+
+  return "";
+}
+
+function verificarPermissaoAcaoCadastro(action = "") {
+  const chaveAcao = obterPermissaoAcaoCadastroRequerida(action);
+  if (!chaveAcao || typeof window.usuarioPodeAcaoCadastro !== "function") return true;
+  if (window.usuarioPodeAcaoCadastro(chaveAcao)) return true;
+
+  avisoPermissaoCadastroNegada(chaveAcao);
+  return false;
+}
+
+function avisoPermissaoCadastroNegada(chaveAcao = "") {
+  const rotulo = CADASTRO_ACAO_LABELS[chaveAcao] || "essa acao";
+  avisoValidacao(`Seu acesso nao possui permissao de ${rotulo.toLowerCase()} em cadastros.`);
+}
+
 const cadastroPainelPadrao = "frota";
 const cadastroSubPainelPorPainel = {
   posto: "posto-setores",
@@ -59,6 +106,10 @@ function criarCadastroKey(nome) {
     .replace(/^_+|_+$/g, "");
 }
 
+function resetarRolagemCadastros() {
+  resetarRolagemSecao("cadastros");
+}
+
 function selecionarPainelCadastro(tipo) {
   document.querySelectorAll("[data-cadastro-panel]").forEach(panel => {
     panel.classList.toggle("is-active", panel.dataset.cadastroPanel === tipo);
@@ -71,6 +122,8 @@ function selecionarPainelCadastro(tipo) {
   if (cadastroSubPainelPorPainel[tipo]) {
     selecionarSubPainelCadastro(cadastroSubPainelPorPainel[tipo]);
   }
+
+  resetarRolagemCadastros();
 }
 
 function selecionarSubPainelCadastro(tipo) {
@@ -81,6 +134,8 @@ function selecionarSubPainelCadastro(tipo) {
   document.querySelectorAll("[data-cadastro-subpanel-trigger]").forEach(botao => {
     botao.classList.toggle("active", botao.dataset.cadastroSubpanelTrigger === tipo);
   });
+
+  resetarRolagemCadastros();
 }
 
 function ordenarCadastrosAtivos(dados) {
@@ -379,7 +434,6 @@ function renderCadastroLista(tipo, containerId, vazio) {
 }
 
 function renderCadastros() {
-  renderCadastroLista("porteiros", "listaCadastroPorteiros", "Nenhum porteiro cadastrado.");
   renderCadastroLista("condutores", "listaCadastroCondutores", "Nenhum condutor cadastrado.");
   renderCadastroLista("setores", "listaCadastroSetores", "Nenhum setor cadastrado.");
   renderCadastroLista("postoSetores", "listaCadastroPostoSetores", "Nenhum setor do posto cadastrado.");
@@ -398,7 +452,6 @@ function renderCadastros() {
 }
 
 function atualizarListasDinamicas() {
-  sincronizarArrayCadastro(porteirosAutorizados, ordenarCadastrosAtivos(cadastroState.porteiros));
   sincronizarArrayCadastro(condutoresAutorizados, ordenarCadastrosAtivos(cadastroState.condutores));
   sincronizarArrayCadastro(setoresGuardas, ordenarCadastrosAtivos(cadastroState.setores));
   sincronizarArrayCadastro(setoresPosto, ordenarCadastrosAtivos(cadastroState.postoSetores));
@@ -1115,6 +1168,10 @@ function vincularAcoesCadastros() {
   document.addEventListener("click", event => {
     const tab = event.target.closest("[data-cadastro-panel-trigger]");
     if (tab) {
+      if (tab.dataset.cadastroPanelTrigger === "acessos" && typeof window.usuarioPodeAcaoCadastro === "function" && !window.usuarioPodeAcaoCadastro("configuracao")) {
+        avisoPermissaoCadastroNegada("configuracao");
+        return;
+      }
       selecionarPainelCadastro(tab.dataset.cadastroPanelTrigger);
       return;
     }
@@ -1129,7 +1186,8 @@ function vincularAcoesCadastros() {
     if (!trigger) return;
 
     const action = trigger.dataset.cadastroAction;
-    if (action === "salvar-porteiro") return salvarCadastro("porteiros", "cadastroPorteiroNome", "porteiro");
+    if (!verificarPermissaoAcaoCadastro(action)) return;
+
     if (action === "salvar-condutor") return salvarCadastro("condutores", "cadastroCondutorNome", "condutor");
     if (action === "salvar-setor") return salvarCadastro("setores", "cadastroSetorNome", "setor");
     if (action === "salvar-posto-setor") return salvarCadastro("postoSetores", "cadastroPostoSetorNome", "setor do posto");
@@ -1150,8 +1208,6 @@ function vincularAcoesCadastros() {
     if (action === "editar-guardas") return editarCadastroGuarda(trigger.dataset.id);
     if (action === "editar-veiculos") return editarCadastroVeiculo(trigger.dataset.id);
     if (action === "editar-avisos") return editarCadastroAviso(trigger.dataset.id);
-    if (action === "desativar-porteiros") return alternarCadastro("porteiros", trigger.dataset.id, false);
-    if (action === "ativar-porteiros") return alternarCadastro("porteiros", trigger.dataset.id, true);
     if (action === "desativar-condutores") return alternarCadastro("condutores", trigger.dataset.id, false);
     if (action === "ativar-condutores") return alternarCadastro("condutores", trigger.dataset.id, true);
     if (action === "desativar-setores") return alternarCadastro("setores", trigger.dataset.id, false);
@@ -1178,7 +1234,6 @@ function vincularAcoesCadastros() {
     if (action === "ativar-agendamentoVeiculos") return alternarCadastro("agendamentoVeiculos", trigger.dataset.id, true);
     if (action === "desativar-veiculos") return alternarCadastro("veiculos", trigger.dataset.id, false);
     if (action === "ativar-veiculos") return alternarCadastro("veiculos", trigger.dataset.id, true);
-    if (action === "excluir-porteiros") return excluirCadastro("porteiros", trigger.dataset.id);
     if (action === "excluir-condutores") return excluirCadastro("condutores", trigger.dataset.id);
     if (action === "excluir-setores") return excluirCadastro("setores", trigger.dataset.id);
     if (action === "excluir-postoSetores") return excluirCadastro("postoSetores", trigger.dataset.id);
@@ -1199,7 +1254,6 @@ window.addEventListener("DOMContentLoaded", () => {
   vincularAcoesCadastros();
   selecionarPainelCadastro(cadastroPainelPadrao);
   Promise.all([
-    semearCadastroSeVazio("porteiros", porteirosAutorizados),
     semearCadastroSeVazio("condutores", condutoresAutorizados),
     semearCadastroSeVazio("setores", setoresGuardas),
     semearCadastroSeVazio("postoSetores", setoresPosto),
@@ -1213,7 +1267,6 @@ window.addEventListener("DOMContentLoaded", () => {
     semearVeiculosSeVazio(),
     semearAgendamentoVeiculosSeVazio()
   ]).finally(() => {
-    iniciarCadastroListener("porteiros");
     iniciarCadastroListener("condutores");
     iniciarCadastroListener("setores");
     iniciarCadastroListener("postoSetores");

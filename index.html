@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-functions-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
@@ -38,17 +39,17 @@
         </div>
 
         <form id="authForm" class="auth-form" novalidate>
-          <label class="auth-field" for="authEmail">
-            <span>E-mail</span>
-            <div class="auth-input-wrap">
-              <input id="authEmail" type="email" inputmode="email" autocomplete="username" placeholder="seuemail@empresa.com">
-            </div>
-          </label>
+        <label class="auth-field" for="authUsername">
+          <span>Email</span>
+          <div class="auth-input-wrap">
+            <input id="authUsername" type="email" autocomplete="email" placeholder="email@empresa.com">
+          </div>
+        </label>
 
           <label class="auth-field" for="authPassword">
             <span>Senha</span>
             <div class="auth-input-wrap">
-              <input id="authPassword" type="password" autocomplete="current-password" placeholder="Digite sua senha">
+              <input id="authPassword" type="password" autocomplete="current-password" placeholder="Senha">
             </div>
           </label>
 
@@ -73,11 +74,6 @@
       <div class="topo-sub">Sistema de Controle • Nortefrut</div>
     </div>
 
-    <button id="logoutButton" class="logout-button is-hidden" type="button" aria-label="Encerrar sessão" title="Encerrar sessão">
-      <i data-lucide="log-out"></i>
-      <span>Sair</span>
-    </button>
-
     <button id="themeToggle" class="theme-toggle" type="button" aria-label="Ativar modo noturno" title="Alternar tema">
       <i data-lucide="moon-star"></i>
     </button>
@@ -86,11 +82,16 @@
 
 <main class="app-shell">
     <aside class="portal-sidebar" aria-label="Navegação principal">
-        <div class="portal-sidebar-card">
-            <div class="portal-sidebar-kicker">Portal</div>
-            <strong class="portal-sidebar-title">Navegação</strong>
-            <p class="portal-sidebar-text">Acesse os módulos principais do sistema.</p>
-        </div>
+        <button class="portal-sidebar-card portal-profile-card" type="button" data-nav="perfilUsuario" aria-label="Abrir perfil do usuário">
+            <div class="portal-profile-avatar" aria-hidden="true">
+                <i data-lucide="user-round"></i>
+            </div>
+            <div class="portal-profile-copy">
+                <div class="portal-sidebar-kicker">Perfil</div>
+                <strong id="portalProfileName" class="portal-sidebar-title">Usuário conectado</strong>
+                <p id="portalProfileMeta" class="portal-sidebar-text">Aguardando autenticação...</p>
+            </div>
+        </button>
 
         <nav class="portal-nav-list">
             <button class="portal-nav-btn" data-nav="inicio"><i data-lucide="house"></i><span>Início</span></button>
@@ -104,6 +105,9 @@
             <button class="portal-nav-btn" data-nav="pesagemManual"><i data-lucide="truck"></i><span>Balança</span></button>
             <button class="portal-nav-btn" data-nav="relatorios"><i data-lucide="chart-column"></i><span>Relatórios</span></button>
             <button class="portal-nav-btn" data-nav="cadastros"><i data-lucide="settings-2"></i><span>Cadastros</span></button>
+            <button id="logoutButton" class="portal-nav-btn portal-nav-btn-logout is-hidden" type="button" aria-label="Encerrar sessão" title="Encerrar sessão">
+                <i data-lucide="log-out"></i><span>Sair</span>
+            </button>
         </nav>
     </aside>
 
@@ -243,6 +247,58 @@
         </div>
     </section>
 
+    <section id="perfilUsuario" class="section">
+        <h3><i data-lucide="user-round" class="title-icon"></i><span>Perfil do usuário</span></h3>
+        <div class="profile-panel">
+            <div class="profile-panel-head">
+                <strong>Seguranca da conta</strong>
+                <span>Nome e usuário ficam travados para evitar alteracoes acidentais. Se precisar, atualize apenas a senha de acesso.</span>
+            </div>
+
+            <div class="profile-form">
+                <div class="profile-identity-grid">
+                    <label class="profile-field profile-field--locked">
+                        <span>Nome</span>
+                        <input id="profileDisplayName" class="readonly-field" type="text" readonly aria-readonly="true" tabindex="-1">
+                        <small class="profile-field-note"><i data-lucide="lock"></i><span>Bloqueado para edicao</span></small>
+                    </label>
+
+                    <label class="profile-field profile-field--locked">
+                        <span>Email</span>
+                        <input id="profileUsername" class="readonly-field" type="text" readonly aria-readonly="true" tabindex="-1">
+                        <small class="profile-field-note"><i data-lucide="lock"></i><span>Vinculado ao acesso atual</span></small>
+                    </label>
+                </div>
+
+                <div class="profile-security-card">
+                    <div class="profile-security-head">
+                        <strong>Trocar senha</strong>
+                        <span>Use pelo menos 8 caracteres e confirme a nova senha antes de salvar.</span>
+                    </div>
+
+                    <div class="profile-password-grid">
+                        <label class="profile-field">
+                            <span>Nova senha</span>
+                            <input id="profilePassword" type="password" autocomplete="new-password" placeholder="Digite a nova senha">
+                        </label>
+
+                        <label class="profile-field">
+                            <span>Confirmar nova senha</span>
+                            <input id="profilePasswordConfirm" type="password" autocomplete="new-password" placeholder="Repita a nova senha">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="botao btn-secondary" type="button" data-nav="inicio"><span>Voltar</span></button>
+                    <button id="profileSaveButton" class="botao btn-primary" type="button">
+                        <i data-lucide="shield-check"></i><span>Atualizar senha</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div id="veiculosGeral" class="section">
         <h3 class="section-title-center"><i data-lucide="car-front" class="title-icon"></i><span>Gestão de Veículos</span></h3>
         <div id="containerBotoesVeiculos" class="acoes-flex">
@@ -352,10 +408,7 @@
             <h4>Registro de Retorno</h4>
             <p id="info_saida" class="info-box"></p>
             <input id="v_km_retorno" type="number" placeholder="KM Retorno">
-            <div class="autocomplete-box">
-            <input id="v_porteiro_retorno" type="text" placeholder="Pesquisar Porteiro..." autocomplete="off">
-            <div id="lista_porteiros_retorno" class="autocomplete-list"></div>
-            </div>
+            <input id="v_porteiro_retorno" class="readonly-field" type="text" placeholder="Usuário logado" readonly>
             
             <h4>Checklist</h4>
             <div class="checklist-grid">
@@ -409,10 +462,7 @@
 
 <input id="ch_num" class="readonly-field" placeholder="Número da Chave" readonly>
             <input id="ch_quem" placeholder="Quem retirou" data-uppercase>
-            <div class="autocomplete-box">
-  <input id="ch_porteiro" type="text" placeholder="Pesquisar Porteiro..." autocomplete="off" data-uppercase>
-  <div id="lista_porteiros_chaves" class="autocomplete-list"></div>
-</div>
+            <input id="ch_porteiro" class="readonly-field" type="text" placeholder="Usuário logado" readonly>
             <button class="botao btn-primary" data-action="salvar-chave">Salvar Retirada</button>
             <button class="botao btn-secondary btn-spaced-sm" data-action="cancelar-chave">Cancelar</button>
         </div>
@@ -438,10 +488,7 @@
       <input id="gu_setor" placeholder="Selecione o setor..." autocomplete="off" data-uppercase>
       <div id="lista_guardas_setor" class="autocomplete-list"></div>
     </div>
-    <div class="autocomplete-box">
-      <input id="gu_porteiro" placeholder="Selecione o porteiro..." autocomplete="off" data-uppercase>
-      <div id="lista_guardas_porteiro" class="autocomplete-list"></div>
-    </div>
+    <input id="gu_porteiro" class="readonly-field" placeholder="Usuário logado" readonly>
 
     <button class="botao btn-primary" data-action="salvar-guarda">Salvar Retirada</button>
     <button class="botao btn-secondary btn-spaced-sm" data-action="fechar-guarda">Cancelar</button>
@@ -463,10 +510,7 @@
                     <input id="jo_jogo" placeholder="Selecione o jogo..." autocomplete="off" data-uppercase>
                     <div id="lista_jogos_nome" class="autocomplete-list"></div>
                 </div>
-                <div class="autocomplete-box">
-                    <input id="jo_porteiro" placeholder="Selecione o porteiro..." autocomplete="off" data-uppercase>
-                    <div id="lista_jogos_porteiro" class="autocomplete-list"></div>
-                </div>
+                <input id="jo_porteiro" class="readonly-field" placeholder="Usuário logado" readonly>
                 <button type="button" class="botao btn-primary" data-action="salvar-jogo">Salvar Retirada</button>
                 <button type="button" class="botao btn-secondary btn-spaced-sm" data-action="fechar-jogo">Cancelar</button>
             </form>
@@ -544,10 +588,7 @@
                 <div id="lista_empilhadeiras_num" class="autocomplete-list"></div>
             </div>
             <input id="ab_motorista" placeholder="Motorista" data-uppercase>
-            <div class="autocomplete-box">
-                <input id="ab_porteiro" placeholder="Selecione o porteiro..." autocomplete="off" data-uppercase>
-                <div id="lista_empilhadeiras_porteiro" class="autocomplete-list"></div>
-            </div>
+            <input id="ab_porteiro" class="readonly-field" placeholder="Usuário logado" readonly>
             <button class="botao btn-primary" data-action="salvar-empilhadeira">Gravar</button>
             <button class="botao btn-secondary btn-spaced-sm" data-action="cancelar-empilhadeira">Cancelar</button>
         </div>
@@ -558,7 +599,7 @@
                     <span>Data</span>
                     <span>Número</span>
                     <span>Motorista</span>
-                    <span>Porteiro</span>
+                        <span>Usuário</span>
                 </div>
                 <div id="listaAbastecimentosRecentes" class="empilhadeira-table-body"></div>
             </div>
@@ -986,21 +1027,88 @@
     <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="jogos">Jogos</button>
     <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="vendas">Vendas</button>
     <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="avisos">Avisos</button>
-    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="porteiros">Porteiros</button>
+    <button class="cadastro-tab" type="button" data-cadastro-panel-trigger="acessos">Acessos</button>
   </div>
   <div class="cadastro-grid">
-    <article class="cadastro-panel" data-cadastro-panel="porteiros">
+    <article class="cadastro-panel cadastro-panel-wide" data-cadastro-panel="acessos">
       <div class="cadastro-panel-head">
-        <strong>Porteiros</strong>
-        <span>Controle quem aparece nas listas de porteiro.</span>
+        <strong>Central de gerenciamento</strong>
       </div>
-      <div class="cadastro-form">
-        <input id="cadastroPorteiroNome" placeholder="Nome do porteiro" data-uppercase>
-        <button class="botao btn-primary" type="button" data-cadastro-action="salvar-porteiro">
-          <i data-lucide="plus"></i><span>Adicionar Porteiro</span>
-        </button>
+      <div class="access-admin-shell">
+        <div class="access-workspace">
+          <section class="access-creation-card">
+            <div class="access-section-head">
+              <strong>Novo acesso</strong>
+            </div>
+
+            <div class="access-admin-form">
+              <label class="access-field">
+                <span>Nome completo</span>
+                <input id="authAdminUserName" placeholder="Ex.: Ricardo Oliveira">
+              </label>
+
+              <label class="access-field">
+                <span>Email de acesso</span>
+                <input id="authAdminUserLogin" type="email" autocomplete="email" placeholder="Ex.: ricardo@nortefrut.com">
+              </label>
+
+              <label class="access-field access-field--wide">
+                <span>Senha provisória</span>
+                <div class="access-password-row">
+                  <input id="authAdminUserPassword" type="password" placeholder="Crie uma senha provisória">
+                </div>
+                <small>Se deixar em branco, o sistema gera uma senha provisória automaticamente.</small>
+              </label>
+            </div>
+
+            <div class="access-create-actions">
+              <button id="authAdminCreateUserButton" class="botao btn-primary" type="button" data-auth-user-action="criar-usuario">
+                <i data-lucide="user-plus"></i><span>Criar acesso</span>
+              </button>
+              <p id="authAdminPresetHint" class="access-admin-note">Entrará vendo os módulos liberados, sem alterar dados, até o gestor ampliar as permissões.</p>
+            </div>
+          </section>
+
+          <section class="access-directory-card">
+            <div class="access-directory-head">
+              <div>
+                <strong>Equipe cadastrada</strong>
+              </div>
+              <span class="access-directory-badge">Registro automático por login ativo</span>
+            </div>
+
+            <div class="access-toolbar">
+              <label class="access-field access-field--search">
+                <span>Buscar</span>
+                <input id="authAccessSearch" type="search" placeholder="Nome ou email">
+              </label>
+
+              <label class="access-field">
+                <span>Status</span>
+                <select id="authAccessStatusFilter">
+                  <option value="all">Todos</option>
+                  <option value="active">Ativos</option>
+                  <option value="inactive">Inativos</option>
+                </select>
+              </label>
+
+              <label class="access-field">
+                <span>Ação</span>
+                <select id="authAccessActionFilter">
+                  <option value="all">Todas</option>
+                  <option value="inclusao">Inclusão</option>
+                  <option value="alteracao">Alteração</option>
+                  <option value="exclusao">Exclusão</option>
+                  <option value="consulta">Consulta</option>
+                  <option value="configuracao">Configuração</option>
+                </select>
+              </label>
+            </div>
+
+            <div id="authUsersAdminList" class="access-user-list"></div>
+          </section>
+        </div>
       </div>
-      <div id="listaCadastroPorteiros" class="cadastro-list"></div>
     </article>
 
     <article class="cadastro-panel cadastro-panel-wide" data-cadastro-panel="posto">

@@ -29,12 +29,31 @@
 
 html{
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31, 112, 210, .34) transparent;
+}
+
+html::-webkit-scrollbar{
+  width: 12px;
+}
+
+html::-webkit-scrollbar-track{
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, rgba(31,112,210,.42), rgba(21,101,192,.26));
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 body{
   margin: 0;
   min-height: 100vh;
   padding: 18px;
+  overflow-x: hidden;
   color: var(--text);
   font-family: "Manrope", "Segoe UI", sans-serif;
   background:
@@ -150,6 +169,7 @@ h2, h3, h4{
 }
 
 .portal-sidebar{
+  position: relative;
   display: none;
 }
 
@@ -166,6 +186,53 @@ h2, h3, h4{
   display: grid;
   gap: 6px;
   padding: 16px 16px 15px;
+  appearance: none;
+  font: inherit;
+}
+
+.portal-profile-card{
+  width: 100%;
+  border: 1px solid rgba(255,255,255,.74);
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.portal-profile-card:hover{
+  transform: translateY(-1px);
+  border-color: rgba(35, 132, 234, .18);
+  box-shadow: 0 12px 22px rgba(18, 76, 145, .10);
+}
+
+.portal-profile-card:focus-visible{
+  outline: 2px solid rgba(35, 132, 234, .28);
+  outline-offset: 2px;
+}
+
+.portal-profile-avatar{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(35,132,234,.14), rgba(35,132,234,.08));
+  color: #1f70d2;
+  box-shadow: inset 0 0 0 1px rgba(35,132,234,.12);
+}
+
+.portal-profile-avatar [data-lucide]{
+  width: 22px;
+  height: 22px;
+}
+
+.portal-profile-copy{
+  min-width: 0;
+  display: grid;
+  gap: 2px;
 }
 
 .portal-sidebar-kicker{
@@ -188,6 +255,14 @@ h2, h3, h4{
   font-size: .76rem;
   font-weight: 700;
   line-height: 1.35;
+  margin: 0;
+}
+
+.portal-profile-copy .portal-sidebar-title,
+.portal-profile-copy .portal-sidebar-text{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .portal-nav-list{
@@ -238,6 +313,21 @@ h2, h3, h4{
   color: #1565c0;
 }
 
+.portal-nav-btn-logout{
+  margin-top: 6px;
+  position: relative;
+}
+
+.portal-nav-btn-logout::before{
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: -6px;
+  height: 1px;
+  background: rgba(110, 135, 164, .18);
+}
+
 body.theme-dark .portal-sidebar-card,
 body.theme-dark .portal-nav-list{
   background:
@@ -258,6 +348,203 @@ body.theme-dark .portal-sidebar-text{
   color: #9db1c7;
 }
 
+body.theme-dark .portal-profile-avatar{
+  background: linear-gradient(180deg, rgba(44,115,212,.18), rgba(44,115,212,.10));
+  color: #8fc0ff;
+  box-shadow: inset 0 0 0 1px rgba(120,161,230,.16);
+}
+
+body.theme-dark .portal-profile-card{
+  border-color: rgba(120, 161, 230, .12);
+}
+
+body.theme-dark .portal-profile-card:hover{
+  border-color: rgba(120, 161, 230, .18);
+  box-shadow: 0 14px 24px rgba(0, 0, 0, .18);
+}
+
+.profile-panel{
+  display: grid;
+  gap: 18px;
+  max-width: 860px;
+  padding: 26px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(246,250,255,.94));
+  border: 1px solid rgba(255,255,255,.72);
+  box-shadow: 0 16px 30px rgba(18, 76, 145, .08);
+}
+
+.profile-panel-head{
+  display: grid;
+  gap: 6px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(102, 138, 176, .14);
+}
+
+.profile-panel-head strong{
+  color: #183d66;
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.profile-panel-head span{
+  color: #6c859d;
+  font-size: .86rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.profile-form{
+  display: grid;
+  gap: 16px;
+}
+
+.profile-identity-grid,
+.profile-password-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.profile-field{
+  display: grid;
+  gap: 7px;
+}
+
+.profile-field > span{
+  color: #5d7892;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.profile-field input{
+  width: 100%;
+  margin: 0;
+}
+
+.profile-field--locked input{
+  background: linear-gradient(180deg, rgba(244,248,253,.98), rgba(236,242,248,.96)) !important;
+  border-color: rgba(58, 94, 130, .12) !important;
+  color: #49667f !important;
+  -webkit-text-fill-color: #49667f !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.92);
+  cursor: not-allowed;
+}
+
+.profile-field--locked input:focus{
+  border-color: rgba(58, 94, 130, .12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.92) !important;
+}
+
+.profile-field-note{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6c859d;
+  font-size: .76rem;
+  font-weight: 700;
+}
+
+.profile-field-note [data-lucide]{
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
+.profile-security-card{
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(240,246,252,.90));
+  border: 1px solid rgba(16, 67, 129, .08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.82);
+}
+
+.profile-security-head{
+  display: grid;
+  gap: 5px;
+}
+
+.profile-security-head strong{
+  color: #183d66;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.profile-security-head span{
+  color: #6c859d;
+  font-size: .84rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.profile-actions{
+  display: grid;
+  grid-template-columns: minmax(0, .42fr) minmax(0, .58fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+
+body.theme-dark .profile-panel{
+  background: linear-gradient(180deg, rgba(16,23,34,.96), rgba(18,27,40,.94));
+  border-color: rgba(120, 161, 230, .12);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, .22);
+}
+
+body.theme-dark .profile-panel-head{
+  border-bottom-color: rgba(120, 161, 230, .12);
+}
+
+body.theme-dark .profile-panel-head strong{
+  color: #eef4fb;
+}
+
+body.theme-dark .profile-panel-head span,
+body.theme-dark .profile-field > span,
+body.theme-dark .profile-field-note,
+body.theme-dark .profile-security-head span{
+  color: #9db1c7;
+}
+
+body.theme-dark .profile-security-card{
+  background: linear-gradient(180deg, rgba(19,30,45,.98), rgba(15,24,36,.94));
+  border-color: rgba(120, 161, 230, .10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+body.theme-dark .profile-security-head strong{
+  color: #eef4fb;
+}
+
+body.theme-dark .profile-field--locked input{
+  background: linear-gradient(180deg, rgba(26,38,54,.98), rgba(20,31,46,.94)) !important;
+  border-color: rgba(120, 161, 230, .12) !important;
+  color: #dce8f5 !important;
+  -webkit-text-fill-color: #dce8f5 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+body.theme-dark .profile-field--locked input:focus{
+  border-color: rgba(120, 161, 230, .12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03) !important;
+}
+
+@media (max-width: 720px){
+  .profile-panel{
+    padding: 22px 18px;
+  }
+
+  .profile-identity-grid,
+  .profile-password-grid,
+  .profile-actions{
+    grid-template-columns: 1fr;
+  }
+
+}
+
 body.theme-dark .portal-nav-btn{
   color: #dce8f5;
 }
@@ -276,6 +563,10 @@ body.theme-dark .portal-nav-btn.active{
   background: linear-gradient(135deg, rgba(48,115,212,.18), rgba(66,142,241,.12));
   border-color: rgba(120, 161, 230, .18);
   color: #eef4fb;
+}
+
+body.theme-dark .portal-nav-btn-logout::before{
+  background: rgba(120, 161, 230, .16);
 }
 
 .topo{
@@ -352,7 +643,7 @@ body.auth-locked .auth-gate{
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 12px;
-  align-items: start;
+  align-items: center;
 }
 
 .auth-card-icon{
@@ -374,6 +665,7 @@ body.auth-locked .auth-gate{
 .auth-card-copy{
   display: grid;
   gap: 5px;
+  align-self: center;
 }
 
 .auth-card-copy strong{
@@ -556,6 +848,7 @@ body.theme-dark .auth-input-wrap input::placeholder{
 .topo-card{
   position: relative;
   overflow: hidden;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -563,16 +856,16 @@ body.theme-dark .auth-input-wrap input::placeholder{
   padding: 14px 154px 14px 24px;
   border-radius: 24px;
   background:
-    linear-gradient(135deg, rgba(255,255,255,.97), rgba(248,252,255,.90)),
+    linear-gradient(135deg, rgba(255,255,255,.995), rgba(248,252,255,.98)),
     linear-gradient(135deg, rgba(33,150,243,.08), rgba(33,150,243,.03));
   border: 1px solid rgba(255,255,255,.7);
   box-shadow: 0 18px 38px rgba(16, 67, 129, .11);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(26px) saturate(1.04);
 }
 
 body.theme-dark .topo-card{
   background:
-    linear-gradient(135deg, rgba(14,20,32,.96), rgba(18,28,42,.90)),
+    linear-gradient(135deg, rgba(14,20,32,.99), rgba(18,28,42,.96)),
     linear-gradient(135deg, rgba(33,150,243,.08), rgba(33,150,243,.04));
   border-color: rgba(131,171,238,.18);
   box-shadow: 0 18px 38px rgba(0,0,0,.30);
@@ -2410,15 +2703,43 @@ body.theme-dark .attention-row-content p{
 }
 
 @media (min-width: 1025px){
+  :root{
+    --desktop-side-padding: clamp(12px, 1.15vw, 22px);
+    --desktop-top-offset: clamp(8px, .75vw, 14px);
+    --desktop-header-height: clamp(74px, 7.4vh, 82px);
+    --desktop-rail-gap: clamp(8px, .7vw, 12px);
+    --desktop-sidebar-width: clamp(248px, 17vw, 292px);
+    --desktop-shell-gap: clamp(14px, 1vw, 20px);
+    --desktop-section-gap: clamp(14px, .95vw, 18px);
+    --desktop-section-padding: clamp(16px, 1.15vw, 22px);
+    --desktop-card-radius: clamp(22px, 1.6vw, 28px);
+    --desktop-shell-width: min(1720px, calc(100vw - (var(--desktop-side-padding) * 2)));
+    --desktop-section-height: calc(100vh - (var(--desktop-top-offset) + var(--desktop-header-height) + var(--desktop-rail-gap) + var(--desktop-side-padding) + 8px));
+    --desktop-section-title-offset: clamp(42px, 3.5vw, 50px);
+    --desktop-home-gap: clamp(12px, .45vw + .5vh, 18px);
+    --desktop-home-panel-padding: clamp(14px, .55vw + .45vh, 18px);
+    --desktop-home-panel-radius: clamp(22px, 1vw + .35vh, 28px);
+    --desktop-home-shortcut-min-height: clamp(74px, 7.6vh, 92px);
+    --desktop-home-stat-min-height: clamp(88px, 9vh, 112px);
+    --desktop-home-bottom-min-height: clamp(208px, 24vh, 286px);
+  }
+
+  body{
+    padding: var(--desktop-top-offset) var(--desktop-side-padding) calc(var(--desktop-side-padding) + 8px);
+  }
+
   .topo{
-    width: min(1560px, calc(100vw - 32px));
-    margin-bottom: 14px;
+    width: var(--desktop-shell-width);
+    position: sticky;
+    top: var(--desktop-top-offset);
+    z-index: 980;
+    margin-bottom: var(--desktop-rail-gap);
   }
 
   .topo-card{
-    min-height: 78px;
-    padding: 10px 146px 10px 20px;
-    border-radius: 22px;
+    min-height: var(--desktop-header-height);
+    padding: clamp(10px, .85vw, 12px) clamp(122px, 10vw, 146px) clamp(10px, .85vw, 12px) clamp(18px, 1.2vw, 24px);
+    border-radius: clamp(20px, 1.5vw, 24px);
     box-shadow: 0 12px 24px rgba(16, 67, 129, .10);
   }
 
@@ -2434,15 +2755,15 @@ body.theme-dark .attention-row-content p{
   }
 
   .logo-box{
-    left: 18px;
-    width: 156px;
-    height: 52px;
+    left: clamp(14px, .95vw, 18px);
+    width: clamp(146px, 9.6vw, 156px);
+    height: clamp(48px, 4.8vh, 52px);
     padding: 7px 11px;
-    border-radius: 18px;
+    border-radius: clamp(16px, 1.2vw, 18px);
   }
 
   .logo-nf{
-    width: 130px;
+    width: clamp(122px, 8.2vw, 130px);
   }
 
   .topo-textos h2{
@@ -2452,63 +2773,230 @@ body.theme-dark .attention-row-content p{
   }
 
   .topo-sub{
-    font-size: .76rem;
+    font-size: clamp(.72rem, .55vw, .76rem);
     letter-spacing: .01em;
   }
 
   .theme-toggle{
-    right: 16px;
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
+    right: clamp(14px, .95vw, 16px);
+    width: clamp(40px, 3vw, 42px);
+    height: clamp(40px, 3vw, 42px);
+    border-radius: clamp(13px, 1vw, 14px);
   }
 
   .logout-button{
-    right: 68px;
-    min-width: 88px;
-    height: 42px;
-    padding: 0 12px;
-    border-radius: 14px;
+    right: clamp(62px, 4.4vw, 68px);
+    min-width: clamp(82px, 5vw, 88px);
+    height: clamp(40px, 3vw, 42px);
+    padding: 0 clamp(10px, .9vw, 12px);
+    border-radius: clamp(13px, 1vw, 14px);
   }
 
   .logout-button span{
-    font-size: .76rem;
+    font-size: clamp(.72rem, .54vw, .76rem);
   }
 
   .theme-toggle [data-lucide]{
-    width: 18px;
-    height: 18px;
+    width: clamp(17px, 1.3vw, 18px);
+    height: clamp(17px, 1.3vw, 18px);
   }
 
   .app-shell{
-    width: min(1560px, calc(100vw - 32px));
+    width: var(--desktop-shell-width);
     display: grid;
-    grid-template-columns: 250px minmax(0, 1fr);
-    gap: 18px;
+    grid-template-columns: var(--desktop-sidebar-width) minmax(0, 1fr);
+    gap: var(--desktop-shell-gap);
     align-items: start;
+    min-height: auto;
+    padding-top: 0;
   }
 
   .portal-sidebar{
     position: sticky;
-    top: 14px;
+    top: calc(var(--desktop-top-offset) + var(--desktop-header-height) + 2px);
     display: grid;
-    gap: 14px;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0;
     align-self: start;
+    max-height: var(--desktop-section-height);
+    padding: clamp(12px, .9vw, 14px);
+    border-radius: var(--desktop-card-radius);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.995), rgba(247,251,255,.96));
+    border: 1px solid rgba(255,255,255,.82);
+    box-shadow: 0 18px 34px rgba(18, 76, 145, .10);
+    overflow: hidden;
+    z-index: 3;
+  }
+
+  .portal-sidebar-card,
+  .portal-nav-list{
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .portal-profile-card{
+    padding: clamp(12px, .85vw, 14px) clamp(10px, .8vw, 12px) clamp(14px, 1vw, 18px);
+    border-radius: clamp(18px, 1.35vw, 20px);
+  }
+
+  .portal-profile-card:hover{
+    transform: none;
+    background: rgba(35, 132, 234, .05);
+    box-shadow: none;
+  }
+
+  .portal-nav-list{
+    position: relative;
+    gap: clamp(6px, .6vw, 8px);
+    min-height: 0;
+    padding: clamp(12px, .9vw, 14px) 0 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .portal-nav-list::before{
+    content: "";
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    top: 0;
+    height: 1px;
+    background: rgba(110, 135, 164, .18);
+  }
+
+  .portal-nav-list::-webkit-scrollbar{
+    width: 0;
+    height: 0;
   }
 
   .app-shell-content{
-    width: 100%;
-    max-width: 1220px;
+    width: auto;
+    max-width: none;
+    margin-left: 0;
+    min-width: 0;
   }
 
   .app-shell-content > .section{
     max-width: none;
     width: 100%;
-    margin: 0 0 18px;
+    margin: 0 0 var(--desktop-section-gap);
+  }
+
+  .section{
+    padding: var(--desktop-section-padding);
+    border-radius: var(--desktop-card-radius);
+    scroll-margin-top: calc(var(--desktop-top-offset) + var(--desktop-header-height) + 28px);
+  }
+
+  body.section-desktop-lock{
+    overflow: hidden;
+  }
+
+  .app-shell-content > .section.section-active{
+    display: flex !important;
+    flex-direction: column;
+    height: var(--desktop-section-height);
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .app-shell-content > .section.section-active > h3{
+    flex: 0 0 auto;
+    margin: 0 0 clamp(12px, .9vw, 16px);
+    padding: 0 0 14px;
+    border-bottom: 1px solid rgba(20, 82, 150, .08);
+  }
+
+  .app-shell-content > .section.section-active > .section-scroll-body{
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-right: clamp(4px, .5vw, 8px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(28, 95, 180, .38) rgba(224, 235, 247, .72);
+  }
+
+  .app-shell-content > .section.section-active > .section-scroll-body::-webkit-scrollbar{
+    width: 10px;
+  }
+
+  .app-shell-content > .section.section-active > .section-scroll-body::-webkit-scrollbar-track{
+    border-radius: 999px;
+    background: rgba(224, 235, 247, .72);
+  }
+
+  .app-shell-content > .section.section-active > .section-scroll-body::-webkit-scrollbar-thumb{
+    border: 2px solid rgba(224, 235, 247, .72);
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(39, 108, 197, .62), rgba(24, 89, 177, .76));
+  }
+
+  .app-shell-content > .section.section-active > .section-scroll-body::-webkit-scrollbar-thumb:hover{
+    background: linear-gradient(180deg, rgba(39, 108, 197, .76), rgba(24, 89, 177, .9));
+  }
+
+  .app-shell-content > #inicio.section.section-active > .section-scroll-body{
+    padding-right: clamp(6px, .55vw, 10px);
+  }
+
+  .app-shell-content > #cadastros.section.section-active > .cadastro-tabs{
+    flex: 0 0 auto;
+    margin: 0 0 16px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid rgba(20, 82, 150, .06);
   }
 
   .section-home-link{
     display: none !important;
+  }
+
+  body.theme-dark .portal-sidebar{
+    background:
+      linear-gradient(180deg, rgba(16,23,34,.98), rgba(18,27,40,.95));
+    border-color: rgba(120, 161, 230, .14);
+    box-shadow: 0 20px 36px rgba(0, 0, 0, .24);
+  }
+
+  body.theme-dark .portal-profile-card:hover{
+    background: rgba(61, 122, 215, .10);
+  }
+
+  body.theme-dark .portal-nav-list::before{
+    background: rgba(120, 161, 230, .16);
+  }
+
+  body.theme-dark .app-shell-content > .section.section-active > .section-scroll-body::-webkit-scrollbar-track{
+    background: rgba(24, 38, 58, .86);
+  }
+
+  body.theme-dark .app-shell-content > .section.section-active > .section-scroll-body::-webkit-scrollbar-thumb{
+    border-color: rgba(24, 38, 58, .86);
+    background: linear-gradient(180deg, rgba(83, 144, 234, .66), rgba(46, 108, 203, .82));
+  }
+
+  body.theme-dark .app-shell-content > .section.section-active > .section-scroll-body::-webkit-scrollbar-thumb:hover{
+    background: linear-gradient(180deg, rgba(108, 162, 245, .8), rgba(61, 122, 215, .94));
+  }
+
+  body.theme-dark .app-shell-content > .section.section-active > .section-scroll-body{
+    scrollbar-color: rgba(83, 144, 234, .62) rgba(24, 38, 58, .86);
+  }
+
+  body.theme-dark .app-shell-content > .section.section-active > h3{
+    border-bottom-color: rgba(120, 161, 230, .12);
+  }
+
+  body.theme-dark .app-shell-content > #cadastros.section.section-active > .cadastro-tabs{
+    border-bottom-color: rgba(120, 161, 230, .10);
   }
 
   #inicio.section{
@@ -2517,8 +3005,9 @@ body.theme-dark .attention-row-content p{
   }
 
   .home-shell{
-    grid-template-columns: minmax(0, 1.24fr) minmax(320px, .86fr);
-    gap: 18px;
+    grid-template-columns: minmax(0, 1.18fr) minmax(320px, .88fr);
+    gap: var(--desktop-home-gap);
+    align-items: stretch;
   }
 
   .home-command-panel,
@@ -2530,26 +3019,83 @@ body.theme-dark .attention-row-content p{
   .home-stats-panel,
   .home-schedule-panel,
   .home-alerts-panel{
-    border-radius: 24px;
+    border-radius: var(--desktop-home-panel-radius);
+    padding: var(--desktop-home-panel-padding);
     box-shadow: 0 10px 22px rgba(18, 78, 145, .06);
   }
 
   .home-command-panel{
-    padding: 16px;
+    padding: var(--desktop-home-panel-padding);
   }
 
   .home-stats-panel{
-    gap: 10px;
+    gap: clamp(10px, .7vw, 14px);
+  }
+
+  .home-shortcuts-panel{
+    gap: clamp(10px, .7vw, 13px);
+  }
+
+  .home-shortcuts-group{
+    gap: clamp(8px, .6vw, 10px);
+  }
+
+  .home-shortcuts{
+    gap: clamp(8px, .55vw, 12px);
+  }
+
+  .home-shortcut{
+    min-height: var(--desktop-home-shortcut-min-height);
+    padding: clamp(10px, .45vw + .35vh, 13px);
+  }
+
+  .home-shortcut span{
+    font-size: clamp(.82rem, .38vw + .2vh, .88rem);
+  }
+
+  .home-shortcut small{
+    font-size: clamp(.66rem, .24vw + .12vh, .72rem);
   }
 
   .home-stats.home-stats-expanded{
-    gap: 10px;
+    gap: clamp(10px, .55vw, 12px);
+  }
+
+  .home-stat-card{
+    min-height: var(--desktop-home-stat-min-height);
+    padding: clamp(12px, .5vw + .35vh, 15px);
+  }
+
+  .home-stat-card span{
+    font-size: clamp(10px, .22vw + .08vh, 11px);
+  }
+
+  .home-stat-card strong{
+    font-size: clamp(1.4rem, .85vw + .55vh, 1.95rem);
+  }
+
+  .home-stat-card small{
+    font-size: clamp(.72rem, .25vw + .12vh, .78rem);
   }
 
   .home-columns-agenda{
     grid-column: 1 / -1;
     grid-template-columns: minmax(0, 1.08fr) minmax(300px, .92fr);
-    gap: 14px;
+    gap: var(--desktop-home-gap);
+  }
+
+  .home-schedule-panel,
+  .home-alerts-panel{
+    min-height: var(--desktop-home-bottom-min-height);
+  }
+
+  .home-attention-head strong{
+    font-size: clamp(.98rem, .32vw + .18vh, 1.08rem);
+  }
+
+  .home-schedule-list,
+  .home-alerts-list{
+    gap: clamp(8px, .55vw, 11px);
   }
 
   body.theme-dark .topo-card{
@@ -2561,6 +3107,117 @@ body.theme-dark .attention-row-content p{
   body.theme-dark .home-schedule-panel,
   body.theme-dark .home-alerts-panel{
     box-shadow: 0 14px 26px rgba(0, 0, 0, .18);
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1366px){
+  :root{
+    --desktop-sidebar-width: clamp(236px, 18vw, 260px);
+    --desktop-shell-gap: 14px;
+    --desktop-section-padding: 16px;
+    --desktop-home-gap: 12px;
+    --desktop-home-panel-padding: 14px;
+    --desktop-home-shortcut-min-height: 72px;
+    --desktop-home-stat-min-height: 86px;
+    --desktop-home-bottom-min-height: 204px;
+  }
+
+  .portal-sidebar-title{
+    font-size: .98rem;
+  }
+
+  .portal-sidebar-text{
+    font-size: .74rem;
+  }
+
+  .portal-nav-btn{
+    min-height: 44px;
+    padding: 9px 12px;
+    gap: 9px;
+    font-size: .82rem;
+  }
+
+  .home-shell{
+    grid-template-columns: minmax(0, 1.12fr) minmax(284px, .88fr);
+  }
+}
+
+@media (min-width: 1025px) and (max-height: 900px){
+  :root{
+    --desktop-header-height: 74px;
+    --desktop-section-padding: 16px;
+    --desktop-home-gap: 12px;
+    --desktop-home-panel-padding: 14px;
+    --desktop-home-shortcut-min-height: 70px;
+    --desktop-home-stat-min-height: 82px;
+    --desktop-home-bottom-min-height: 194px;
+  }
+
+  .portal-profile-card{
+    padding-bottom: 12px;
+  }
+
+  .portal-nav-btn{
+    min-height: 42px;
+  }
+
+  .home-command-panel,
+  .home-stats-panel,
+  .home-schedule-panel,
+  .home-alerts-panel{
+    border-radius: 22px;
+  }
+
+  .home-shortcut{
+    padding: 10px 11px;
+  }
+
+  .home-shortcut span{
+    font-size: .82rem;
+  }
+
+  .home-shortcut small{
+    font-size: .66rem;
+  }
+
+  .home-stat-card strong{
+    font-size: clamp(1.34rem, .78vw + .48vh, 1.72rem);
+  }
+
+  .home-attention-head strong{
+    font-size: .96rem;
+  }
+}
+
+@media (min-width: 1600px) and (min-height: 920px){
+  :root{
+    --desktop-sidebar-width: clamp(258px, 16vw, 304px);
+    --desktop-shell-width: min(1780px, calc(100vw - (var(--desktop-side-padding) * 2)));
+    --desktop-home-gap: 18px;
+    --desktop-home-panel-padding: 18px;
+    --desktop-home-shortcut-min-height: 88px;
+    --desktop-home-stat-min-height: 106px;
+    --desktop-home-bottom-min-height: 260px;
+  }
+
+  .portal-nav-btn{
+    min-height: 48px;
+  }
+
+  .home-shell{
+    grid-template-columns: minmax(0, 1.2fr) minmax(360px, .9fr);
+  }
+
+  .home-shortcut span{
+    font-size: .88rem;
+  }
+
+  .home-shortcut small{
+    font-size: .71rem;
+  }
+
+  .home-stat-card strong{
+    font-size: clamp(1.56rem, .96vw + .58vh, 2rem);
   }
 }
 
@@ -4405,6 +5062,7 @@ tr:last-child td{
   }
 
   #agendamentoVeiculosContent > .botao,
+  #chaves > .section-scroll-body > #btnAbrirChave,
   #btnAbrirChave{
     max-width: 700px;
     margin-left: auto;
@@ -4422,11 +5080,16 @@ tr:last-child td{
     font-size: 13px;
   }
 
+  #veiculosGeral > .section-scroll-body > .botao,
   #veiculosGeral > .botao,
   #agendamentoVeiculosContent > .botao,
+  #guardachuvas > .section-scroll-body > .botao,
   #guardachuvas > .botao,
+  #jogos > .section-scroll-body > .botao,
   #jogos > .botao,
+  #empilhadeiras > .section-scroll-body > .botao,
   #empilhadeiras > .botao,
+  #chaves > .section-scroll-body > .botao,
   #chaves > .botao{
     width: 100%;
     max-width: 780px;
@@ -5391,6 +6054,10 @@ tr:last-child td{
   display: grid;
   gap: 2px;
   min-width: 0;
+}
+
+.permission-hidden{
+  display: none !important;
 }
 
 .cadastro-grid{
@@ -7288,9 +7955,13 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   #agendamentoVeiculosContent > .botao,
+  #chaves > .section-scroll-body > .botao,
   #chaves > .botao,
+  #guardachuvas > .section-scroll-body > .botao,
   #guardachuvas > .botao,
+  #jogos > .section-scroll-body > .botao,
   #jogos > .botao,
+  #empilhadeiras > .section-scroll-body > .botao,
   #empilhadeiras > .botao{
     margin-bottom: 8px;
   }
@@ -8008,8 +8679,582 @@ body.theme-dark .password-modal .confirm-btn-cancel{
     padding: 16px 14px;
     border-radius: 14px;
     font-size: .78rem;
-    line-height: 1.45;
+  line-height: 1.45;
+}
+
+#cadastros.is-readonly-access .cadastro-form,
+#cadastros.is-readonly-access .cadastro-row-actions{
+  display: none !important;
+}
+
+.access-admin-shell{
+  display: grid;
+  gap: 14px;
+}
+
+.access-admin-form{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) 190px;
+  gap: 10px;
+  align-items: center;
+}
+
+.access-admin-form .botao{
+  min-height: 45px;
+  margin-top: 0;
+}
+
+.access-admin-note{
+  margin: 0;
+  color: #6b8094;
+  font-size: .82rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.access-user-list{
+  display: grid;
+  gap: 12px;
+}
+
+.access-user-card{
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,249,255,.94));
+  border: 1px solid rgba(16, 67, 129, .08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.82);
+}
+
+.access-user-card.is-inactive{
+  opacity: .8;
+}
+
+.access-user-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.access-user-title{
+  display: grid;
+  gap: 3px;
+}
+
+.access-user-title strong{
+  color: #22364d;
+  font-size: .98rem;
+  font-weight: 900;
+}
+
+.access-user-title span{
+  color: #678096;
+  font-size: .76rem;
+  font-weight: 800;
+}
+
+.access-user-badges{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.access-user-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(35, 132, 234, .10);
+  color: #1565c0;
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.access-user-badge.is-active{
+  background: rgba(56, 161, 105, .12);
+  color: #2f855a;
+}
+
+.access-user-badge.is-inactive{
+  background: rgba(226, 85, 85, .10);
+  color: #c53030;
+}
+
+.access-user-badge.is-current{
+  background: rgba(82, 143, 233, .12);
+  color: #1d4f91;
+}
+
+.access-user-meta{
+  margin: 0;
+  color: #6b8094;
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.access-permissions-grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.access-permission-field{
+  display: grid;
+  gap: 6px;
+}
+
+.access-permission-field > span{
+  color: #5d7892;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.access-user-actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 1240px){
+  .access-admin-form{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .access-permissions-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px){
+  .access-admin-form,
+  .access-permissions-grid{
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .access-user-head{
+    flex-direction: column;
+  }
+
+  .access-user-badges{
+    justify-content: flex-start;
+  }
+}
+
+.access-admin-shell{
+  gap: 18px;
+}
+
+.access-overview-grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.access-overview-card,
+.access-creation-card,
+.access-directory-card{
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,249,255,.95));
+  border: 1px solid rgba(16, 67, 129, .08);
+  border-radius: 22px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.82);
+}
+
+.access-overview-card{
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
+}
+
+.access-overview-card > span{
+  color: #6f88a1;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.access-overview-card > strong{
+  color: #22364d;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.access-overview-card > small{
+  color: #6b8094;
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.access-workspace{
+  display: grid;
+  grid-template-columns: minmax(340px, .92fr) minmax(0, 1.18fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.access-creation-card,
+.access-directory-card{
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.access-section-head,
+.access-directory-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.access-section-head{
+  flex-direction: column;
+}
+
+.access-section-head strong,
+.access-directory-head strong{
+  color: #22364d;
+  font-size: 1.02rem;
+  font-weight: 900;
+}
+
+.access-section-head span,
+.access-directory-head span{
+  color: #6b8094;
+  font-size: .8rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.access-directory-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(35, 132, 234, .10);
+  color: #1565c0 !important;
+  font-size: .72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.access-admin-form{
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.access-field{
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.access-field > span{
+  color: #5d7892;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.access-field--wide,
+.access-field--search{
+  grid-column: 1 / -1;
+}
+
+.access-password-row{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.access-password-row .cadastro-action{
+  min-height: 45px;
+  margin: 0;
+}
+
+.access-create-actions{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.access-create-actions .botao{
+  min-height: 46px;
+  margin-top: 0;
+}
+
+.access-toolbar{
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(180px, .72fr));
+  gap: 10px;
+}
+
+.access-user-list{
+  gap: 14px;
+}
+
+.access-user-card{
+  padding: 0;
+  overflow: hidden;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.access-user-card[open]{
+  box-shadow: 0 16px 30px rgba(17, 74, 138, .08);
+}
+
+.access-user-card.is-dirty{
+  border-color: rgba(35, 132, 234, .32);
+  box-shadow: 0 0 0 1px rgba(35, 132, 234, .08), 0 16px 30px rgba(17, 74, 138, .08);
+}
+
+.access-user-card summary{
+  list-style: none;
+}
+
+.access-user-card summary::marker{
+  content: "";
+}
+
+.access-user-card summary::-webkit-details-marker{
+  display: none;
+}
+
+.access-user-summary{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 18px 16px;
+  cursor: pointer;
+}
+
+.access-user-lead{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.access-user-avatar{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(37, 114, 209, .12), rgba(102, 170, 255, .18));
+  color: #1d4f91;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+  flex: 0 0 auto;
+}
+
+.access-user-side{
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
+.access-user-highlight{
+  display: grid;
+  gap: 2px;
+  text-align: right;
+}
+
+.access-user-highlight strong{
+  color: #22364d;
+  font-size: .88rem;
+  font-weight: 900;
+}
+
+.access-user-highlight small{
+  color: #6b8094;
+  font-size: .76rem;
+  font-weight: 700;
+}
+
+.access-user-body{
+  display: grid;
+  gap: 14px;
+  padding: 0 18px 18px;
+  border-top: 1px solid rgba(20, 82, 150, .08);
+}
+
+.access-user-badge.is-custom{
+  background: rgba(255, 183, 77, .14);
+  color: #b96b00;
+}
+
+.access-preset-actions{
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.access-mini-label{
+  color: #5d7892;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.access-preset-chip{
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(35, 132, 234, .16);
+  border-radius: 999px;
+  background: rgba(35, 132, 234, .06);
+  color: #245185;
+  font-size: .76rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.access-preset-chip:hover{
+  background: rgba(35, 132, 234, .12);
+  border-color: rgba(35, 132, 234, .28);
+}
+
+.access-preset-chip.is-active{
+  background: linear-gradient(180deg, #3e93ff, #1e6cde);
+  border-color: rgba(30, 108, 222, .24);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(32, 110, 214, .18);
+}
+
+.access-preset-chip:disabled{
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.access-permission-groups{
+  display: grid;
+  gap: 12px;
+}
+
+.access-permission-group{
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(245, 250, 255, .92);
+  border: 1px solid rgba(16, 67, 129, .07);
+}
+
+.access-permission-group-head{
+  display: grid;
+  gap: 4px;
+}
+
+.access-permission-group-head strong{
+  color: #22364d;
+  font-size: .86rem;
+  font-weight: 900;
+}
+
+.access-permission-group-head span{
+  color: #6b8094;
+  font-size: .76rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.access-permissions-grid{
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.access-user-actions{
+  justify-content: flex-end;
+}
+
+.access-user-actions .cadastro-action.solid{
+  background: linear-gradient(180deg, #3e93ff, #1e6cde);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(32, 110, 214, .18);
+}
+
+.access-user-actions .cadastro-action.solid:hover{
+  filter: brightness(1.03);
+}
+
+.access-creation-card.is-readonly{
+  opacity: .82;
+}
+
+@media (max-width: 1240px){
+  .access-overview-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .access-workspace{
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .access-toolbar{
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px){
+  .access-overview-grid,
+  .access-admin-form{
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .access-password-row{
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .access-section-head,
+  .access-directory-head,
+  .access-user-summary{
+    flex-direction: column;
+  }
+
+  .access-user-side{
+    width: 100%;
+    justify-items: start;
+  }
+
+  .access-user-highlight{
+    text-align: left;
+  }
+
+  .access-create-actions,
+  .access-user-actions{
+    justify-content: stretch;
+  }
+
+  .access-create-actions .botao,
+  .access-user-actions .cadastro-action{
+    width: 100%;
+  }
+}
 
   .posto-table .empilhadeira-table-row .posto-col-acao{
     margin: 6px;
@@ -8151,9 +9396,13 @@ body.theme-dark .password-modal .confirm-btn-cancel{
   }
 
   #agendamentoVeiculosContent > .botao,
+  #chaves > .section-scroll-body > .botao,
   #chaves > .botao,
+  #guardachuvas > .section-scroll-body > .botao,
   #guardachuvas > .botao,
+  #jogos > .section-scroll-body > .botao,
   #jogos > .botao,
+  #empilhadeiras > .section-scroll-body > .botao,
   #empilhadeiras > .botao{
     margin-bottom: 7px;
   }
@@ -8645,9 +9894,13 @@ body.theme-dark .password-modal .confirm-btn-cancel{
 }
 
 @media (min-width: 981px){
+  #chaves > .section-scroll-body > #btnAbrirChave.botao,
   #chaves > #btnAbrirChave.botao,
+  #empilhadeiras > .section-scroll-body > #btnAbrirEmpilhadeira.botao,
   #empilhadeiras > #btnAbrirEmpilhadeira.botao,
+  #jogos > .section-scroll-body > #btnAbrirJogo.botao,
   #jogos > #btnAbrirJogo.botao,
+  #guardachuvas > .section-scroll-body > #btnAbrirGuarda.botao,
   #guardachuvas > #btnAbrirGuarda.botao,
   #agendamentoVeiculosContent > #btnAbrirAgendamento.botao{
     display: flex !important;
@@ -8660,19 +9913,6 @@ body.theme-dark .password-modal .confirm-btn-cancel{
     font-size: 13px !important;
     margin-left: auto !important;
     margin-right: auto !important;
-  }
-}
-
-/* Reduz a escala em computadores menores sem alterar o layout original. */
-@media (min-width: 861px){
-  body{
-    zoom: .95;
-  }
-}
-
-@media (min-width: 861px) and (max-height: 780px){
-  body{
-    zoom: .92;
   }
 }
 
@@ -8719,12 +9959,13 @@ body.theme-dark .password-modal .confirm-btn-cancel{
     border-radius: 12px;
   }
 
-  #veiculosGeral,
-  #chaves,
-  #vendas,
-  #cadastros{
-    max-width: 920px;
-    padding: 16px 18px;
+  .app-shell-content > #veiculosGeral,
+  .app-shell-content > #chaves,
+  .app-shell-content > #vendas,
+  .app-shell-content > #cadastros{
+    width: 100%;
+    max-width: none;
+    padding: var(--desktop-section-padding, 16px);
   }
 
   #listaVeiculosContent{
@@ -8960,6 +10201,19 @@ body.theme-dark .section textarea::placeholder{
 body.theme-dark .section select option{
   background: #ffffff;
   color: #111111;
+}
+
+body.theme-dark #perfilUsuario.section .profile-field--locked input{
+  background: linear-gradient(180deg, rgba(26,38,54,.98), rgba(20,31,46,.94)) !important;
+  border-color: rgba(120, 161, 230, .12) !important;
+  color: #dce8f5 !important;
+  -webkit-text-fill-color: #dce8f5 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03) !important;
+}
+
+body.theme-dark #perfilUsuario.section .profile-field--locked input:focus{
+  border-color: rgba(120, 161, 230, .12) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03) !important;
 }
 
 body.theme-dark .autocomplete-list{
@@ -9407,6 +10661,120 @@ body.theme-dark #cadastros .cadastro-tag.is-active{
 body.theme-dark #cadastros .cadastro-tag.is-inactive{
   background: rgba(120, 161, 230, .12);
   color: #9fb3c8;
+}
+
+body.theme-dark .access-user-card{
+  background: linear-gradient(180deg, rgba(16, 22, 34, .94), rgba(20, 29, 44, .92));
+  border-color: rgba(124, 169, 226, .18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+body.theme-dark .access-user-title strong{
+  color: #eef5ff;
+}
+
+body.theme-dark .access-user-title span,
+body.theme-dark .access-user-meta,
+body.theme-dark .access-permission-field > span,
+body.theme-dark .access-admin-note{
+  color: #9fb3c8;
+}
+
+body.theme-dark .access-user-badge{
+  background: rgba(82, 143, 233, .16);
+  color: #9ec8ff;
+}
+
+body.theme-dark .access-user-badge.is-active{
+  background: rgba(84, 169, 90, .18);
+  color: #b7e0b9;
+}
+
+body.theme-dark .access-user-badge.is-inactive{
+  background: rgba(239, 83, 80, .16);
+  color: #ffb4ad;
+}
+
+body.theme-dark .access-user-badge.is-current{
+  background: rgba(255, 214, 102, .14);
+  color: #ffe199;
+}
+
+body.theme-dark .access-overview-card,
+body.theme-dark .access-creation-card,
+body.theme-dark .access-directory-card{
+  background: linear-gradient(180deg, rgba(16, 22, 34, .94), rgba(20, 29, 44, .92));
+  border-color: rgba(124, 169, 226, .18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+body.theme-dark .access-overview-card > span,
+body.theme-dark .access-overview-card > small,
+body.theme-dark .access-section-head span,
+body.theme-dark .access-directory-head span,
+body.theme-dark .access-field > span,
+body.theme-dark .access-mini-label,
+body.theme-dark .access-user-highlight small,
+body.theme-dark .access-permission-group-head span{
+  color: #9fb3c8;
+}
+
+body.theme-dark .access-overview-card > strong,
+body.theme-dark .access-section-head strong,
+body.theme-dark .access-directory-head strong,
+body.theme-dark .access-user-highlight strong,
+body.theme-dark .access-permission-group-head strong{
+  color: #eef5ff;
+}
+
+body.theme-dark .access-directory-badge{
+  background: rgba(82, 143, 233, .16);
+  color: #9ec8ff !important;
+}
+
+body.theme-dark .access-user-avatar{
+  background: linear-gradient(180deg, rgba(82, 143, 233, .16), rgba(34, 92, 180, .24));
+  color: #dbe9ff;
+}
+
+body.theme-dark .access-user-body{
+  border-top-color: rgba(124, 169, 226, .12);
+}
+
+body.theme-dark .access-user-badge.is-custom{
+  background: rgba(255, 193, 94, .14);
+  color: #ffd48b;
+}
+
+body.theme-dark .access-preset-chip{
+  background: rgba(82, 143, 233, .10);
+  border-color: rgba(124, 169, 226, .2);
+  color: #d7e8ff;
+}
+
+body.theme-dark .access-preset-chip:hover{
+  background: rgba(82, 143, 233, .16);
+  border-color: rgba(124, 169, 226, .28);
+}
+
+body.theme-dark .access-preset-chip.is-active{
+  background: linear-gradient(180deg, rgba(82, 143, 233, .94), rgba(41, 100, 192, .96));
+  color: #ffffff;
+}
+
+body.theme-dark .access-permission-group{
+  background: rgba(16, 25, 38, .78);
+  border-color: rgba(124, 169, 226, .12);
+}
+
+body.theme-dark .access-user-card.is-dirty{
+  border-color: rgba(82, 143, 233, .34);
+  box-shadow: 0 0 0 1px rgba(82, 143, 233, .08), 0 16px 30px rgba(0, 0, 0, .26);
+}
+
+body.theme-dark .access-user-actions .cadastro-action.solid{
+  background: linear-gradient(180deg, rgba(82, 143, 233, .94), rgba(41, 100, 192, .96));
+  color: #ffffff;
 }
 
 body.theme-dark #veiculosForm input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]),
@@ -10490,7 +11858,888 @@ body.theme-dark #guardachuvas .btn-secondary::before{
     font-size: .76rem;
   }
 
-  body.theme-dark .home-alert-content p{
+body.theme-dark .home-alert-content p{
     font-size: .7rem;
+  }
+}
+
+#cadastros .access-admin-shell{
+  display: grid;
+  gap: 18px;
+}
+
+#cadastros .access-overview-grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+#cadastros .access-overview-card,
+#cadastros .access-creation-card,
+#cadastros .access-directory-card{
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,249,255,.95));
+  border: 1px solid rgba(16, 67, 129, .08);
+  border-radius: 22px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.82), 0 10px 24px rgba(17, 74, 138, .05);
+}
+
+#cadastros .access-overview-card{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+}
+
+#cadastros .access-overview-card > span,
+#cadastros .access-overview-card > strong,
+#cadastros .access-overview-card > small{
+  display: block;
+}
+
+#cadastros .access-overview-card > span{
+  color: #6f88a1;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+#cadastros .access-overview-card > strong{
+  color: #22364d;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+#cadastros .access-overview-card > small{
+  color: #6b8094;
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+#cadastros .access-workspace{
+  display: grid;
+  grid-template-columns: minmax(320px, .88fr) minmax(0, 1.12fr);
+  gap: 16px;
+  align-items: start;
+}
+
+#cadastros .access-creation-card,
+#cadastros .access-directory-card{
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+#cadastros .access-directory-card{
+  gap: 12px;
+}
+
+#cadastros .access-section-head,
+#cadastros .access-directory-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#cadastros .access-section-head{
+  flex-direction: column;
+}
+
+#cadastros .access-directory-head > div{
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+#cadastros .access-directory-head{
+  align-items: center;
+}
+
+#cadastros .access-section-head strong,
+#cadastros .access-directory-head strong{
+  color: #22364d;
+  font-size: 1.02rem;
+  font-weight: 900;
+}
+
+#cadastros .access-section-head span,
+#cadastros .access-directory-head span{
+  color: #6b8094;
+  font-size: .8rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+#cadastros .access-directory-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(35, 132, 234, .10);
+  color: #1565c0;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#cadastros .access-admin-form{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+#cadastros .access-field{
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+#cadastros .access-field > span{
+  color: #5d7892;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+#cadastros .access-field small{
+  color: #6b8094;
+  font-size: .76rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+#cadastros .access-field--wide,
+#cadastros .access-field--search{
+  grid-column: 1 / -1;
+}
+
+#cadastros .access-field--compact{
+  max-width: 360px;
+}
+
+#cadastros .access-password-row{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+#cadastros .access-password-row .cadastro-action{
+  min-height: 45px;
+  margin: 0;
+}
+
+#cadastros .access-create-actions{
+  display: grid;
+  gap: 10px;
+}
+
+#cadastros .access-create-actions .botao{
+  min-height: 46px;
+  margin-top: 0;
+  width: 100%;
+}
+
+#cadastros .access-toolbar{
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(130px, .52fr));
+  gap: 8px 10px;
+  align-items: end;
+}
+
+#cadastros .access-toolbar .access-field{
+  gap: 4px;
+}
+
+#cadastros .access-toolbar .access-field--search{
+  grid-column: auto;
+}
+
+#cadastros .access-toolbar .access-field > span{
+  font-size: .66rem;
+}
+
+#cadastros .access-toolbar input,
+#cadastros .access-toolbar select{
+  min-height: 40px;
+}
+
+#cadastros .access-user-list{
+  display: grid;
+  gap: 14px;
+}
+
+#cadastros details.access-user-card{
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+#cadastros details.access-user-card[open]{
+  box-shadow: 0 16px 30px rgba(17, 74, 138, .08);
+}
+
+#cadastros details.access-user-card.is-dirty{
+  border-color: rgba(35, 132, 234, .32);
+  box-shadow: 0 0 0 1px rgba(35, 132, 234, .08), 0 16px 30px rgba(17, 74, 138, .08);
+}
+
+#cadastros .access-user-card summary{
+  list-style: none;
+}
+
+#cadastros .access-user-card summary::marker,
+#cadastros .access-user-card summary::-webkit-details-marker{
+  display: none;
+  content: "";
+}
+
+#cadastros .access-user-summary{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+#cadastros .access-user-lead{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+#cadastros .access-user-avatar{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(37, 114, 209, .12), rgba(102, 170, 255, .18));
+  color: #1d4f91;
+  font-size: .88rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+  flex: 0 0 auto;
+}
+
+#cadastros .access-user-title{
+  display: grid;
+  gap: 1px;
+}
+
+#cadastros .access-user-title strong{
+  color: #22364d;
+  font-size: .9rem;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+#cadastros .access-user-title span,
+#cadastros .access-user-meta,
+#cadastros .access-admin-note,
+#cadastros .access-mini-label,
+#cadastros .access-user-highlight small,
+#cadastros .access-permission-group-head span{
+  color: #6b8094;
+  font-size: .74rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+#cadastros .access-user-side{
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+#cadastros .access-user-badges{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+#cadastros .access-user-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(35, 132, 234, .10);
+  color: #1565c0;
+  font-size: .64rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+#cadastros .access-user-badge.is-active{
+  background: rgba(56, 161, 105, .12);
+  color: #2f855a;
+}
+
+#cadastros .access-user-badge.is-inactive{
+  background: rgba(226, 85, 85, .10);
+  color: #c53030;
+}
+
+#cadastros .access-user-badge.is-current{
+  background: rgba(82, 143, 233, .12);
+  color: #1d4f91;
+}
+
+#cadastros .access-user-badge.is-custom{
+  background: rgba(255, 183, 77, .14);
+  color: #b96b00;
+}
+
+#cadastros .access-user-highlight{
+  display: grid;
+  gap: 1px;
+  text-align: right;
+}
+
+#cadastros .access-user-highlight strong,
+#cadastros .access-permission-group-head strong{
+  color: #22364d;
+  font-size: .78rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+#cadastros .access-user-body{
+  display: grid;
+  gap: 14px;
+  padding: 0 18px 18px;
+  border-top: 1px solid rgba(20, 82, 150, .08);
+}
+
+#cadastros .access-card-controls{
+  display: grid;
+  gap: 10px;
+}
+
+#cadastros .access-control-note{
+  display: block;
+}
+
+#cadastros .access-preset-actions{
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#cadastros .access-mini-label{
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+#cadastros .access-preset-chip{
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(35, 132, 234, .16);
+  border-radius: 999px;
+  background: rgba(35, 132, 234, .06);
+  color: #245185;
+  font-size: .76rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+#cadastros .access-preset-chip:hover{
+  background: rgba(35, 132, 234, .12);
+  border-color: rgba(35, 132, 234, .28);
+}
+
+#cadastros .access-preset-chip.is-active{
+  background: linear-gradient(180deg, #3e93ff, #1e6cde);
+  border-color: rgba(30, 108, 222, .24);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(32, 110, 214, .18);
+}
+
+#cadastros .access-preset-chip:disabled{
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+#cadastros .access-permission-groups{
+  display: grid;
+  gap: 12px;
+}
+
+#cadastros .access-action-permissions{
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(35, 132, 234, .12);
+  border-radius: 8px;
+  background: rgba(35, 132, 234, .04);
+}
+
+#cadastros .access-action-permissions-grid{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#cadastros .access-action-permission-field{
+  display: inline-flex;
+}
+
+#cadastros .access-advanced-panel{
+  display: grid;
+  gap: 0;
+  padding: 0;
+  border: 1px solid rgba(16, 67, 129, .08);
+  border-radius: 18px;
+  background: rgba(245, 250, 255, .68);
+  overflow: hidden;
+}
+
+#cadastros .access-advanced-panel summary{
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  color: #245185;
+  font-size: .82rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+#cadastros .access-advanced-panel summary::marker,
+#cadastros .access-advanced-panel summary::-webkit-details-marker{
+  display: none;
+  content: "";
+}
+
+#cadastros .access-advanced-panel summary::after{
+  content: "+";
+  color: #5d7892;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+#cadastros .access-advanced-panel[open] summary::after{
+  content: "-";
+}
+
+#cadastros .access-advanced-panel-body{
+  display: grid;
+  gap: 12px;
+  padding: 0 14px 14px;
+}
+
+#cadastros .access-permission-group-head{
+  display: grid;
+  gap: 4px;
+}
+
+#cadastros .access-permission-group{
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(245, 250, 255, .92);
+  border: 1px solid rgba(16, 67, 129, .07);
+}
+
+#cadastros .access-permission-field{
+  display: grid;
+  gap: 6px;
+}
+
+#cadastros .access-permission-field--flags{
+  gap: 8px;
+}
+
+#cadastros .access-permission-field > span{
+  color: #5d7892;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+#cadastros .access-permission-flags{
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#cadastros .access-permission-flag{
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid rgba(35, 132, 234, .12);
+  border-radius: 999px;
+  background: rgba(35, 132, 234, .05);
+  color: #5d7892;
+  font-size: .74rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+#cadastros .access-permission-flag:hover{
+  background: rgba(35, 132, 234, .1);
+  border-color: rgba(35, 132, 234, .22);
+  color: #245185;
+}
+
+#cadastros .access-permission-flag.is-active{
+  border-color: rgba(30, 108, 222, .2);
+  background: linear-gradient(180deg, #3e93ff, #1e6cde);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(32, 110, 214, .14);
+}
+
+#cadastros .access-permission-flag:disabled{
+  opacity: .58;
+  cursor: not-allowed;
+}
+
+#cadastros .access-permission-groups .access-permissions-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#cadastros .access-user-actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+#cadastros .access-user-actions .cadastro-action.solid{
+  background: linear-gradient(180deg, #3e93ff, #1e6cde);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(32, 110, 214, .18);
+}
+
+#cadastros .access-user-actions .cadastro-action.solid:hover{
+  filter: brightness(1.03);
+}
+
+#cadastros .access-creation-card.is-readonly{
+  opacity: .82;
+}
+
+body.theme-dark #cadastros .access-overview-card,
+body.theme-dark #cadastros .access-creation-card,
+body.theme-dark #cadastros .access-directory-card,
+body.theme-dark #cadastros details.access-user-card{
+  background: linear-gradient(180deg, rgba(16, 22, 34, .94), rgba(20, 29, 44, .92));
+  border-color: rgba(124, 169, 226, .18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+body.theme-dark #cadastros .access-overview-card > span,
+body.theme-dark #cadastros .access-overview-card > small,
+body.theme-dark #cadastros .access-section-head span,
+body.theme-dark #cadastros .access-directory-head span,
+body.theme-dark #cadastros .access-field > span,
+body.theme-dark #cadastros .access-field small,
+body.theme-dark #cadastros .access-permission-field > span,
+body.theme-dark #cadastros .access-user-title span,
+body.theme-dark #cadastros .access-user-meta,
+body.theme-dark #cadastros .access-admin-note,
+body.theme-dark #cadastros .access-mini-label,
+body.theme-dark #cadastros .access-user-highlight small,
+body.theme-dark #cadastros .access-permission-group-head span{
+  color: #9fb3c8;
+}
+
+body.theme-dark #cadastros .access-overview-card > strong,
+body.theme-dark #cadastros .access-section-head strong,
+body.theme-dark #cadastros .access-directory-head strong,
+body.theme-dark #cadastros .access-user-title strong,
+body.theme-dark #cadastros .access-user-highlight strong,
+body.theme-dark #cadastros .access-permission-group-head strong{
+  color: #eef5ff;
+}
+
+body.theme-dark #cadastros .access-directory-badge{
+  background: rgba(82, 143, 233, .16);
+  color: #9ec8ff;
+}
+
+body.theme-dark #cadastros .access-user-avatar{
+  background: linear-gradient(180deg, rgba(82, 143, 233, .16), rgba(34, 92, 180, .24));
+  color: #dbe9ff;
+}
+
+body.theme-dark #cadastros .access-user-body{
+  border-top-color: rgba(124, 169, 226, .12);
+}
+
+body.theme-dark #cadastros .access-advanced-panel{
+  background: rgba(16, 25, 38, .72);
+  border-color: rgba(124, 169, 226, .14);
+}
+
+body.theme-dark #cadastros .access-action-permissions{
+  background: rgba(82, 143, 233, .08);
+  border-color: rgba(124, 169, 226, .16);
+}
+
+body.theme-dark #cadastros .access-advanced-panel summary{
+  color: #d7e8ff;
+}
+
+body.theme-dark #cadastros .access-advanced-panel summary::after{
+  color: #9fb3c8;
+}
+
+body.theme-dark #cadastros .access-user-badge{
+  background: rgba(82, 143, 233, .16);
+  color: #9ec8ff;
+}
+
+body.theme-dark #cadastros .access-user-badge.is-active{
+  background: rgba(84, 169, 90, .18);
+  color: #b7e0b9;
+}
+
+body.theme-dark #cadastros .access-user-badge.is-inactive{
+  background: rgba(239, 83, 80, .16);
+  color: #ffb4ad;
+}
+
+body.theme-dark #cadastros .access-user-badge.is-current{
+  background: rgba(255, 214, 102, .14);
+  color: #ffe199;
+}
+
+body.theme-dark #cadastros .access-user-badge.is-custom{
+  background: rgba(255, 193, 94, .14);
+  color: #ffd48b;
+}
+
+body.theme-dark #cadastros .access-preset-chip{
+  background: rgba(82, 143, 233, .10);
+  border-color: rgba(124, 169, 226, .2);
+  color: #d7e8ff;
+}
+
+body.theme-dark #cadastros .access-preset-chip:hover{
+  background: rgba(82, 143, 233, .16);
+  border-color: rgba(124, 169, 226, .28);
+}
+
+body.theme-dark #cadastros .access-preset-chip.is-active,
+body.theme-dark #cadastros .access-user-actions .cadastro-action.solid{
+  background: linear-gradient(180deg, rgba(82, 143, 233, .94), rgba(41, 100, 192, .96));
+  color: #ffffff;
+}
+
+body.theme-dark #cadastros .access-permission-group{
+  background: rgba(16, 25, 38, .78);
+  border-color: rgba(124, 169, 226, .12);
+}
+
+body.theme-dark #cadastros .access-permission-flag{
+  background: rgba(82, 143, 233, .08);
+  border-color: rgba(124, 169, 226, .16);
+  color: #b8cbe0;
+}
+
+body.theme-dark #cadastros .access-permission-flag:hover{
+  background: rgba(82, 143, 233, .14);
+  border-color: rgba(124, 169, 226, .24);
+  color: #e4efff;
+}
+
+body.theme-dark #cadastros .access-permission-flag.is-active{
+  background: linear-gradient(180deg, rgba(82, 143, 233, .94), rgba(41, 100, 192, .96));
+  color: #ffffff;
+}
+
+body.theme-dark #cadastros details.access-user-card.is-dirty{
+  border-color: rgba(82, 143, 233, .34);
+  box-shadow: 0 0 0 1px rgba(82, 143, 233, .08), 0 16px 30px rgba(0, 0, 0, .26);
+}
+
+@media (max-width: 1240px){
+  #cadastros .access-overview-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #cadastros .access-workspace{
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #cadastros .access-toolbar{
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px){
+  #cadastros .access-overview-grid,
+  #cadastros .access-admin-form,
+  #cadastros .access-permission-groups .access-permissions-grid{
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #cadastros .access-password-row{
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #cadastros .access-section-head,
+  #cadastros .access-directory-head,
+  #cadastros .access-user-summary{
+    flex-direction: column;
+  }
+
+  #cadastros .access-user-side{
+    width: 100%;
+    justify-items: start;
+  }
+
+  #cadastros .access-user-badges{
+    justify-content: flex-start;
+  }
+
+  #cadastros .access-user-highlight{
+    text-align: left;
+  }
+
+  #cadastros .access-create-actions,
+  #cadastros .access-user-actions{
+    justify-content: stretch;
+  }
+
+  #cadastros .access-create-actions .botao,
+  #cadastros .access-user-actions .cadastro-action{
+    width: 100%;
+  }
+
+  #cadastros .access-permission-flags{
+    width: 100%;
+  }
+
+  #cadastros .access-permission-flag{
+    flex: 1 1 0;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1241px){
+  .app-shell-content > #cadastros.section.section-active > .section-scroll-body > .cadastro-grid{
+    height: 100%;
+    min-height: 0;
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active{
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 100%;
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active .access-admin-shell,
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active .access-workspace{
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active .access-directory-card{
+    min-height: 0;
+    grid-template-rows: auto auto 1fr;
+    overflow: hidden;
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active .access-creation-card{
+    position: sticky;
+    top: 0;
+    align-self: start;
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active .access-user-list{
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active details.access-user-card{
+    min-height: 0;
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active details.access-user-card[open]{
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+    min-height: 0;
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active details.access-user-card[open] .access-user-body{
+    min-height: 0;
+    padding-right: 6px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(28, 95, 180, .34) rgba(224, 235, 247, .68);
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active details.access-user-card[open] .access-user-body::-webkit-scrollbar{
+    width: 8px;
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active details.access-user-card[open] .access-user-body::-webkit-scrollbar-track{
+    border-radius: 999px;
+    background: rgba(224, 235, 247, .68);
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active details.access-user-card[open] .access-user-body::-webkit-scrollbar-thumb{
+    border: 2px solid rgba(224, 235, 247, .68);
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(39, 108, 197, .56), rgba(24, 89, 177, .72));
+  }
+
+  #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active details.access-user-card[open] .access-user-meta{
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 0;
+    padding: 0 0 10px;
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,249,255,.95));
+  }
+
+  body.theme-dark #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active details.access-user-card[open] .access-user-body{
+    scrollbar-color: rgba(83, 144, 234, .56) rgba(24, 38, 58, .82);
+  }
+
+  body.theme-dark #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active details.access-user-card[open] .access-user-body::-webkit-scrollbar-track{
+    background: rgba(24, 38, 58, .82);
+  }
+
+  body.theme-dark #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active details.access-user-card[open] .access-user-body::-webkit-scrollbar-thumb{
+    border-color: rgba(24, 38, 58, .82);
+    background: linear-gradient(180deg, rgba(83, 144, 234, .62), rgba(46, 108, 203, .8));
+  }
+
+  body.theme-dark #cadastros .cadastro-panel[data-cadastro-panel="acessos"].is-active details.access-user-card[open] .access-user-meta{
+    background: linear-gradient(180deg, rgba(16, 22, 34, .96), rgba(20, 29, 44, .94));
   }
 }

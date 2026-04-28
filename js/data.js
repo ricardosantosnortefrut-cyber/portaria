@@ -68,14 +68,6 @@ const condutoresAutorizados = [
   "LISBOA"
 ];
 
-const porteirosAutorizados = [
-  "EDERVAL",
-  "ELIVELTON",
-  "FELIPE",
-  "JACKSON",
-  "RICARDO"
-];
-
 const guardasDisponiveis = ["01", "02", "03", "04", "05"];
 
 const empilhadeirasDisponiveis = ["01", "02", "03"];

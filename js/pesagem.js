@@ -7,7 +7,11 @@ const pesagemManualState = {
   origemEdicao: false
 };
 
-const OPERADOR_PESAGEM_MANUAL = "PORTEIRO";
+function obterOperadorPesagemManualAtual() {
+  return typeof obterNomeUsuarioAtual === "function"
+    ? normalizarTexto(obterNomeUsuarioAtual() || "USUARIO")
+    : "USUARIO";
+}
 
 function formatarPlacaPesagem(valor) {
   const bruto = String(valor || "")
@@ -468,7 +472,7 @@ function preencherFormularioPesagemManual(id) {
   renderTicketPesagemManual({ id, ...dados });
   abrirDetalhePesagemManual();
   atualizarEstadoSegundaPesagem();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  rolarParaTopoContextual("smooth");
 }
 
 function salvarPesagemManual() {
@@ -490,11 +494,11 @@ function salvarPesagemManual() {
   if (!possuiPrimeiraRegistrada) {
     dados.dataPrimeiraPesagem = agora.data;
     dados.horaPrimeiraPesagem = agora.hora;
-    dados.usuarioPrimeiraPesagem = OPERADOR_PESAGEM_MANUAL;
+    dados.usuarioPrimeiraPesagem = obterOperadorPesagemManualAtual();
   } else if (dados.segundaPesagem > 0 && !possuiSegundaRegistrada) {
     dados.dataSegundaPesagem = agora.data;
     dados.horaSegundaPesagem = agora.hora;
-    dados.usuarioSegundaPesagem = OPERADOR_PESAGEM_MANUAL;
+    dados.usuarioSegundaPesagem = obterOperadorPesagemManualAtual();
   } else if (possuiPrimeiraRegistrada && !dados.segundaPesagem) {
     avisoValidacao("Informe a segunda pesagem para finalizar.");
     return;

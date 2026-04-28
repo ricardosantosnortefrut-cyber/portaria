@@ -19,6 +19,14 @@ function parseDateTime(dateStr, timeStr) {
   return date;
 }
 
+function obterNomeResponsavelRegistro(...candidatos) {
+  for (const candidato of candidatos) {
+    const texto = String(candidato || "").trim();
+    if (texto) return texto;
+  }
+  return "";
+}
+
 function aplicarCabecalhoRelatorio(ws, titulo, periodo, color) {
   const lastColumn = String.fromCharCode(64 + ws.columns.length);
   ws.mergeCells(`A1:${lastColumn}1`);
@@ -82,7 +90,7 @@ async function exportarRelatorioVeiculosSemanal(offsetSemana = 0) {
       destino: i.destino || "",
       kmSaida: i.kmSaida || "",
       kmRetorno: i.kmRetorno || "",
-      porteiro: i.porteiro || "",
+      porteiro: obterNomeResponsavelRegistro(i.usuarioRetornoNome, i.porteiroRetorno, i.usuarioSaidaNome, i.porteiro),
       checklistLuzes: i.checklist_luz || "",
       checklistPneus: i.checklist_pneu || "",
       checklistLimpeza: i.checklist_limp || "",
@@ -107,7 +115,7 @@ async function exportarRelatorioVeiculosSemanal(offsetSemana = 0) {
     { header: "Destino", key: "destino", width: 26 },
     { header: "KM Saída", key: "kmSaida", width: 12 },
     { header: "KM Retorno", key: "kmRetorno", width: 12 },
-    { header: "Porteiro", key: "porteiro", width: 18 },
+    { header: "Usuario", key: "porteiro", width: 18 },
     { header: "Buzina/Ar Condicionado", key: "checklistLuzes", width: 13 },
     { header: "Farol/Luzes", key: "checklistPneus", width: 11 },
     { header: "Lataria/Retrovisores", key: "checklistLimpeza", width: 13 },
@@ -185,7 +193,7 @@ async function exportarRelatorioEmpilhadeirasMensal(offsetMes = 0) {
       const data = parseBRDate(i.data);
       return data && data >= inicioMes && data <= fimMes;
     })
-    .map(i => ({ data: i.data || "", empilhadeira: i.num || "", motorista: i.motorista || "", porteiro: i.porteiro || "" }));
+    .map(i => ({ data: i.data || "", empilhadeira: i.num || "", motorista: i.motorista || "", porteiro: obterNomeResponsavelRegistro(i.usuarioNome, i.porteiro) }));
 
   if (!lista.length) {
     avisoInfo("Nenhum registro de empilhadeiras neste mês.", "forklift");
@@ -198,7 +206,7 @@ async function exportarRelatorioEmpilhadeirasMensal(offsetMes = 0) {
     { header: "Data", key: "data", width: 14 },
     { header: "Nº Empilhadeira", key: "empilhadeira", width: 16 },
     { header: "Motorista", key: "motorista", width: 22 },
-    { header: "Porteiro", key: "porteiro", width: 18 }
+    { header: "Usuario", key: "porteiro", width: 18 }
   ];
   aplicarCabecalhoRelatorio(ws, "RELATÓRIO - EMPILHADEIRAS (MENSAL)", `Período: ${formatarDataBR(inicioMes)} até ${formatarDataBR(fimMes)}`, "FF455A64");
   lista.forEach(item => ws.addRow(item));
@@ -222,12 +230,12 @@ async function exportarRelatorioChavesMensal(offsetMes = 0) {
   Object.values(ativas).forEach(c => {
     const dt = parseBRDate(c.dataRetirada);
     if (!dt || dt < inicioMes || dt > fimMes) return;
-    lista.push({ dataRetirada: c.dataRetirada || "", horaRetirada: c.horaRetirada || "", numero: c.num || "", sala: c.sala || "", retirou: c.quem || "", porteiro: c.porteiro || "", dataDev: "", horaDev: "", status: "EM USO" });
+    lista.push({ dataRetirada: c.dataRetirada || "", horaRetirada: c.horaRetirada || "", numero: c.num || "", sala: c.sala || "", retirou: c.quem || "", porteiro: obterNomeResponsavelRegistro(c.usuarioNome, c.porteiro), dataDev: "", horaDev: "", status: "EM USO" });
   });
   Object.values(historico).forEach(c => {
     const dt = parseBRDate(c.dataRetirada);
     if (!dt || dt < inicioMes || dt > fimMes) return;
-    lista.push({ dataRetirada: c.dataRetirada || "", horaRetirada: c.horaRetirada || "", numero: c.num || "", sala: c.sala || "", retirou: c.quem || "", porteiro: c.porteiro || "", dataDev: c.dataDevolucao || "", horaDev: c.horaDevolucao || "", status: "DEVOLVIDO" });
+    lista.push({ dataRetirada: c.dataRetirada || "", horaRetirada: c.horaRetirada || "", numero: c.num || "", sala: c.sala || "", retirou: c.quem || "", porteiro: obterNomeResponsavelRegistro(c.usuarioNome, c.usuarioDevolucaoNome, c.porteiro), dataDev: c.dataDevolucao || "", horaDev: c.horaDevolucao || "", status: "DEVOLVIDO" });
   });
 
   if (!lista.length) {
@@ -243,7 +251,7 @@ async function exportarRelatorioChavesMensal(offsetMes = 0) {
     { header: "Nº Chave", key: "numero", width: 18 },
     { header: "Sala / Setor", key: "sala", width: 34 },
     { header: "Quem Retirou", key: "retirou", width: 22 },
-    { header: "Porteiro Retirada", key: "porteiro", width: 20 },
+    { header: "Usuario Responsavel", key: "porteiro", width: 20 },
     { header: "Data Devolução", key: "dataDev", width: 16 },
     { header: "Hora Devolução", key: "horaDev", width: 16 },
     { header: "Status", key: "status", width: 12 }
@@ -270,12 +278,12 @@ async function exportarRelatorioGuardaMensal(offsetMes = 0) {
   Object.values(ativos).forEach(g => {
     const dt = parseBRDate(g.dataRetirada);
     if (!dt || dt < inicioMes || dt > fimMes) return;
-    lista.push({ dataRetirada: g.dataRetirada || "", horaRetirada: g.horaRetirada || "", numero: g.numero || "", retirou: g.quem || "", setor: g.setor || "", porteiro: g.porteiro || "", dataDevolucao: "", horaDevolucao: "", status: "EM USO" });
+    lista.push({ dataRetirada: g.dataRetirada || "", horaRetirada: g.horaRetirada || "", numero: g.numero || "", retirou: g.quem || "", setor: g.setor || "", porteiro: obterNomeResponsavelRegistro(g.usuarioNome, g.porteiro), dataDevolucao: "", horaDevolucao: "", status: "EM USO" });
   });
   Object.values(historico).forEach(g => {
     const dt = parseBRDate(g.dataRetirada);
     if (!dt || dt < inicioMes || dt > fimMes) return;
-    lista.push({ dataRetirada: g.dataRetirada || "", horaRetirada: g.horaRetirada || "", numero: g.numero || "", retirou: g.quem || "", setor: g.setor || "", porteiro: g.porteiro || "", dataDevolucao: g.dataDevolucao || "", horaDevolucao: g.horaDevolucao || "", status: "DEVOLVIDO" });
+    lista.push({ dataRetirada: g.dataRetirada || "", horaRetirada: g.horaRetirada || "", numero: g.numero || "", retirou: g.quem || "", setor: g.setor || "", porteiro: obterNomeResponsavelRegistro(g.usuarioNome, g.usuarioDevolucaoNome, g.porteiro), dataDevolucao: g.dataDevolucao || "", horaDevolucao: g.horaDevolucao || "", status: "DEVOLVIDO" });
   });
 
   if (!lista.length) {
@@ -291,7 +299,7 @@ async function exportarRelatorioGuardaMensal(offsetMes = 0) {
     { header: "Nº Patrimônio", key: "numero", width: 16 },
     { header: "Quem Retirou", key: "retirou", width: 22 },
     { header: "Setor", key: "setor", width: 18 },
-    { header: "Porteiro", key: "porteiro", width: 18 },
+    { header: "Usuario", key: "porteiro", width: 18 },
     { header: "Data Devolução", key: "dataDevolucao", width: 14 },
     { header: "Hora Devolução", key: "horaDevolucao", width: 14 },
     { header: "Status", key: "status", width: 12 }
@@ -588,7 +596,7 @@ function normalizarRegistroVeiculo(item) {
     kmSaida: item.kmSaida || "",
     kmRetorno: item.kmRetorno || "",
     kmRodado: Number.isFinite(kmSaida) && Number.isFinite(kmRetorno) ? Math.max(0, kmRetorno - kmSaida) : 0,
-    porteiro: item.porteiroRetorno || item.porteiro || "",
+    porteiro: obterNomeResponsavelRegistro(item.usuarioRetornoNome, item.porteiroRetorno, item.usuarioSaidaNome, item.porteiro),
     checklistLuzes: item.checklist_luz || "",
     checklistPneus: item.checklist_pneu || "",
     checklistLimpeza: item.checklist_limp || "",
@@ -720,7 +728,7 @@ async function exportarRelatorioVeiculosFiltrado() {
     { header: "KM Saída", key: "kmSaida", width: 12 },
     { header: "KM Retorno", key: "kmRetorno", width: 12 },
     { header: "KM Rodado", key: "kmRodado", width: 12 },
-    { header: "Porteiro", key: "porteiro", width: 18 },
+    { header: "Usuario", key: "porteiro", width: 18 },
     { header: "Buzina/Ar Condicionado", key: "checklistLuzes", width: 13 },
     { header: "Farol/Luzes", key: "checklistPneus", width: 11 },
     { header: "Lataria/Retrovisores", key: "checklistLimpeza", width: 13 },
@@ -1350,7 +1358,7 @@ function aplicarFiltrosRelatorioEmpilhadeiras() {
 }
 
 async function exportarRelatorioEmpilhadeirasFiltrado() {
-  const lista = obterEmpilhadeirasFiltradas().map(item => ({ data: item.data || "", hora: item.hora || "", empilhadeira: item.num || "", motorista: item.motorista || "", porteiro: item.porteiro || "" }));
+  const lista = obterEmpilhadeirasFiltradas().map(item => ({ data: item.data || "", hora: item.hora || "", empilhadeira: item.num || "", motorista: item.motorista || "", porteiro: obterNomeResponsavelRegistro(item.usuarioNome, item.porteiro) }));
   if (!lista.length) return avisoInfo("Nenhum registro de empilhadeiras para exportar.", "forklift");
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("Empilhadeiras", { views: [{ state: "frozen", ySplit: 3 }] });
@@ -1359,7 +1367,7 @@ async function exportarRelatorioEmpilhadeirasFiltrado() {
     { header: "Hora", key: "hora", width: 12 },
     { header: "Nº Empilhadeira", key: "empilhadeira", width: 16 },
     { header: "Motorista", key: "motorista", width: 22 },
-    { header: "Porteiro", key: "porteiro", width: 18 }
+    { header: "Usuario", key: "porteiro", width: 18 }
   ];
   aplicarCabecalhoRelatorio(ws, "RELATÓRIO - EMPILHADEIRAS", formatarPeriodoLabel(relatorioEmpilhadeirasState.filtros.dataInicio, relatorioEmpilhadeirasState.filtros.dataFim), "FF455A64");
   lista.forEach(item => ws.addRow(item));
@@ -1428,7 +1436,7 @@ async function exportarRelatorioChavesFiltrado() {
     numero: item.num || "",
     sala: item.sala || "",
     retirou: item.quem || "",
-    porteiro: item.porteiro || "",
+    porteiro: obterNomeResponsavelRegistro(item.usuarioNome, item.usuarioDevolucaoNome, item.porteiro),
     dataDevolucao: item.dataDevolucao || "",
     horaDevolucao: item.horaDevolucao || "",
     status: item.status || ""
@@ -1442,7 +1450,7 @@ async function exportarRelatorioChavesFiltrado() {
     { header: "Nº Chave", key: "numero", width: 18 },
     { header: "Sala / Setor", key: "sala", width: 34 },
     { header: "Quem Retirou", key: "retirou", width: 22 },
-    { header: "Porteiro", key: "porteiro", width: 20 },
+    { header: "Usuario Responsavel", key: "porteiro", width: 20 },
     { header: "Data Devolução", key: "dataDevolucao", width: 16 },
     { header: "Hora Devolução", key: "horaDevolucao", width: 16 },
     { header: "Status", key: "status", width: 12 }
@@ -1499,7 +1507,7 @@ async function exportarRelatorioGuardasFiltrado() {
     numero: item.numero || "",
     retirou: item.quem || "",
     setor: item.setor || "",
-    porteiro: item.porteiro || "",
+    porteiro: obterNomeResponsavelRegistro(item.usuarioNome, item.usuarioDevolucaoNome, item.porteiro),
     dataDevolucao: item.dataDevolucao || "",
     horaDevolucao: item.horaDevolucao || "",
     status: item.status || ""
@@ -1513,7 +1521,7 @@ async function exportarRelatorioGuardasFiltrado() {
     { header: "Nº Patrimônio", key: "numero", width: 16 },
     { header: "Quem Retirou", key: "retirou", width: 22 },
     { header: "Setor", key: "setor", width: 18 },
-    { header: "Porteiro", key: "porteiro", width: 18 },
+    { header: "Usuario", key: "porteiro", width: 18 },
     { header: "Data Devolução", key: "dataDevolucao", width: 14 },
     { header: "Hora Devolução", key: "horaDevolucao", width: 14 },
     { header: "Status", key: "status", width: 12 }
@@ -1570,6 +1578,7 @@ async function exportarRelatorioJogosFiltrado() {
     jogo: item.jogo || "",
     funcionario: item.funcionario || "",
     autorizador: item.autorizador || "",
+    usuario: obterNomeResponsavelRegistro(item.usuarioNome, item.usuarioDevolucaoNome, item.porteiro),
     dataDevolucao: item.dataDevolucao || "",
     horaDevolucao: item.horaDevolucao || "",
     status: item.status || ""
@@ -1583,6 +1592,7 @@ async function exportarRelatorioJogosFiltrado() {
     { header: "Jogo", key: "jogo", width: 26 },
     { header: "Funcionário", key: "funcionario", width: 22 },
     { header: "Autorizador", key: "autorizador", width: 22 },
+    { header: "Usuario", key: "usuario", width: 20 },
     { header: "Data Devolução", key: "dataDevolucao", width: 14 },
     { header: "Hora Devolução", key: "horaDevolucao", width: 14 },
     { header: "Status", key: "status", width: 12 }
@@ -1612,7 +1622,7 @@ function criarCardChaveAberta([, dados]) {
     titulo: `Nº ${dados.num || "-"} - ${dados.sala || "-"}`,
     linhas: [
       { icon: "user-round", text: `Retirado por: ${dados.quem || "-"}` },
-      { icon: "shield-check", text: `Porteiro: ${dados.porteiro || "-"}` }
+      { icon: "shield-check", text: `Registrado por: ${obterNomeResponsavelRegistro(dados.usuarioNome, dados.usuarioDevolucaoNome, dados.porteiro) || "-"}` }
     ]
   });
 }
@@ -1623,7 +1633,8 @@ function criarCardJogoAberto([, dados]) {
     titulo: dados.jogo || "-",
     linhas: [
       { icon: "user-round", text: `Funcionário: ${dados.funcionario || "-"}` },
-      { icon: "shield-check", text: `Autorizador: ${dados.autorizador || "-"}` }
+      { icon: "shield-check", text: `Autorizador: ${dados.autorizador || "-"}` },
+      { icon: "badge-check", text: `Registrado por: ${obterNomeResponsavelRegistro(dados.usuarioNome, dados.usuarioDevolucaoNome, dados.porteiro) || "-"}` }
     ]
   });
 }

@@ -1,11 +1,12 @@
 ﻿// --- Empilhadeiras ---
 function limparFormEmpilhadeiraCampos() {
-  ["ab_num", "ab_motorista", "ab_porteiro"].forEach(id => {
+  ["ab_num", "ab_motorista"].forEach(id => {
     const campo = getById(id);
     if (campo) campo.value = "";
   });
+  if (typeof preencherCamposOperadorAtual === "function") preencherCamposOperadorAtual();
 
-  ["lista_empilhadeiras_num", "lista_empilhadeiras_porteiro"].forEach(id => {
+  ["lista_empilhadeiras_num"].forEach(id => {
     const lista = getById(id);
     if (!lista) return;
     limparConteudoElemento(lista);
@@ -85,7 +86,6 @@ function configurarAutocompleteEmpilhadeira(inputId, listaId, getOpcoes) {
 
 function configurarAutocompletesEmpilhadeira() {
   configurarAutocompleteEmpilhadeira("ab_num", "lista_empilhadeiras_num", obterEmpilhadeirasDisponiveisHoje);
-  configurarAutocompleteEmpilhadeira("ab_porteiro", "lista_empilhadeiras_porteiro", () => porteirosAutorizados);
 }
 
 function obterEmpilhadeirasDisponiveisHoje() {
@@ -132,8 +132,8 @@ function renderAbastecimentosRecentes(dados) {
 
     const porteiro = document.createElement("span");
     porteiro.className = "empilhadeira-cell";
-    porteiro.dataset.label = "Porteiro";
-    porteiro.textContent = item.porteiro || "-";
+    porteiro.dataset.label = "Usuario";
+    porteiro.textContent = item.usuarioNome || item.porteiro || "-";
 
     row.append(data, numero, motorista, porteiro);
     container.appendChild(row);
@@ -144,20 +144,23 @@ function salvarAbastecimento() {
   const botao = document.activeElement;
   const num = normalizarTexto(getById("ab_num").value);
   const motorista = normalizarTexto(getById("ab_motorista").value);
-  const porteiro = normalizarTexto(getById("ab_porteiro").value);
+  const assinatura = typeof obterAssinaturaUsuarioAtual === "function"
+    ? obterAssinaturaUsuarioAtual()
+    : { usuarioUid: "", usuarioLogin: "", usuarioNome: "" };
+  const porteiro = normalizarTexto(assinatura.usuarioNome || getById("ab_porteiro").value || "");
 
-  if (!num || !motorista || !porteiro) {
-    avisoValidacao("Preencha todos os campos.");
+  if (!porteiro) {
+    avisoValidacao("Nao foi possivel identificar o usuario logado para registrar o abastecimento.");
+    return;
+  }
+
+  if (!num || !motorista) {
+    avisoValidacao("Preencha a empilhadeira e o motorista.");
     return;
   }
 
   if (!empilhadeirasDisponiveis.includes(num)) {
     avisoValidacao("Selecione uma empilhadeira válida na lista.");
-    return;
-  }
-
-  if (!validarPorteiroAutorizado(porteiro)) {
-    avisoValidacao("Selecione um porteiro válido na lista.");
     return;
   }
 
@@ -182,6 +185,9 @@ function salvarAbastecimento() {
       num,
       motorista,
       porteiro,
+      usuarioUid: assinatura.usuarioUid || "",
+      usuarioLogin: assinatura.usuarioLogin || "",
+      usuarioNome: assinatura.usuarioNome || "",
       data: hoje,
       hora: new Date().toLocaleTimeString("pt-BR", { hour12: false })
     };

@@ -8,9 +8,28 @@ const postoState = {
   movimentacoes: {},
   plantoes: {}
 };
-const OPERADOR_POSTO_PADRAO = "PORTEIRO";
 let postoAutoSyncPromise = null;
 let postoUltimaChaveSincronizada = "";
+
+function obterAssinaturaOperadorPostoAtual() {
+  return typeof obterAssinaturaUsuarioAtual === "function"
+    ? obterAssinaturaUsuarioAtual()
+    : { usuarioUid: "", usuarioLogin: "", usuarioNome: "" };
+}
+
+function obterNomeOperadorPostoAtual() {
+  return normalizarTexto(obterAssinaturaOperadorPostoAtual().usuarioNome || "USUARIO");
+}
+
+function obterMetadadosOperadorPostoAtual() {
+  const assinatura = obterAssinaturaOperadorPostoAtual();
+  return {
+    porteiro: normalizarTexto(assinatura.usuarioNome || "USUARIO"),
+    usuarioUid: assinatura.usuarioUid || "",
+    usuarioLogin: assinatura.usuarioLogin || "",
+    usuarioNome: assinatura.usuarioNome || ""
+  };
+}
 
 function obterConfiguracaoBasePosto() {
   return window.postoConfigCadastro || {};
@@ -502,6 +521,7 @@ function validarMovimentacaoPosto(dados) {
 function salvarMovimentacaoPosto() {
   const botao = document.activeElement;
   const agora = definirDataHoraAtualPosto();
+  const operador = obterMetadadosOperadorPostoAtual();
   const dados = {
     modo: getById("postoMovModo")?.value || "abastecimento",
     data: agora.data,
@@ -514,6 +534,7 @@ function salvarMovimentacaoPosto() {
     quantidadeTextoOriginal: String(getById("postoMovQuantidade")?.value || "").trim(),
     contador: parseContadorPosto(getById("postoMovContador")?.value || 0),
     km: Number(getById("postoMovKm")?.value || 0),
+    ...operador,
     criadoEm: Date.now()
   };
 
@@ -561,10 +582,11 @@ function montarProdutoPlantaoPeloResumo(resumo, tipo) {
 function montarDadosPlantaoAberturaPosto(resumo, agora, referencia = new Date()) {
   const { inicio, turno } = obterJanelaTurnoPosto(referencia);
   const plantaoChave = obterChaveTurnoPosto(referencia);
+  const operador = obterMetadadosOperadorPostoAtual();
   return {
     plantaoChave,
     data: agora.data,
-    porteiro: OPERADOR_POSTO_PADRAO,
+    ...operador,
     turno,
     s10: montarProdutoPlantaoPeloResumo(resumo, "S10"),
     s500: montarProdutoPlantaoPeloResumo(resumo, "S500"),
@@ -578,10 +600,11 @@ function montarDadosPlantaoAberturaPosto(resumo, agora, referencia = new Date())
 function montarDadosPlantaoFechamentoPosto(resumo, agora, plantaoAtual, referencia = new Date()) {
   const { fim, turno } = obterJanelaTurnoPosto(referencia);
   const plantaoChave = obterChaveTurnoPosto(referencia);
+  const operador = obterMetadadosOperadorPostoAtual();
   return {
     plantaoChave,
     data: agora.data,
-    porteiro: OPERADOR_POSTO_PADRAO,
+    ...operador,
     turno,
     s10: {
       estoqueInicial: Number(plantaoAtual?.s10?.estoqueInicial ?? resumo?.saldo?.S10 ?? 0),
@@ -678,10 +701,11 @@ function salvarPlantaoPostoLegado() {
   const resumo = obterResumoCalculadoPosto();
   const plantaoAtual = resumo.plantaoAtual;
   const plantaoChave = obterChaveTurnoPosto();
+  const operador = obterMetadadosOperadorPostoAtual();
   const dados = {
     plantaoChave,
     data: agora.data,
-    porteiro: OPERADOR_POSTO_PADRAO,
+    ...operador,
     turno: obterTurnoAtualPosto(),
     s10: coletarProdutoPlantao("postoS10"),
     s500: coletarProdutoPlantao("postoS500"),
@@ -712,6 +736,7 @@ function salvarPlantaoPosto() {
   const plantaoAberto = obterPlantaoAbertoPosto();
   const plantaoChave = obterChaveTurnoPosto();
   const modo = obterModoPlantaoPosto();
+  const operador = obterMetadadosOperadorPostoAtual();
 
   if (modo === "abertura" && plantaoAtual) {
     avisoValidacao("O plantao deste turno ja foi iniciado.");
@@ -726,7 +751,7 @@ function salvarPlantaoPosto() {
   const dados = {
     plantaoChave,
     data: agora.data,
-    porteiro: OPERADOR_POSTO_PADRAO,
+    ...operador,
     turno: obterTurnoAtualPosto(),
     s10: coletarProdutoPlantao("postoS10"),
     s500: coletarProdutoPlantao("postoS500"),
